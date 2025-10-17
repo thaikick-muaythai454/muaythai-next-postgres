@@ -63,7 +63,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
         setSession(initialSession);
         setUser(initialSession?.user ?? null);
       } catch (error) {
-        console.error("Error initializing auth:", error);
+        // Silently handle auth initialization errors
       } finally {
         setIsLoading(false);
       }
@@ -74,8 +74,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Listen for auth state changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, currentSession) => {
-        console.log("Auth state changed:", event);
-        
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
         setIsLoading(false);
@@ -110,7 +108,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const { error } = await supabase.auth.signOut();
       
       if (error) {
-        console.error("Sign out error:", error);
         throw error;
       }
 
@@ -118,7 +115,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(null);
       setSession(null);
     } catch (error) {
-      console.error("Error during sign out:", error);
       throw error;
     }
   };
@@ -132,14 +128,12 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const { data: { session: refreshedSession }, error } = await supabase.auth.refreshSession();
       
       if (error) {
-        console.error("Session refresh error:", error);
         throw error;
       }
 
       setSession(refreshedSession);
       setUser(refreshedSession?.user ?? null);
     } catch (error) {
-      console.error("Error refreshing session:", error);
       throw error;
     }
   };

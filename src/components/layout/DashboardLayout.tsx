@@ -53,7 +53,7 @@ export default function DashboardLayout({
       await signOut();
       router.push('/');
     } catch (error) {
-      console.error('Logout error:', error);
+      // Silently handle logout errors
     }
   };
 

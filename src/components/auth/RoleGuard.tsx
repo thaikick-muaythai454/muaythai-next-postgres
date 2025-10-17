@@ -55,10 +55,7 @@ export default function RoleGuard({
 
         // Check if user has the required role
         if (userRole !== allowedRole) {
-          // User doesn't have required role
-          console.warn(`Access denied: User role "${userRole}" cannot access "${allowedRole}" area`);
-          
-          // Redirect to user's appropriate dashboard or specified redirect
+          // User doesn't have required role - redirect silently
           const redirectPath = redirectTo || getDashboardPath(userRole);
           router.push(redirectPath);
           return;
@@ -67,7 +64,6 @@ export default function RoleGuard({
         // User is authorized
         setIsAuthorized(true);
       } catch (error) {
-        console.error('Role check error:', error);
         router.push('/login');
       } finally {
         setIsLoading(false);

@@ -87,7 +87,7 @@ export default function SignupPage() {
           router.push("/");
         }
       } catch (error) {
-        console.error("Error checking authentication:", error);
+        // Silently handle errors
       } finally {
         setIsCheckingAuth(false);
       }
@@ -238,12 +238,10 @@ export default function SignupPage() {
             role: "authenticated",
           });
         } catch (roleError) {
-          console.error("Error creating user role:", roleError);
           // Don't block signup if role creation fails
         }
       }
     } catch (error) {
-      console.error("Signup error:", error);
       setErrors({
         general: "เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง",
       });

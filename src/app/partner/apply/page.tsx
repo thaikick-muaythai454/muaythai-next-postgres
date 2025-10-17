@@ -151,21 +151,8 @@ export default function PartnerApplyPage() {
         .eq("user_id", currentUser.id)
         .single();
 
-      if (roleError) {
-        if (roleError.code === "PGRST116") {
-          // No rows returned - user doesn't have a role entry yet
-          console.log("No role found for user, defaulting to 'authenticated'");
-        } else if (roleError.code === "42P01") {
-          // Table doesn't exist
-          console.error("❌ user_roles table doesn't exist!");
-          console.error("Please run the migration: supabase/migrations/partner_application_setup.sql");
-          console.error("See MIGRATION_GUIDE.md for instructions");
-        } else {
-          // Other error
-          console.error("Error fetching user role:", roleError);
-          console.error("Error code:", roleError.code);
-          console.error("Error message:", roleError.message);
-        }
+      if (roleError && roleError.code !== "PGRST116") {
+        // Silently handle errors
       }
 
       const currentRole = roleData?.role || "authenticated";
@@ -179,18 +166,10 @@ export default function PartnerApplyPage() {
         .single();
 
       if (gymError) {
-        if (gymError.code === "PGRST116") {
-          // No rows returned - user doesn't have a gym application yet
-          console.log("No gym application found for user");
-        } else if (gymError.code === "42P01") {
-          // Table doesn't exist
-          console.error("❌ gyms table doesn't exist!");
-          console.error("Please run the migration: supabase/migrations/partner_application_setup.sql");
-          console.error("See MIGRATION_GUIDE.md for instructions");
+        if (gymError.code === "42P01") {
           setSubmitError("Database tables not set up. Please contact administrator.");
-        } else {
-          console.error("Error fetching gym data:", gymError);
         }
+        // Silently handle other errors
       } else if (gymData) {
         // User already has an application
         setExistingGym(gymData);
@@ -198,7 +177,6 @@ export default function PartnerApplyPage() {
       }
 
     } catch (error) {
-      console.error("Authentication check error:", error);
       router.push("/login?redirect=/partner/apply");
     } finally {
       setIsLoading(false);
@@ -350,7 +328,6 @@ export default function PartnerApplyPage() {
           });
 
         if (error) {
-          console.error("Error uploading image:", error);
           throw error;
         }
 
@@ -361,7 +338,6 @@ export default function PartnerApplyPage() {
 
         uploadedUrls.push(urlData.publicUrl);
       } catch (error) {
-        console.error("Image upload failed:", error);
         throw new Error("การอัปโหลดรูปภาพล้มเหลว");
       }
     }
@@ -398,7 +374,6 @@ export default function PartnerApplyPage() {
         if (error) throw error;
       }
     } catch (error) {
-      console.error("Error updating user role:", error);
       throw new Error("ไม่สามารถอัปเดตบทบาทผู้ใช้ได้");
     }
   };
@@ -498,7 +473,6 @@ export default function PartnerApplyPage() {
       setSelectedFiles([]);
 
     } catch (error) {
-      console.error("Submission error:", error);
       const errorMessage = error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการส่งข้อมูล กรุณาลองใหม่อีกครั้ง";
       setSubmitError(errorMessage);
     } finally {

@@ -80,7 +80,7 @@ export default function LoginPage() {
           router.push(redirectTo);
         }
       } catch (error) {
-        console.error("Error checking authentication:", error);
+        // Silently handle errors
       } finally {
         setIsCheckingAuth(false);
       }
@@ -182,7 +182,6 @@ export default function LoginPage() {
         router.refresh(); // Refresh to update server components
       }
     } catch (error) {
-      console.error("Login error:", error);
       setErrors({
         general: "เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง",
       });
