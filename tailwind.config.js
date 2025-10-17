@@ -1,5 +1,4 @@
 import { heroui } from "@heroui/theme";
-import tailwindScrollbar from "tailwind-scrollbar";
 
 /** @type {import('tailwindcss').Config} */
 const config = {
@@ -12,7 +11,7 @@ const config = {
     extend: {},
   },
   darkMode: "class",
-  plugins: [heroui(), tailwindScrollbar],
+  plugins: [heroui()],
 };
 
 export default config;
