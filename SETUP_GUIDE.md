@@ -45,8 +45,8 @@ cp .env.example .env.local
 แก้ไขไฟล์ `.env.local` ใส่ค่าที่คัดลอกมา:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGci...
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_ANON_KEY=eyJhbGci...
 ```
 
 ### 4. รัน Development Server
@@ -231,7 +231,7 @@ npm run type-check   # ตรวจสอบ TypeScript types (ถ้ามี)
 **แก้ไข**: ใช้ placeholder values ตอน build
 
 ```bash
-NEXT_PUBLIC_SUPABASE_URL=https://placeholder.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=placeholder npm run build
+SUPABASE_URL=https://placeholder.supabase.co SUPABASE_ANON_KEY=placeholder npm run build
 ```
 
 ---

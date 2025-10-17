@@ -65,8 +65,8 @@ cp .env.example .env.local
 จากนั้นแก้ไขไฟล์ `.env.local`:
 
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_URL=https://your-project-id.supabase.co
+SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
 ### 4. รันโปรเจกต์
@@ -285,8 +285,8 @@ create policy "Users can update own data"
 2. ไปที่ [Vercel](https://vercel.com)
 3. Import repository
 4. เพิ่ม Environment Variables:
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY`
 5. Deploy!
 
 ### ตรวจสอบก่อน Deploy
