@@ -43,14 +43,14 @@ function loadEnv(path) {
 
 const env = loadEnv(envPath);
 
-const supabaseUrl = env.NEXT_PUBLIC_SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseUrl = env.SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseAnonKey = env.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('❌ Missing Supabase credentials in .env.local');
   console.error('Required variables:');
-  console.error('  - NEXT_PUBLIC_SUPABASE_URL');
-  console.error('  - NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  console.error('  - SUPABASE_URL');
+  console.error('  - SUPABASE_ANON_KEY');
   process.exit(1);
 }
 

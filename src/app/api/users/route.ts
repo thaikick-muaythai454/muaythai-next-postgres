@@ -62,7 +62,6 @@ export async function GET() {
       message: '⚠️ This endpoint should be protected in production!',
     });
   } catch (error) {
-    console.error('Error fetching users:', error);
     return NextResponse.json(
       {
         success: false,

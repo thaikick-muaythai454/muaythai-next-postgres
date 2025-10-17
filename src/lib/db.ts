@@ -110,7 +110,6 @@ export async function checkDatabaseHealth(): Promise<boolean> {
     await sql`SELECT 1`;
     return true;
   } catch (error) {
-    console.error('Database health check failed:', error);
     return false;
   }
 }

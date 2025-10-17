@@ -18,7 +18,6 @@ import {
   TableBody,
   TableRow,
   TableCell,
-  Input,
 } from '@heroui/react';
 import {
   HomeIcon,
@@ -28,10 +27,7 @@ import {
   ShoppingBagIcon,
   HeartIcon,
   ArrowRightIcon,
-  CreditCardIcon,
   BanknotesIcon,
-  StarIcon,
-  CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { User } from '@supabase/supabase-js';
 
@@ -45,46 +41,15 @@ function DashboardContent() {
   const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [profileData, setProfileData] = useState({
-    full_name: '',
-    phone: '',
-  });
 
   useEffect(() => {
     async function loadUser() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
-      
-      if (user) {
-        setProfileData({
-          full_name: user.user_metadata?.full_name || '',
-          phone: user.user_metadata?.phone || '',
-        });
-      }
-      
       setIsLoading(false);
     }
     loadUser();
   }, [supabase]);
-
-  const handleSaveProfile = async () => {
-    if (!user) return;
-
-    try {
-      const { error } = await supabase.auth.updateUser({
-        data: profileData
-      });
-
-      if (error) throw error;
-
-      setIsEditingProfile(false);
-      alert('บันทึกข้อมูลสำเร็จ!');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      alert('เกิดข้อผิดพลาดในการบันทึกข้อมูล');
-    }
-  };
 
   // Menu items for sidebar
   const menuItems: MenuItem[] = [

@@ -131,7 +131,6 @@ export default function ResetPasswordPage() {
       // Success
       setIsSuccess(true);
     } catch (error) {
-      console.error("Password reset error:", error);
       setErrors({
         general: "เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง",
       });
