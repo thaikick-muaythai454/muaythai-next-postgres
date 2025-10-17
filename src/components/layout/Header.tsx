@@ -2,17 +2,32 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { ShoppingCartIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
+
+type NavLink =
+  | {
+      text: string;
+      href: string;
+      dropdown?: never;
+    }
+  | {
+      text: string;
+      dropdown: { href: string; text: string }[];
+      href?: never;
+    };
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isLangDropdownOpen, setLangDropdownOpen] = useState(false);
-  const [isProgramsMenuOpen, setProgramsMenuOpen] = useState(false);
   const [isInfoMenuOpen, setInfoMenuOpen] = useState(false);
 
   const [currentLang, setCurrentLang] = useState("TH");
 
-  const navLinks = [
+  const navLinks: NavLink[] = [
+    { text: "ค่ายมวย", href: "/gyms" },
+    { text: "ตั๋วชกมวย", href: "/events" },
+    { text: "โปรแกรม", href: "/fighter-program" },
+    { text: "ร้านค้า", href: "/shop" },
     {
       text: "ข้อมูล",
       dropdown: [
@@ -42,10 +57,7 @@ export default function Header() {
                 link.dropdown ? (
                   <div key={link.text} className="relative">
                     <button
-                      onClick={() => {
-                        setInfoMenuOpen((o) => !o);
-                        setProgramsMenuOpen(false);
-                      }}
+                      onClick={() => setInfoMenuOpen((o) => !o)}
                       className="flex items-center gap-1 hover:text-red-500 transition-colors"
                     >
                       {link.text}
@@ -59,10 +71,7 @@ export default function Header() {
                               key={item.href}
                               href={item.href}
                               className="block hover:bg-white/5 px-4 py-2 text-white/80 text-sm"
-                              onClick={() => {
-                                setProgramsMenuOpen(false);
-                                setInfoMenuOpen(false);
-                              }}
+                              onClick={() => setInfoMenuOpen(false)}
                             >
                               {item.text}
                             </Link>
@@ -194,51 +203,25 @@ export default function Header() {
             )}
 
             <div className="pt-4 border-white/10 border-t">
-              {status === "authenticated" && session ? (
-                <div className="space-y-2">
-                  <p className="px-4 text-white/80 text-sm">
-                    Signed in as{" "}
-                    <span className="font-semibold text-white">
-                      {session.user?.username || session.user?.name || session.user?.email}
-                    </span>
-                  </p>
-                  <Link
-                    href={getDashboardLink()}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded-md text-white/80 text-center"
-                  >
-                    แดชบอร์ด
-                  </Link>
-                  <button
-                    onClick={() => {
-                      signOut();
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className="block bg-zinc-800/50 hover:bg-zinc-700/50 px-4 py-2 rounded-md w-full text-red-400 text-center"
-                  >
-                    ออกจากระบบ
-                  </button>
-                </div>
-              ) : (
-                <Link
-                  href="/login"
-                  className="flex justify-center items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded font-medium text-white text-sm transition-colors"
+              <Link
+                href="/login"
+                className="flex justify-center items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded font-medium text-white text-sm transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="w-5 h-5"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="w-5 h-5"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  <span>เข้าสู่ระบบ / สมัคร</span>
-                </Link>
-              )}
+                  <path
+                    fillRule="evenodd"
+                    d="M10 1a4.5 4.5 0 0 0-4.5 4.5V9H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-.5V5.5A4.5 4.5 0 0 0 10 1Zm3 8V5.5a3 3 0 1 0-6 0V9h6Z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                <span>เข้าสู่ระบบ / สมัคร</span>
+              </Link>
             </div>
 
             <div className="pt-4 border-white/10 border-t">
