@@ -162,7 +162,16 @@ function LoginForm() {
         const { data: userData, error: rpcError } = await supabase
           .rpc('get_user_by_username_or_email', { identifier: formData.identifier });
 
-        if (rpcError || !userData || userData.length === 0) {
+        if (rpcError) {
+          console.error('RPC Error:', rpcError);
+          setErrors({
+            general: `เกิดข้อผิดพลาดในการค้นหาผู้ใช้: ${rpcError.message}`,
+          });
+          setIsLoading(false);
+          return;
+        }
+
+        if (!userData || userData.length === 0) {
           setErrors({
             general: "ไม่พบผู้ใช้งานนี้ในระบบ กรุณาตรวจสอบ Username หรืออีเมลของคุณ",
           });

@@ -18,10 +18,11 @@ export function createClient() {
 
   // Validate environment variables
   if (!supabaseUrl || !supabaseAnonKey) {
-    // Return a dummy client to prevent crashes
-    return createBrowserClient(
-      'https://placeholder.supabase.co',
-      'placeholder-key'
+    console.error('❌ Supabase environment variables are missing!');
+    console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl);
+    console.error('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? '✓ Set' : '✗ Missing');
+    throw new Error(
+      'Missing Supabase environment variables. Please ensure NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY are set in .env.local'
     );
   }
 

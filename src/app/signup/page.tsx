@@ -266,7 +266,7 @@ export default function SignupPage() {
             .from('user_roles')
             .select('role')
             .eq('user_id', data.user.id)
-            .single();
+            .maybeSingle();
 
           // Redirect based on role
           if (roleData?.role === 'admin') {

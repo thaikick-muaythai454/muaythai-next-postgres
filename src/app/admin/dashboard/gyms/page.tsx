@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { Toaster } from 'react-hot-toast';
 import { createClient } from '@/lib/supabase/client';
 import RoleGuard from '@/components/auth/RoleGuard';
 import DashboardLayout, { MenuItem } from '@/components/layout/DashboardLayout';
-import Link from 'next/link';
+import { showSuccessToast, showErrorToast } from '@/lib/toast';
 import {
   Card,
   CardBody,
@@ -19,6 +20,7 @@ import {
   Input,
   Tabs,
   Tab,
+  useDisclosure,
 } from '@heroui/react';
 import {
   UsersIcon,
@@ -35,32 +37,184 @@ import {
 } from '@heroicons/react/24/outline';
 import { User } from '@supabase/supabase-js';
 import type { Gym } from '@/types/database.types';
+import GymStatsCards from './components/GymStatsCards';
+import GymDetailModal from './components/GymDetailModal';
+import GymEditModal from './components/GymEditModal';
+import GymDeleteDialog from './components/GymDeleteDialog';
 
 function AdminGymsContent() {
   const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
   const [gyms, setGyms] = useState<Gym[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [filteredGyms, setFilteredGyms] = useState<Gym[]>([]);
+  const [selectedGym, setSelectedGym] = useState<Gym | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [selectedTab, setSelectedTab] = useState('all');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  useEffect(() => {
-    async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+  // Modal states
+  const detailModal = useDisclosure();
+  const editModal = useDisclosure();
+  const deleteDialog = useDisclosure();
 
-      const { data: gymsData } = await supabase
-        .from('gyms')
-        .select('*')
-        .order('created_at', { ascending: false });
+  // Load gyms from API
+  const loadGyms = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/gyms');
+      const data = await response.json();
 
-      if (gymsData) {
-        setGyms(gymsData);
+      if (data.success && data.gyms) {
+        setGyms(data.gyms);
+      } else {
+        showErrorToast(data.error || 'Failed to load gyms');
       }
-
+    } catch (error) {
+      console.error('Error loading gyms:', error);
+      showErrorToast('An unexpected error occurred while loading gyms.');
+    } finally {
       setIsLoading(false);
     }
-    loadData();
-  }, [supabase]);
+  }, []);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    fetchUser();
+    loadGyms();
+  }, [loadGyms, supabase.auth]);
+
+  // Filter gyms by status and search query
+  useEffect(() => {
+    let filtered = gyms;
+
+    // Filter by status tab
+    if (selectedTab !== 'all') {
+      filtered = filtered.filter(gym => gym.status === selectedTab);
+    }
+
+    // Filter by search query (with debounce effect)
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(gym =>
+        gym.gym_name.toLowerCase().includes(query) ||
+        gym.contact_name.toLowerCase().includes(query) ||
+        gym.phone.includes(query) ||
+        gym.location.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredGyms(filtered);
+  }, [gyms, selectedTab, searchQuery]);
+
+  // Handle approve gym
+  const handleApprove = async (gymId: string) => {
+    setIsProcessing(true);
+    try {
+      const response = await fetch(`/api/partner-applications/${gymId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'approved' }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        await loadGyms();
+        detailModal.onClose();
+        showSuccessToast('อนุมัติยิมสำเร็จ');
+      } else {
+        showErrorToast('เกิดข้อผิดพลาด: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error approving gym:', error);
+      showErrorToast('เกิดข้อผิดพลาดในการอนุมัติยิม');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Handle reject gym
+  const handleReject = async (gymId: string) => {
+    setIsProcessing(true);
+    try {
+      const response = await fetch(`/api/partner-applications/${gymId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'denied' }),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        await loadGyms();
+        detailModal.onClose();
+        showSuccessToast('ปฏิเสธยิมสำเร็จ');
+      } else {
+        showErrorToast('เกิดข้อผิดพลาด: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error rejecting gym:', error);
+      showErrorToast('เกิดข้อผิดพลาดในการปฏิเสธยิม');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Handle edit gym
+  const handleEdit = async (gymId: string, data: Partial<Gym>) => {
+    setIsProcessing(true);
+    try {
+      const response = await fetch(`/api/gyms/${gymId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        await loadGyms();
+        editModal.onClose();
+        showSuccessToast('แก้ไขข้อมูลยิมสำเร็จ');
+      } else {
+        showErrorToast('เกิดข้อผิดพลาด: ' + (result.error || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error editing gym:', error);
+      showErrorToast('เกิดข้อผิดพลาดในการแก้ไขข้อมูลยิม');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Handle delete gym
+  const handleDelete = async (gymId: string) => {
+    setIsProcessing(true);
+    try {
+      const response = await fetch(`/api/gyms/${gymId}`, {
+        method: 'DELETE',
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        await loadGyms();
+        deleteDialog.onClose();
+        showSuccessToast('ลบยิมสำเร็จ');
+      } else {
+        showErrorToast('เกิดข้อผิดพลาด: ' + result.error);
+      }
+    } catch (error) {
+      console.error('Error deleting gym:', error);
+      showErrorToast('เกิดข้อผิดพลาดในการลบยิม');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const menuItems: MenuItem[] = [
     { label: 'ภาพรวม', href: '/admin/dashboard', icon: HomeIcon },
@@ -87,11 +241,6 @@ function AdminGymsContent() {
       </Chip>
     );
   };
-
-  const filteredGyms = gyms.filter(gym => {
-    if (selectedTab === 'all') return true;
-    return gym.status === selectedTab;
-  });
 
   if (isLoading) {
     return (
@@ -121,38 +270,7 @@ function AdminGymsContent() {
     >
       {/* Stats */}
       <section className="mb-8">
-        <div className="gap-6 grid grid-cols-1 md:grid-cols-4">
-          <Card className="bg-default-100/50 backdrop-blur-sm border-none">
-            <CardBody>
-              <p className="mb-2 text-default-400 text-sm">ยิมทั้งหมด</p>
-              <p className="font-bold text-white text-3xl">{gyms.length}</p>
-            </CardBody>
-          </Card>
-          <Card className="bg-default-100/50 backdrop-blur-sm border-none">
-            <CardBody>
-              <p className="mb-2 text-default-400 text-sm">อนุมัติแล้ว</p>
-              <p className="font-bold text-success text-3xl">
-                {gyms.filter(g => g.status === 'approved').length}
-              </p>
-            </CardBody>
-          </Card>
-          <Card className="bg-default-100/50 backdrop-blur-sm border-none">
-            <CardBody>
-              <p className="mb-2 text-default-400 text-sm">รออนุมัติ</p>
-              <p className="font-bold text-warning text-3xl">
-                {gyms.filter(g => g.status === 'pending').length}
-              </p>
-            </CardBody>
-          </Card>
-          <Card className="bg-default-100/50 backdrop-blur-sm border-none">
-            <CardBody>
-              <p className="mb-2 text-default-400 text-sm">ไม่อนุมัติ</p>
-              <p className="font-bold text-danger text-3xl">
-                {gyms.filter(g => g.status === 'rejected').length}
-              </p>
-            </CardBody>
-          </Card>
-        </div>
+        <GymStatsCards gyms={gyms} />
       </section>
 
       {/* Gyms Table */}
@@ -160,9 +278,13 @@ function AdminGymsContent() {
         <Card className="bg-default-100/50 backdrop-blur-sm border-none">
           <CardBody>
             <div className="flex sm:flex-row flex-col justify-between items-start sm:items-center gap-4 mb-6">
-              <h2 className="font-bold text-white text-xl">รายชื่อยิม</h2>
+              <h2 className="font-bold text-white text-xl">
+                รายชื่อยิม ({filteredGyms.length})
+              </h2>
               <Input
                 placeholder="ค้นหายิม..."
+                value={searchQuery}
+                onValueChange={setSearchQuery}
                 startContent={<MagnifyingGlassIcon className="w-4 h-4 text-default-400" />}
                 className="max-w-xs"
                 classNames={{
@@ -212,12 +334,15 @@ function AdminGymsContent() {
                     <TableCell>
                       <div className="flex gap-2">
                         <Button
-                          as={Link}
-                          href={`/gyms/${gym.id}`}
                           size="sm"
                           isIconOnly
                           variant="flat"
                           color="primary"
+                          onPress={() => {
+                            setSelectedGym(gym);
+                            detailModal.onOpen();
+                          }}
+                          title="ดูรายละเอียด"
                         >
                           <EyeIcon className="w-4 h-4" />
                         </Button>
@@ -226,6 +351,11 @@ function AdminGymsContent() {
                           isIconOnly
                           variant="flat"
                           color="secondary"
+                          onPress={() => {
+                            setSelectedGym(gym);
+                            editModal.onOpen();
+                          }}
+                          title="แก้ไข"
                         >
                           <PencilIcon className="w-4 h-4" />
                         </Button>
@@ -234,6 +364,11 @@ function AdminGymsContent() {
                           isIconOnly
                           variant="flat"
                           color="danger"
+                          onPress={() => {
+                            setSelectedGym(gym);
+                            deleteDialog.onOpen();
+                          }}
+                          title="ลบ"
                         >
                           <TrashIcon className="w-4 h-4" />
                         </Button>
@@ -246,6 +381,40 @@ function AdminGymsContent() {
           </CardBody>
         </Card>
       </section>
+
+      {/* Modals */}
+      <GymDetailModal
+        isOpen={detailModal.isOpen}
+        onClose={detailModal.onClose}
+        gym={selectedGym}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onEdit={(gym) => {
+          setSelectedGym(gym);
+          editModal.onOpen();
+        }}
+        onDelete={(gym) => {
+          setSelectedGym(gym);
+          deleteDialog.onOpen();
+        }}
+        isProcessing={isProcessing}
+      />
+
+      <GymEditModal
+        isOpen={editModal.isOpen}
+        onClose={editModal.onClose}
+        gym={selectedGym}
+        onSave={handleEdit}
+        isProcessing={isProcessing}
+      />
+
+      <GymDeleteDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={deleteDialog.onClose}
+        gym={selectedGym}
+        onConfirm={handleDelete}
+        isProcessing={isProcessing}
+      />
     </DashboardLayout>
   );
 }
@@ -253,6 +422,7 @@ function AdminGymsContent() {
 export default function AdminGymsPage() {
   return (
     <RoleGuard allowedRole="admin">
+      <Toaster />
       <AdminGymsContent />
     </RoleGuard>
   );

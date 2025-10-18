@@ -58,7 +58,7 @@ export default function Header() {
           .from('gyms')
           .select('status')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
         setApplicationStatus(gymData?.status || null);
       } else {
@@ -224,21 +224,6 @@ export default function Header() {
                         <div className="px-4 py-2 border-white/10 border-t">
                           <p className="text-yellow-400 text-xs">📋 รอการอนุมัติ Partner</p>
                         </div>
-                      )}
-
-                      {/* Admin Link - Show only for admins */}
-                      {userRole === 'admin' && (
-                        <>
-                          <Link
-                            href="/admin/dashboard"
-                            className="flex items-center gap-2 hover:bg-white/5 px-4 py-2 text-white/80 text-sm"
-                            onClick={() => setUserMenuOpen(false)}
-                          >
-                            <UserCircleIcon className="w-4 h-4" />
-                            แดชบอร์ดผู้ดูแล
-                          </Link>
-                          <div className="my-1 border-white/10 border-t"></div>
-                        </>
                       )}
 
                       {/* Logout */}
@@ -424,18 +409,6 @@ export default function Header() {
                       <p className="font-medium text-white text-sm">📋 รอการอนุมัติ Partner</p>
                       <p className="mt-1 text-yellow-400 text-xs">ทีมงานกำลังตรวจสอบข้อมูล</p>
                     </div>
-                  )}
-
-                  {/* Admin Link - Show only for admins */}
-                  {userRole === 'admin' && (
-                    <Link
-                      href="/admin/dashboard"
-                      className="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 px-4 py-2 rounded font-medium text-white text-sm transition-colors"
-                      onClick={() => setIsMobileMenuOpen(false)}
-                    >
-                      <UserCircleIcon className="w-5 h-5" />
-                      <span>แดชบอร์ดผู้ดูแล</span>
-                    </Link>
                   )}
 
                   {/* Logout Button */}

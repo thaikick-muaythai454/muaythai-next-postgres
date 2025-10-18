@@ -29,7 +29,7 @@ export async function GET() {
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (roleError || roleData?.role !== 'admin') {
       return NextResponse.json(
