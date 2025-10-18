@@ -37,16 +37,10 @@ export async function GET() {
       );
     }
 
-    // Fetch all gyms with user info
+    // Fetch all gyms
     const { data: gyms, error } = await supabase
       .from('gyms')
-      .select(`
-        *,
-        profiles:user_id (
-          username,
-          full_name
-        )
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -57,10 +51,23 @@ export async function GET() {
       );
     }
 
+    // Fetch profiles for all gym owners
+    const userIds = [...new Set(gyms?.map(g => g.user_id) || [])];
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('user_id, username, full_name')
+      .in('user_id', userIds);
+
+    // Merge profiles with gyms
+    const gymsWithProfiles = gyms?.map(gym => ({
+      ...gym,
+      profiles: profiles?.find(p => p.user_id === gym.user_id) || null
+    })) || [];
+
     return NextResponse.json({
       success: true,
-      count: gyms?.length || 0,
-      gyms: gyms || [],
+      count: gymsWithProfiles.length,
+      gyms: gymsWithProfiles,
     });
 
   } catch (error) {
