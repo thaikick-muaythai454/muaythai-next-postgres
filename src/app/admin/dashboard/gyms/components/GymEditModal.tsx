@@ -376,7 +376,7 @@ export default function GymEditModal({
                 <Select
                   label="สถานะ"
                   selectedKeys={[formData.status]}
-                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as FormData['status'] }))}
                   classNames={{
                     trigger: 'bg-default-100',
                     label: 'text-default-400',

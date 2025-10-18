@@ -46,7 +46,12 @@ function AdminReportsContent() {
     { label: 'ตั้งค่าระบบ', href: '/admin/dashboard/settings', icon: Cog6ToothIcon },
   ];
 
-  const reports = [
+  const reports: Array<{
+    title: string;
+    description: string;
+    icon: React.ComponentType<{ className?: string }>;
+    color: 'primary' | 'success' | 'warning' | 'secondary';
+  }> = [
     {
       title: 'รายงานผู้ใช้ทั้งหมด',
       description: 'ข้อมูลผู้ใช้ทั้งหมดในระบบ',
@@ -116,7 +121,7 @@ function AdminReportsContent() {
               <CardBody>
                 <div className="flex gap-2">
                   <Button
-                    color={report.color as any}
+                    color={report.color}
                     variant="flat"
                     startContent={<ArrowDownTrayIcon className="w-4 h-4" />}
                     className="flex-1"
@@ -124,7 +129,7 @@ function AdminReportsContent() {
                     ดาวน์โหลด PDF
                   </Button>
                   <Button
-                    color={report.color as any}
+                    color={report.color}
                     variant="bordered"
                     startContent={<ArrowDownTrayIcon className="w-4 h-4" />}
                     className="flex-1"
