@@ -70,7 +70,7 @@ function PartnerDashboardContent() {
           .from('gyms')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         setGym(gymData);
         if (gymData) {
@@ -105,7 +105,7 @@ function PartnerDashboardContent() {
         .from('gyms')
         .select('*')
         .eq('id', gym.id)
-        .single();
+        .maybeSingle();
 
       setGym(updatedGym);
       setIsEditing(false);

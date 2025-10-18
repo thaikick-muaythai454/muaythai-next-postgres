@@ -148,7 +148,7 @@ export default function PartnerApplyPage() {
         .from("user_roles")
         .select("role")
         .eq("user_id", currentUser.id)
-        .single();
+        .maybeSingle();
 
       if (roleError && roleError.code !== "PGRST116") {
         // Silently handle errors
@@ -162,7 +162,7 @@ export default function PartnerApplyPage() {
         .from("gyms")
         .select("*")
         .eq("user_id", currentUser.id)
-        .single();
+        .maybeSingle();
 
       if (gymError) {
         if (gymError.code === "42P01") {
@@ -413,10 +413,14 @@ export default function PartnerApplyPage() {
         .from("gyms")
         .insert(gymData)
         .select()
-        .single();
+        .maybeSingle();
 
       if (insertError) {
         throw new Error("ไม่สามารถบันทึกข้อมูลยิมได้: " + insertError.message);
+      }
+
+      if (!insertedGym) {
+        throw new Error("ไม่สามารถรับข้อมูลยิมที่สร้างใหม่ได้");
       }
 
       // Success! Update state

@@ -168,10 +168,21 @@ muaythai-next-postgres/
 │   │   ├── auth.types.ts
 │   │   └── database.types.ts
 │   └── middleware.ts          # Next.js Middleware
+├── tests/                     # 🧪 E2E Testing (NEW!)
+│   ├── e2e/
+│   │   ├── helpers.ts         # Test helper functions
+│   │   └── auth-flow.spec.ts  # Main E2E test suite
+│   ├── screenshots/           # Auto-generated screenshots
+│   └── README.md              # Testing documentation
+├── docs/                      # Documentation
+│   ├── ARCHITECTURE.md
+│   ├── SETUP_GUIDE.md
+│   └── E2E_TESTING_QUICKSTART.md  # 🧪 Testing guide (NEW!)
 ├── .env.local                 # Environment variables (สร้างเอง)
 ├── .env.example              # ตัวอย่าง environment variables
-├── ARCHITECTURE.md            # 📘 อธิบายโครงสร้างโปรเจกต์โดยละเอียด
-├── SETUP_GUIDE.md             # คู่มือการติดตั้งและใช้งาน
+├── playwright.config.ts       # 🧪 Playwright config (NEW!)
+├── RUN_TESTS.md              # 🧪 Step-by-step test guide (NEW!)
+├── TESTING_SUMMARY.md        # 🧪 Testing summary (NEW!)
 ├── package.json
 └── README.md
 ```
@@ -243,17 +254,52 @@ export default function AuthPage() {
 - **Font**: แก้ไขใน `src/app/layout.tsx`
 - **Global CSS**: แก้ไขใน `src/app/globals.css`
 
+## 🧪 E2E Automation Testing (NEW!)
+
+โปรเจกต์นี้มีระบบ automation testing สำหรับทดสอบ authentication flow ทั้ง 3 roles:
+
+### ✅ Test Coverage
+- **User Signup & Login** - ทดสอบการสมัครสมาชิกและเข้าสู่ระบบ
+- **Partner Application** - ทดสอบการสมัครเป็น Partner และส่งข้อมูลค่ายมวย
+- **Admin Approval** - ทดสอบการอนุมัติค่ายมวยโดย Admin
+- **Role-based Access** - ตรวจสอบว่าแต่ละ role เข้าถึง dashboard ที่ถูกต้อง
+
+### 🚀 Quick Start
+```bash
+# Terminal 1: Start dev server
+npm run dev
+
+# Terminal 2: Run tests in UI mode
+npm run test:e2e:ui
+```
+
+### 📚 Testing Documentation
+- 🎬 [RUN_TESTS.md](./RUN_TESTS.md) - วิธีรัน tests แบบ step-by-step
+- 🚀 [E2E_TESTING_QUICKSTART.md](./docs/E2E_TESTING_QUICKSTART.md) - Quick start guide
+- 📖 [tests/README.md](./tests/README.md) - Full testing documentation
+- 📋 [TESTING_SUMMARY.md](./TESTING_SUMMARY.md) - สรุปการติดตั้ง
+
+### 🎯 Test Commands
+```bash
+npm run test:e2e          # Run tests (headless)
+npm run test:e2e:ui       # Run with Playwright UI
+npm run test:e2e:debug    # Debug mode
+npm run test:report       # View test report
+```
+
 ## 📖 Resources & Documentation
 
 ### โปรเจกต์นี้
 - 📘 [ARCHITECTURE.md](./ARCHITECTURE.md) - โครงสร้างและ design patterns
 - 🚀 [SETUP_GUIDE.md](./SETUP_GUIDE.md) - คู่มือการติดตั้งโดยละเอียด
+- 🧪 [RUN_TESTS.md](./RUN_TESTS.md) - วิธีรัน E2E tests
 - 🤝 [CONTRIBUTING.md](./CONTRIBUTING.md) - วิธีการมีส่วนร่วม
 - 💾 [supabase-setup.sql](./supabase-setup.sql) - SQL สำหรับสร้าง database schema
 
 ### External Resources
 - [Next.js Documentation](https://nextjs.org/docs)
 - [Supabase Documentation](https://supabase.com/docs)
+- [Playwright Documentation](https://playwright.dev) - 🧪 E2E Testing Framework
 - [Tailwind CSS Documentation](https://tailwindcss.com/docs)
 - [TypeScript Documentation](https://www.typescriptlang.org/docs)
 

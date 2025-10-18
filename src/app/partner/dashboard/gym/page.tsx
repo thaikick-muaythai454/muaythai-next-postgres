@@ -56,7 +56,7 @@ function GymPageContent() {
           .from('gyms')
           .select('*')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
 
         setGym(gymData);
         if (gymData) {
@@ -91,7 +91,7 @@ function GymPageContent() {
         .from('gyms')
         .select('*')
         .eq('id', gym.id)
-        .single();
+        .maybeSingle();
 
       setGym(updatedGym);
       setIsEditing(false);
@@ -390,7 +390,7 @@ function GymPageContent() {
 
               {(!gym.images || gym.images.length === 0) && (
                 <div className="pt-6 border-white/5 border-t">
-                  <Card className="bg-white/5 border-white/10 border border-dashed">
+                  <Card className="bg-white/5 border border-white/10 border-dashed">
                     <CardBody className="py-12 text-center">
                       <PhotoIcon className="mx-auto mb-4 w-12 h-12 text-default-300" />
                       <p className="mb-4 text-default-400">ยังไม่มีรูปภาพยิม</p>

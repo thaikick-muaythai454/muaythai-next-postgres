@@ -63,7 +63,7 @@ function DashboardContent() {
           .from('gyms')
           .select('id, gym_name, status, created_at')
           .eq('user_id', user.id)
-          .single();
+          .maybeSingle();
         
         setGymApplication(gymData);
       }

@@ -57,16 +57,6 @@ ALTER TABLE gyms ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
 -- Drop existing policies (for idempotency)
-DROP POLICY IF EXISTS "Users can view their own role" ON user_roles;
-DROP POLICY IF EXISTS "Users can insert their own role" ON user_roles;
-DROP POLICY IF EXISTS "Users can update their own role" ON user_roles;
-DROP POLICY IF EXISTS "users_can_read_own_role" ON user_roles;
-DROP POLICY IF EXISTS "users_can_insert_own_role" ON user_roles;
-DROP POLICY IF EXISTS "admins_can_view_all_roles" ON user_roles;
-DROP POLICY IF EXISTS "admins_can_update_roles" ON user_roles;
-DROP POLICY IF EXISTS "users_can_view_own_gym" ON gyms;
-DROP POLICY IF EXISTS "users_can_insert_own_gym" ON gyms;
-DROP POLICY IF EXISTS "users_can_update_own_gym" ON gyms;
 DROP POLICY IF EXISTS "anyone_can_view_profiles" ON profiles;
 DROP POLICY IF EXISTS "users_can_insert_own_profile" ON profiles;
 DROP POLICY IF EXISTS "users_can_update_own_profile" ON profiles;
@@ -83,6 +73,11 @@ CREATE POLICY "users_can_insert_own_role"
   WITH CHECK (auth.uid() = user_id);
 
 -- RLS Policies for gyms
+CREATE POLICY "anyone_can_view_approved_gyms"
+  ON gyms FOR SELECT
+  TO public
+  USING (status = 'approved');
+
 CREATE POLICY "users_can_view_own_gym"
   ON gyms FOR SELECT
   TO authenticated
@@ -97,6 +92,22 @@ CREATE POLICY "users_can_update_own_gym"
   ON gyms FOR UPDATE
   TO authenticated
   USING (auth.uid() = user_id);
+
+CREATE POLICY "admins_can_manage_all_gyms"
+  ON gyms FOR ALL
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM user_roles
+      WHERE user_id = auth.uid() AND role = 'admin'
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM user_roles
+      WHERE user_id = auth.uid() AND role = 'admin'
+    )
+  );
 
 -- RLS Policies for profiles
 CREATE POLICY "anyone_can_view_profiles"
@@ -125,7 +136,6 @@ GRANT INSERT ON user_roles TO authenticated;
 GRANT UPDATE ON user_roles TO authenticated;
 
 GRANT SELECT, INSERT, UPDATE ON gyms TO authenticated;
-GRANT SELECT ON gyms TO anon;
 
 GRANT SELECT, INSERT, UPDATE ON profiles TO authenticated;
 GRANT SELECT ON profiles TO anon, public;

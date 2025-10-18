@@ -35,7 +35,7 @@ export async function PATCH(
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (roleError || roleData?.role !== 'admin') {
       return NextResponse.json(
@@ -61,7 +61,7 @@ export async function PATCH(
       .from('gyms')
       .select('*')
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (gymError || !gym) {
       return NextResponse.json(
@@ -79,10 +79,14 @@ export async function PATCH(
       })
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
 
     if (updateError) {
       throw updateError;
+    }
+
+    if (!updatedGym) {
+      throw new Error('ไม่สามารถอัพเดทข้อมูลได้');
     }
 
     // ถ้าอนุมัติ ให้อัพเดท role ของ user เป็น partner
@@ -91,7 +95,7 @@ export async function PATCH(
         .from('user_roles')
         .select('role')
         .eq('user_id', gym.user_id)
-        .single();
+        .maybeSingle();
 
       // เปลี่ยน role เป็น partner เมื่ออนุมัติ
       if (currentRole && currentRole.role !== 'partner' && currentRole.role !== 'admin') {
@@ -108,7 +112,7 @@ export async function PATCH(
         .from('user_roles')
         .select('role')
         .eq('user_id', gym.user_id)
-        .single();
+        .maybeSingle();
 
       // เปลี่ยน role กลับเป็น authenticated (ยกเว้น admin)
       if (currentRole && currentRole.role !== 'admin') {
@@ -178,7 +182,7 @@ export async function GET(
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle();
 
     if (roleError || roleData?.role !== 'admin') {
       return NextResponse.json(
@@ -199,7 +203,7 @@ export async function GET(
         )
       `)
       .eq('id', id)
-      .single();
+      .maybeSingle();
 
     if (queryError || !application) {
       return NextResponse.json(
