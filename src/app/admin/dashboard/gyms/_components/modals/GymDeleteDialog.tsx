@@ -7,15 +7,7 @@ import {
   Button,
 } from '@heroui/react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import type { Gym } from '@/types/database.types';
-
-interface GymDeleteDialogProps {
-  isOpen: boolean;
-  onClose: () => void;
-  gym: Gym | null;
-  onConfirm: (gymId: string) => Promise<void>;
-  isProcessing: boolean;
-}
+import type { GymDeleteDialogProps } from '../../_lib';
 
 export default function GymDeleteDialog({
   isOpen,

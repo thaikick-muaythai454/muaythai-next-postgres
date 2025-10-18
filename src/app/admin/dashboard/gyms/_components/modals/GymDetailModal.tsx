@@ -19,18 +19,8 @@ import {
   UsersIcon,
 } from '@heroicons/react/24/outline';
 import Image from 'next/image';
-import type { Gym } from '@/types/database.types';
-
-interface GymDetailModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  gym: Gym | null;
-  onApprove: (gymId: string) => Promise<void>;
-  onReject: (gymId: string) => Promise<void>;
-  onEdit: (gym: Gym) => void;
-  onDelete: (gym: Gym) => void;
-  isProcessing: boolean;
-}
+import type { GymDetailModalProps } from '../../_lib';
+import { STATUS_CONFIG, formatDate } from '../../_lib';
 
 export default function GymDetailModal({
   isOpen,
@@ -44,25 +34,8 @@ export default function GymDetailModal({
 }: GymDetailModalProps) {
   if (!gym) return null;
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('th-TH', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
   const getStatusChip = (status: string) => {
-    const statusConfig = {
-      pending: { label: 'รอการตรวจสอบ', color: 'warning' as const },
-      approved: { label: 'อนุมัติแล้ว', color: 'success' as const },
-      rejected: { label: 'ไม่อนุมัติ', color: 'danger' as const },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    const config = STATUS_CONFIG[status] || STATUS_CONFIG.pending;
 
     return (
       <Chip color={config.color} variant="flat">

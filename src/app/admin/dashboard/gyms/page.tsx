@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { createClient } from '@/lib/supabase/client';
 import RoleGuard from '@/components/auth/RoleGuard';
 import DashboardLayout, { MenuItem } from '@/components/layout/DashboardLayout';
-import { showSuccessToast, showErrorToast } from '@/lib/toast';
 import {
   Card,
   CardBody,
@@ -37,186 +36,85 @@ import {
 } from '@heroicons/react/24/outline';
 import { User } from '@supabase/supabase-js';
 import type { Gym } from '@/types/database.types';
-import GymStatsCards from './components/GymStatsCards';
-import GymDetailModal from './components/GymDetailModal';
-import GymEditModal from './components/GymEditModal';
-import GymDeleteDialog from './components/GymDeleteDialog';
+import {
+  GymStatsCards,
+  GymDetailModal,
+  GymEditModal,
+  GymDeleteDialog,
+} from './_components';
+import { useGymManagement } from './_hooks';
+import { STATUS_CONFIG } from './_lib';
 
 function AdminGymsContent() {
   const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
-  const [gyms, setGyms] = useState<Gym[]>([]);
-  const [filteredGyms, setFilteredGyms] = useState<Gym[]>([]);
-  const [selectedGym, setSelectedGym] = useState<Gym | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTab, setSelectedTab] = useState('all');
-  const [isLoading, setIsLoading] = useState(true);
-  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Use custom hook for gym management
+  const {
+    gyms,
+    filteredGyms,
+    selectedGym,
+    searchQuery,
+    selectedTab,
+    isLoading,
+    isProcessing,
+    setSelectedGym,
+    setSearchQuery,
+    setSelectedTab,
+    loadGyms,
+    handleApprove,
+    handleReject,
+    handleEdit,
+    handleDelete,
+  } = useGymManagement();
 
   // Modal states
   const detailModal = useDisclosure();
   const editModal = useDisclosure();
   const deleteDialog = useDisclosure();
 
-  // Load gyms from API
-  const loadGyms = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/gyms');
-      const data = await response.json();
-
-      if (data.success && data.gyms) {
-        setGyms(data.gyms);
-      } else {
-        showErrorToast(data.error || 'Failed to load gyms');
-      }
-    } catch (error) {
-      console.error('Error loading gyms:', error);
-      showErrorToast('An unexpected error occurred while loading gyms.');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
+    async function loadUser() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user);
-    };
-    fetchUser();
+    }
+    loadUser();
     loadGyms();
-  }, [loadGyms, supabase.auth]);
+  }, [supabase, loadGyms]);
 
-  // Filter gyms by status and search query
-  useEffect(() => {
-    let filtered = gyms;
-
-    // Filter by status tab
-    if (selectedTab !== 'all') {
-      filtered = filtered.filter(gym => gym.status === selectedTab);
-    }
-
-    // Filter by search query (with debounce effect)
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(gym =>
-        gym.gym_name.toLowerCase().includes(query) ||
-        gym.contact_name.toLowerCase().includes(query) ||
-        gym.phone.includes(query) ||
-        gym.location.toLowerCase().includes(query)
-      );
-    }
-
-    setFilteredGyms(filtered);
-  }, [gyms, selectedTab, searchQuery]);
-
-  // Handle approve gym
-  const handleApprove = async (gymId: string) => {
-    setIsProcessing(true);
-    try {
-      const response = await fetch(`/api/partner-applications/${gymId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'approved' }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await loadGyms();
-        detailModal.onClose();
-        showSuccessToast('อนุมัติยิมสำเร็จ');
-      } else {
-        showErrorToast('เกิดข้อผิดพลาด: ' + result.error);
-      }
-    } catch (error) {
-      console.error('Error approving gym:', error);
-      showErrorToast('เกิดข้อผิดพลาดในการอนุมัติยิม');
-    } finally {
-      setIsProcessing(false);
+  // Wrapper functions to handle modal closing
+  const handleApproveWithClose = async (gymId: string) => {
+    const success = await handleApprove(gymId);
+    if (success) {
+      detailModal.onClose();
     }
   };
 
-  // Handle reject gym
-  const handleReject = async (gymId: string) => {
-    setIsProcessing(true);
-    try {
-      const response = await fetch(`/api/partner-applications/${gymId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'denied' }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await loadGyms();
-        detailModal.onClose();
-        showSuccessToast('ปฏิเสธยิมสำเร็จ');
-      } else {
-        showErrorToast('เกิดข้อผิดพลาด: ' + result.error);
-      }
-    } catch (error) {
-      console.error('Error rejecting gym:', error);
-      showErrorToast('เกิดข้อผิดพลาดในการปฏิเสธยิม');
-    } finally {
-      setIsProcessing(false);
+  const handleRejectWithClose = async (gymId: string) => {
+    const success = await handleReject(gymId);
+    if (success) {
+      detailModal.onClose();
     }
   };
 
-  // Handle edit gym
-  const handleEdit = async (gymId: string, data: Partial<Gym>) => {
-    setIsProcessing(true);
-    try {
-      const response = await fetch(`/api/gyms/${gymId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await loadGyms();
-        editModal.onClose();
-        showSuccessToast('แก้ไขข้อมูลยิมสำเร็จ');
-      } else {
-        showErrorToast('เกิดข้อผิดพลาด: ' + (result.error || 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Error editing gym:', error);
-      showErrorToast('เกิดข้อผิดพลาดในการแก้ไขข้อมูลยิม');
-    } finally {
-      setIsProcessing(false);
+  const handleEditWithClose = async (gymId: string, data: Partial<Gym>) => {
+    const success = await handleEdit(gymId, data);
+    if (success) {
+      editModal.onClose();
     }
   };
 
-  // Handle delete gym
-  const handleDelete = async (gymId: string) => {
-    setIsProcessing(true);
-    try {
-      const response = await fetch(`/api/gyms/${gymId}`, {
-        method: 'DELETE',
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await loadGyms();
-        deleteDialog.onClose();
-        showSuccessToast('ลบยิมสำเร็จ');
-      } else {
-        showErrorToast('เกิดข้อผิดพลาด: ' + result.error);
-      }
-    } catch (error) {
-      console.error('Error deleting gym:', error);
-      showErrorToast('เกิดข้อผิดพลาดในการลบยิม');
-    } finally {
-      setIsProcessing(false);
+  const handleDeleteWithClose = async (gymId: string) => {
+    const success = await handleDelete(gymId);
+    if (success) {
+      deleteDialog.onClose();
     }
   };
 
   const menuItems: MenuItem[] = [
+    { label: 'ภาพรวม', href: '/admin/dashboard', icon: HomeIcon },
     { label: 'จัดการผู้ใช้', href: '/admin/dashboard/users', icon: UsersIcon },
     { label: 'จัดการยิม', href: '/admin/dashboard/gyms', icon: BuildingStorefrontIcon },
     { label: 'อนุมัติยิม', href: '/admin/dashboard/approvals', icon: ClockIcon },
@@ -226,13 +124,7 @@ function AdminGymsContent() {
   ];
 
   const getStatusChip = (status?: string) => {
-    const statusConfig = {
-      pending: { label: 'รอการตรวจสอบ', color: 'warning' as const },
-      approved: { label: 'อนุมัติแล้ว', color: 'success' as const },
-      rejected: { label: 'ไม่อนุมัติ', color: 'danger' as const },
-    };
-
-    const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.pending;
+    const config = STATUS_CONFIG[status || 'pending'];
 
     return (
       <Chip color={config.color} variant="flat" size="sm">
@@ -287,7 +179,7 @@ function AdminGymsContent() {
                 startContent={<MagnifyingGlassIcon className="w-4 h-4 text-default-400" />}
                 className="max-w-xs"
                 classNames={{
-                  input: "text-white",
+                  input: 'text-white',
                 }}
               />
             </div>
@@ -307,7 +199,7 @@ function AdminGymsContent() {
             <Table
               aria-label="Gyms table"
               classNames={{
-                wrapper: "bg-transparent",
+                wrapper: 'bg-transparent',
               }}
             >
               <TableHeader>
@@ -386,8 +278,8 @@ function AdminGymsContent() {
         isOpen={detailModal.isOpen}
         onClose={detailModal.onClose}
         gym={selectedGym}
-        onApprove={handleApprove}
-        onReject={handleReject}
+        onApprove={handleApproveWithClose}
+        onReject={handleRejectWithClose}
         onEdit={(gym) => {
           setSelectedGym(gym);
           editModal.onOpen();
@@ -403,7 +295,7 @@ function AdminGymsContent() {
         isOpen={editModal.isOpen}
         onClose={editModal.onClose}
         gym={selectedGym}
-        onSave={handleEdit}
+        onSave={handleEditWithClose}
         isProcessing={isProcessing}
       />
 
@@ -411,7 +303,7 @@ function AdminGymsContent() {
         isOpen={deleteDialog.isOpen}
         onClose={deleteDialog.onClose}
         gym={selectedGym}
-        onConfirm={handleDelete}
+        onConfirm={handleDeleteWithClose}
         isProcessing={isProcessing}
       />
     </DashboardLayout>

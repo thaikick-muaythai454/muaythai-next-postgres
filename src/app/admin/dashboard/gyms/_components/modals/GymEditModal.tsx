@@ -13,35 +13,13 @@ import {
   Chip,
 } from '@heroui/react';
 import type { Gym } from '@/types/database.types';
-
-interface GymEditModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  gym: Gym | null;
-  onSave: (gymId: string, data: Partial<Gym>) => Promise<void>;
-  isProcessing: boolean;
-}
-
-interface FormData {
-  gym_name: string;
-  contact_name: string;
-  phone: string;
-  email: string;
-  website: string;
-  location: string;
-  gym_details: string;
-  services: string[];
-  status: 'pending' | 'approved' | 'rejected';
-}
-
-interface FormErrors {
-  gym_name?: string;
-  contact_name?: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  location?: string;
-}
+import type {
+  GymEditModalProps,
+  GymFormData,
+  GymFormErrors,
+} from '../../_lib/types';
+import { validateField } from '../../_lib/validation';
+import { previewSlug } from '@/lib/slug';
 
 export default function GymEditModal({
   isOpen,
@@ -50,8 +28,9 @@ export default function GymEditModal({
   onSave,
   isProcessing,
 }: GymEditModalProps) {
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<GymFormData>({
     gym_name: '',
+    gym_name_english: '',
     contact_name: '',
     phone: '',
     email: '',
@@ -62,7 +41,7 @@ export default function GymEditModal({
     status: 'pending',
   });
 
-  const [errors, setErrors] = useState<FormErrors>({});
+  const [errors, setErrors] = useState<GymFormErrors>({});
   const [serviceInput, setServiceInput] = useState('');
 
   // Pre-fill form data when gym changes
@@ -70,6 +49,7 @@ export default function GymEditModal({
     if (gym) {
       setFormData({
         gym_name: gym.gym_name || '',
+        gym_name_english: gym.gym_name_english || '',
         contact_name: gym.contact_name || '',
         phone: gym.phone || '',
         email: gym.email || '',
@@ -83,55 +63,7 @@ export default function GymEditModal({
     }
   }, [gym]);
 
-  const validateField = (name: keyof FormData, value: string): string | undefined => {
-    switch (name) {
-      case 'gym_name':
-        if (!value || value.trim().length < 3 || value.trim().length > 100) {
-          return 'ชื่อยิมต้องมีความยาว 3-100 ตัวอักษร';
-        }
-        break;
-      case 'contact_name':
-        if (!value || value.trim().length < 2 || value.trim().length > 100) {
-          return 'ชื่อผู้ติดต่อต้องมีความยาว 2-100 ตัวอักษร';
-        }
-        break;
-      case 'phone':
-        if (!value) {
-          return 'กรุณากรอกเบอร์โทรศัพท์';
-        }
-        const phoneRegex = /^0\d{1,2}-?\d{3,4}-?\d{4}$/;
-        if (!phoneRegex.test(value.replace(/\s/g, ''))) {
-          return 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (ตัวอย่าง: 02-123-4567 หรือ 0812345678)';
-        }
-        break;
-      case 'email':
-        if (!value) {
-          return 'กรุณากรอกอีเมล';
-        }
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-          return 'รูปแบบอีเมลไม่ถูกต้อง';
-        }
-        break;
-      case 'website':
-        if (value) {
-          try {
-            new URL(value);
-          } catch {
-            return 'รูปแบบ URL ไม่ถูกต้อง';
-          }
-        }
-        break;
-      case 'location':
-        if (!value || value.trim().length < 10) {
-          return 'ที่อยู่ต้องมีความยาวอย่างน้อย 10 ตัวอักษร';
-        }
-        break;
-    }
-    return undefined;
-  };
-
-  const handleChange = (name: keyof FormData, value: string) => {
+  const handleChange = (name: keyof GymFormData, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
     
     // Validate on change
@@ -160,9 +92,10 @@ export default function GymEditModal({
   };
 
   const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
+    const newErrors: GymFormErrors = {};
     
     newErrors.gym_name = validateField('gym_name', formData.gym_name);
+    newErrors.gym_name_english = validateField('gym_name_english', formData.gym_name_english);
     newErrors.contact_name = validateField('contact_name', formData.contact_name);
     newErrors.phone = validateField('phone', formData.phone);
     newErrors.email = validateField('email', formData.email);
@@ -171,8 +104,8 @@ export default function GymEditModal({
 
     // Remove undefined errors
     Object.keys(newErrors).forEach(key => {
-      if (newErrors[key as keyof FormErrors] === undefined) {
-        delete newErrors[key as keyof FormErrors];
+      if (newErrors[key as keyof GymFormErrors] === undefined) {
+        delete newErrors[key as keyof GymFormErrors];
       }
     });
 
@@ -185,6 +118,7 @@ export default function GymEditModal({
 
     await onSave(gym.id, {
       gym_name: formData.gym_name.trim(),
+      gym_name_english: formData.gym_name_english.trim() || undefined,
       contact_name: formData.contact_name.trim(),
       phone: formData.phone.trim(),
       email: formData.email.trim(),
@@ -229,7 +163,7 @@ export default function GymEditModal({
               <div className="space-y-4">
                 {/* Gym Name */}
                 <Input
-                  label="ชื่อยิม"
+                  label="ชื่อยิม (ไทย)"
                   placeholder="กรอกชื่อยิม"
                   value={formData.gym_name}
                   onValueChange={(value) => handleChange('gym_name', value)}
@@ -241,6 +175,29 @@ export default function GymEditModal({
                     label: 'text-default-400',
                   }}
                 />
+
+                {/* Gym Name English */}
+                <Input
+                  label="ชื่อยิม (อังกฤษ)"
+                  placeholder="Enter gym name in English"
+                  value={formData.gym_name_english}
+                  onValueChange={(value) => handleChange('gym_name_english', value)}
+                  isInvalid={!!errors.gym_name_english}
+                  errorMessage={errors.gym_name_english}
+                  description={formData.gym_name_english ? `Slug: ${previewSlug(formData.gym_name_english)}` : 'ใช้สำหรับสร้าง URL ของยิม'}
+                  classNames={{
+                    input: 'text-white',
+                    label: 'text-default-400',
+                  }}
+                />
+
+                {/* Current Slug Display */}
+                {gym?.slug && (
+                  <div className="bg-default-100/50 px-3 py-2 rounded-lg">
+                    <p className="mb-1 text-default-400 text-xs">Slug ปัจจุบัน:</p>
+                    <p className="font-mono text-white text-sm">{gym.slug}</p>
+                  </div>
+                )}
 
                 {/* Contact Name */}
                 <Input
@@ -376,7 +333,7 @@ export default function GymEditModal({
                 <Select
                   label="สถานะ"
                   selectedKeys={[formData.status]}
-                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as FormData['status'] }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as GymFormData['status'] }))}
                   classNames={{
                     trigger: 'bg-default-100',
                     label: 'text-default-400',
