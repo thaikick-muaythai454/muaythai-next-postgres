@@ -24,15 +24,24 @@ export interface Gym {
   id: string;
   user_id: string;
   gym_name: string;
+  gym_name_english?: string;
   contact_name: string;
   phone: string;
   email: string;
   website?: string;
   location: string;
+  address?: string;
   gym_details?: string;
   services: string[];
   images: string[];
   status: 'pending' | 'approved' | 'rejected';
+  rating?: number;
+  latitude?: number;
+  longitude?: number;
+  map_url?: string;
+  socials?: string;
+  gym_type?: string;
+  slug?: string;
   created_at: string;
   updated_at: string;
 }

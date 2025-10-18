@@ -1,7 +1,8 @@
 "use client";
 
-import { use } from "react";
-import { GYMS } from "@/lib/data";
+import { use, useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import type { Gym } from "@/types/database.types";
 import {
   MapPinIcon,
   StarIcon,
@@ -10,7 +11,6 @@ import {
   GlobeAltIcon,
   CurrencyDollarIcon,
   ClockIcon,
-  CheckCircleIcon,
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
@@ -22,7 +22,37 @@ export default function GymDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const gym = GYMS.find((g) => g.slug === slug);
+  const [gym, setGym] = useState<Gym | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const supabase = createClient();
+
+  useEffect(() => {
+    async function fetchGym() {
+      const { data, error } = await supabase
+        .from('gyms')
+        .select('*')
+        .eq('slug', slug)
+        .eq('status', 'approved')
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching gym:', error);
+      }
+
+      setGym(data);
+      setIsLoading(false);
+    }
+
+    fetchGym();
+  }, [slug, supabase]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center bg-zinc-900 min-h-screen">
+        <div className="border-4 border-t-transparent border-red-600 rounded-full w-12 h-12 animate-spin"></div>
+      </div>
+    );
+  }
 
   if (!gym) {
     notFound();
@@ -52,11 +82,11 @@ export default function GymDetailPage({
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h1 className="mb-2 font-bold text-white text-4xl">
-                    {gym.gymNameThai}
+                    {gym.gym_name}
                   </h1>
-                  {gym.gymNameEnglish && (
+                  {gym.gym_name_english && (
                     <p className="text-zinc-400 text-xl">
-                      {gym.gymNameEnglish}
+                      {gym.gym_name_english}
                     </p>
                   )}
                 </div>
@@ -70,9 +100,9 @@ export default function GymDetailPage({
                 )}
               </div>
 
-              {gym.gymType && (
+              {gym.gym_type && (
                 <span className="inline-block bg-red-600 px-3 py-1 rounded-full font-semibold text-white text-sm">
-                  {gym.gymType}
+                  {gym.gym_type}
                 </span>
               )}
             </div>
@@ -91,7 +121,7 @@ export default function GymDetailPage({
                 เกี่ยวกับค่ายมวย
               </h2>
               <p className="text-zinc-300 leading-relaxed">
-                {gym.details || "ไม่มีรายละเอียดเพิ่มเติม"}
+                {gym.gym_details || "ไม่มีรายละเอียดเพิ่มเติม"}
               </p>
             </div>
 
@@ -102,11 +132,11 @@ export default function GymDetailPage({
               </h2>
               <div className="flex items-start gap-3 mb-4">
                 <MapPinIcon className="flex-shrink-0 w-6 h-6 text-red-500" />
-                <p className="text-zinc-300">{gym.address}</p>
+                <p className="text-zinc-300">{gym.location}</p>
               </div>
-              {gym.mapUrl && (
+              {gym.map_url && (
                 <a
-                  href={gym.mapUrl}
+                  href={gym.map_url}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 bg-zinc-700 hover:bg-zinc-600 px-4 py-2 rounded-lg text-white transition-colors"
@@ -117,8 +147,27 @@ export default function GymDetailPage({
               )}
             </div>
 
-            {/* Packages */}
-            {gym.packages && gym.packages.length > 0 && (
+            {/* Services */}
+            {gym.services && gym.services.length > 0 && (
+              <div className="bg-zinc-800 p-6 border border-zinc-700 rounded-lg">
+                <h2 className="mb-4 font-bold text-white text-2xl">
+                  บริการ
+                </h2>
+                <div className="flex flex-wrap gap-2">
+                  {gym.services.map((service, idx) => (
+                    <span
+                      key={idx}
+                      className="bg-zinc-700 px-3 py-1 rounded-full text-zinc-300 text-sm"
+                    >
+                      {service}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Packages - Commented out until we have packages table */}
+            {/* {gym.packages && gym.packages.length > 0 && (
               <div className="bg-zinc-800 p-6 border border-zinc-700 rounded-lg">
                 <h2 className="mb-4 font-bold text-white text-2xl">
                   แพ็คเกจการฝึกซ้อม
@@ -166,7 +215,7 @@ export default function GymDetailPage({
                   ))}
                 </div>
               </div>
-            )}
+            )} */}
           </div>
 
           {/* Sidebar */}
@@ -178,7 +227,7 @@ export default function GymDetailPage({
                   ข้อมูลติดต่อ
                 </h3>
                 <div className="space-y-4">
-                  {gym.ownerPhone && (
+                  {gym.phone && (
                     <div className="flex items-start gap-3">
                       <PhoneIcon className="flex-shrink-0 mt-0.5 w-5 h-5 text-green-500" />
                       <div>
@@ -186,24 +235,42 @@ export default function GymDetailPage({
                           โทรศัพท์
                         </p>
                         <a
-                          href={`tel:${gym.ownerPhone}`}
+                          href={`tel:${gym.phone}`}
                           className="text-zinc-300 hover:text-white transition-colors"
                         >
-                          {gym.ownerPhone}
+                          {gym.phone}
                         </a>
                       </div>
                     </div>
                   )}
-                  {gym.ownerEmail && (
+                  {gym.email && (
                     <div className="flex items-start gap-3">
                       <EnvelopeIcon className="flex-shrink-0 mt-0.5 w-5 h-5 text-blue-500" />
                       <div>
                         <p className="mb-1 text-zinc-400 text-xs">อีเมล</p>
                         <a
-                          href={`mailto:${gym.ownerEmail}`}
+                          href={`mailto:${gym.email}`}
                           className="text-zinc-300 hover:text-white break-all transition-colors"
                         >
-                          {gym.ownerEmail}
+                          {gym.email}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+                  {gym.website && (
+                    <div className="flex items-start gap-3">
+                      <GlobeAltIcon className="flex-shrink-0 mt-0.5 w-5 h-5 text-purple-500" />
+                      <div>
+                        <p className="mb-1 text-zinc-400 text-xs">
+                          เว็บไซต์
+                        </p>
+                        <a
+                          href={gym.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-zinc-300 hover:text-white break-all transition-colors"
+                        >
+                          {gym.website}
                         </a>
                       </div>
                     </div>
@@ -219,12 +286,12 @@ export default function GymDetailPage({
                       </div>
                     </div>
                   )}
-                  {gym.ownerName && (
+                  {gym.contact_name && (
                     <div className="pt-4 border-zinc-700 border-t">
                       <p className="mb-1 text-zinc-400 text-xs">
-                        เจ้าของ/ผู้ดูแล
+                        ผู้ติดต่อ
                       </p>
-                      <p className="text-zinc-300">{gym.ownerName}</p>
+                      <p className="text-zinc-300">{gym.contact_name}</p>
                     </div>
                   )}
                 </div>
@@ -236,24 +303,31 @@ export default function GymDetailPage({
                   ข้อมูลทั่วไป
                 </h3>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-3">
-                    <CurrencyDollarIcon className="w-5 h-5 text-green-500" />
-                    <div>
-                      <p className="text-zinc-400 text-xs">ราคาเริ่มต้น</p>
-                      <p className="font-semibold text-zinc-300">
-                        {gym.packages && gym.packages.length > 0
-                          ? `฿${Math.min(
-                              ...gym.packages.map((p) => p.base_price)
-                            ).toLocaleString()}`
-                          : "ติดต่อสอบถาม"}
-                      </p>
+                  {gym.rating && (
+                    <div className="flex items-center gap-3">
+                      <StarIcon className="w-5 h-5 text-yellow-400" />
+                      <div>
+                        <p className="text-zinc-400 text-xs">คะแนน</p>
+                        <p className="font-semibold text-zinc-300">
+                          {gym.rating.toFixed(1)} / 5.0
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   <div className="flex items-center gap-3">
                     <ClockIcon className="w-5 h-5 text-blue-500" />
                     <div>
                       <p className="text-zinc-400 text-xs">เวลาทำการ</p>
                       <p className="text-zinc-300">จันทร์-เสาร์: 06:00-20:00</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <CurrencyDollarIcon className="w-5 h-5 text-green-500" />
+                    <div>
+                      <p className="text-zinc-400 text-xs">ราคา</p>
+                      <p className="font-semibold text-zinc-300">
+                        ติดต่อสอบถาม
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -267,12 +341,12 @@ export default function GymDetailPage({
                 <p className="mb-4 text-white/80 text-sm">
                   ติดต่อค่ายมวยเพื่อจองและสอบถามข้อมูลเพิ่มเติม
                 </p>
-                {gym.ownerPhone ? (
+                {gym.phone ? (
                   <a
-                    href={`tel:${gym.ownerPhone}`}
+                    href={`tel:${gym.phone}`}
                     className="block bg-white hover:bg-zinc-100 px-6 py-3 rounded-lg w-full font-semibold text-red-600 transition-colors"
                   >
-                    โทรติดต่อเลย
+                    จองค่ายมวย
                   </a>
                 ) : (
                   <Link

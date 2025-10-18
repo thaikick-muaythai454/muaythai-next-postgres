@@ -27,6 +27,7 @@ import TermsModal from "@/components/modals/TermsModal";
  */
 interface FormData {
   gymName: string;
+  gymNameEnglish: string;
   contactName: string;
   phone: string;
   email: string;
@@ -52,6 +53,7 @@ interface GymData {
   id?: string;
   user_id: string;
   gym_name: string;
+  gym_name_english?: string;
   contact_name: string;
   phone: string;
   email: string;
@@ -88,6 +90,7 @@ export default function PartnerApplyPage() {
   // Form state
   const [formData, setFormData] = useState<FormData>({
     gymName: "",
+    gymNameEnglish: "",
     contactName: "",
     phone: "",
     email: "",
@@ -398,6 +401,7 @@ export default function PartnerApplyPage() {
       const gymData: Omit<GymData, "id"> = {
         user_id: user.id,
         gym_name: formData.gymName,
+        gym_name_english: formData.gymNameEnglish || undefined,
         contact_name: formData.contactName,
         phone: formData.phone,
         email: formData.email,
@@ -432,6 +436,7 @@ export default function PartnerApplyPage() {
       // Reset form
       setFormData({
         gymName: "",
+        gymNameEnglish: "",
         contactName: "",
         phone: "",
         email: "",
@@ -669,7 +674,7 @@ export default function PartnerApplyPage() {
                   htmlFor="gymName"
                   className="block mb-2 font-medium text-zinc-300 text-sm"
                 >
-                  ชื่อยิม / ชื่อสถานที่ <span className="text-red-500">*</span>
+                  ชื่อยิม (ภาษาไทย) <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
                   <input
@@ -681,7 +686,7 @@ export default function PartnerApplyPage() {
                     className={`w-full bg-zinc-700 border ${
                       errors.gymName ? "border-red-500" : "border-zinc-600"
                     } rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
-                    placeholder="เช่น: Tiger Muay Thai Gym"
+                    placeholder="เช่น: ยิมมวยไทยเสือ"
                   />
                 </div>
                 {errors.gymName && (
@@ -690,6 +695,38 @@ export default function PartnerApplyPage() {
                     {errors.gymName}
                   </p>
                 )}
+              </div>
+
+              {/* Gym Name English */}
+              <div>
+                <label
+                  htmlFor="gymNameEnglish"
+                  className="block mb-2 font-medium text-zinc-300 text-sm"
+                >
+                  ชื่อยิม (English)
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    id="gymNameEnglish"
+                    name="gymNameEnglish"
+                    value={formData.gymNameEnglish}
+                    onChange={handleInputChange}
+                    className={`w-full bg-zinc-700 border ${
+                      errors.gymNameEnglish ? "border-red-500" : "border-zinc-600"
+                    } rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
+                    placeholder="e.g., Tiger Muay Thai Gym"
+                  />
+                </div>
+                {errors.gymNameEnglish && (
+                  <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                    <ExclamationTriangleIcon className="w-4 h-4" />
+                    {errors.gymNameEnglish}
+                  </p>
+                )}
+                <p className="mt-2 text-zinc-400 text-xs">
+                  ใช้สำหรับสร้าง URL ของยิม เช่น /gyms/tiger-muay-thai-gym
+                </p>
               </div>
 
               {/* Contact Name */}
