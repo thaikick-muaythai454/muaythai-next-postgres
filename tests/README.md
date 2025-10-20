@@ -43,7 +43,7 @@ npm install
 ตรวจสอบว่าไฟล์ `.env.local` มีค่าที่ถูกต้อง:
 ```env
 SUPABASE_URL=your_supabase_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 ### 3. Database Setup

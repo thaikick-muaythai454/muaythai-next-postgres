@@ -66,7 +66,7 @@ cp .env.example .env.local
 
 ```env
 SUPABASE_URL=https://your-project-id.supabase.co
-SUPABASE_ANON_KEY=your-anon-key-here
+NEXT_PUBLIC_NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
 ### 4. รันโปรเจกต์
@@ -443,7 +443,7 @@ create policy "Users can update own data"
 3. Import repository
 4. เพิ่ม Environment Variables:
    - `SUPABASE_URL`
-   - `SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_NEXT_PUBLIC_NEXT_PUBLIC_NEXT_PUBLIC_NEXT_PUBLIC_NEXT_PUBLIC_NEXT_PUBLIC_NEXT_PUBLIC_NEXT_PUBLIC_SUPABASE_ANON_KEY`
 5. Deploy!
 
 ### ตรวจสอบก่อน Deploy
