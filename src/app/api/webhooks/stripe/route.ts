@@ -110,73 +110,85 @@ async function handlePaymentSuccess(
   supabase: any,
   paymentIntent: Stripe.PaymentIntent
 ) {
-  console.log('Payment succeeded:', paymentIntent.id);
+  console.log('💳 Payment succeeded:', paymentIntent.id);
+  console.log('💳 Payment metadata:', paymentIntent.metadata);
 
-  // Update payment status
-  const { error: paymentError } = await supabase
-    .from('payments')
-    .update({
-      status: 'succeeded',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('stripe_payment_intent_id', paymentIntent.id);
+  try {
+    // Option 1: Update via payments table (if payment record exists)
+    const { data: payment, error: paymentFetchError } = await supabase
+      .from('payments')
+      .select('id, user_id, payment_type, metadata')
+      .eq('stripe_payment_intent_id', paymentIntent.id)
+      .maybeSingle();
 
-  if (paymentError) {
-    console.error('Error updating payment status:', paymentError);
-    throw paymentError;
-  }
+    if (paymentFetchError) {
+      console.error('❌ Error fetching payment:', paymentFetchError);
+    }
 
-  // Get the payment record to find associated order
-  const { data: payment } = await supabase
-    .from('payments')
-    .select('id, user_id, payment_type, metadata')
-    .eq('stripe_payment_intent_id', paymentIntent.id)
-    .single();
+    if (payment) {
+      console.log('✅ Payment record found, updating status...');
 
-  if (!payment) {
-    console.error('Payment record not found');
-    return;
-  }
+      // Update payment status
+      const { error: paymentUpdateError } = await supabase
+        .from('payments')
+        .update({
+          status: 'succeeded',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', payment.id);
 
-  // Update order status
-  const { error: orderError } = await supabase
-    .from('orders')
-    .update({
-      status: 'confirmed',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('payment_id', payment.id);
+      if (paymentUpdateError) {
+        console.error('❌ Error updating payment status:', paymentUpdateError);
+      }
 
-  if (orderError) {
-    console.error('Error updating order status:', orderError);
-    throw orderError;
-  }
+      // Update order status
+      const { data: order } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('payment_id', payment.id)
+        .maybeSingle();
 
-  // Get order details
-  const { data: order } = await supabase
-    .from('orders')
-    .select('id')
-    .eq('payment_id', payment.id)
-    .single();
+      if (order) {
+        await supabase
+          .from('orders')
+          .update({
+            status: 'confirmed',
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', order.id);
 
-  if (!order) {
-    console.error('Order not found');
-    return;
-  }
+        console.log('✅ Order updated:', order.id);
+      }
+    }
 
-  // Handle specific payment types
-  const metadata = payment.metadata || {};
+    // Option 2: Update via booking directly (using metadata.bookingId)
+    const bookingId = paymentIntent.metadata?.bookingId;
 
-  switch (payment.payment_type) {
-    case 'product':
-      await handleProductOrderSuccess(supabase, order.id, metadata);
-      break;
-    case 'ticket':
-      await handleTicketBookingSuccess(supabase, order.id, metadata);
-      break;
-    case 'gym_booking':
-      await handleGymBookingSuccess(supabase, order.id, metadata);
-      break;
+    if (bookingId) {
+      console.log('📋 Updating booking directly:', bookingId);
+
+      const { error: bookingUpdateError } = await supabase
+        .from('bookings')
+        .update({
+          payment_status: 'paid',
+          status: 'confirmed',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', bookingId);
+
+      if (bookingUpdateError) {
+        console.error('❌ Error updating booking:', bookingUpdateError);
+      } else {
+        console.log('✅ Booking payment status updated successfully');
+      }
+    } else {
+      console.warn('⚠️ No bookingId in metadata, skipping direct booking update');
+    }
+
+    console.log('✅ Payment success handler completed');
+  } catch (error) {
+    console.error('❌ Error in handlePaymentSuccess:', error);
+    // Don't throw - we don't want to fail the webhook
   }
 }
 
@@ -283,47 +295,5 @@ async function handleRefund(supabase: any, charge: Stripe.Charge) {
   }
 }
 
-async function handleProductOrderSuccess(
-  supabase: any,
-  orderId: string,
-  metadata: any
-) {
-  // You can create product order records here
-  console.log('Product order succeeded:', orderId);
-  // TODO: Implement product-specific logic
-}
-
-async function handleTicketBookingSuccess(
-  supabase: any,
-  orderId: string,
-  metadata: any
-) {
-  // You can create ticket booking records here
-  console.log('Ticket booking succeeded:', orderId);
-  // TODO: Implement ticket-specific logic
-}
-
-async function handleGymBookingSuccess(
-  supabase: any,
-  orderId: string,
-  metadata: any
-) {
-  // Confirm gym booking
-  console.log('Gym booking succeeded:', orderId);
-
-  const { data: gymBooking } = await supabase
-    .from('gym_bookings')
-    .select('id')
-    .eq('order_id', orderId)
-    .single();
-
-  if (gymBooking) {
-    await supabase
-      .from('gym_bookings')
-      .update({
-        is_confirmed: true,
-        confirmed_at: new Date().toISOString(),
-      })
-      .eq('id', gymBooking.id);
-  }
-}
+// Note: Specific payment type handlers removed
+// Payment success now updates booking directly via metadata.bookingId

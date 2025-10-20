@@ -321,9 +321,9 @@ function PartnerDashboardContent() {
   // Menu items for sidebar
   const menuItems: MenuItem[] = [
     { label: 'Dashboard', href: '/partner/dashboard', icon: HomeIcon },
-    { label: 'รายการจอง', href: '/partner/bookings', icon: CalendarIcon },
-    { label: 'รายการธุรกรรม', href: '/partner/transactions', icon: BanknotesIcon },
-    { label: 'สถิติ', href: '/partner/analytics', icon: ChartBarIcon },
+    { label: 'รายการจอง', href: '/partner/dashboard/bookings', icon: CalendarIcon },
+    { label: 'รายการธุรกรรม', href: '/partner/dashboard/transactions', icon: BanknotesIcon },
+    { label: 'สถิติ', href: '/partner/dashboard/analytics', icon: ChartBarIcon },
   ];
 
   const oneTimePackages = packages.filter(p => p.package_type === 'one_time');

@@ -17,6 +17,13 @@ import {
   Tabs,
   Tab,
   Button,
+  Spinner,
+  Modal,
+  ModalContent,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  useDisclosure,
 } from '@heroui/react';
 import {
   BuildingStorefrontIcon,
@@ -24,40 +31,61 @@ import {
   CalendarIcon,
   BanknotesIcon,
   Cog6ToothIcon,
-  HomeIcon,
   CheckCircleIcon,
   ClockIcon,
   XCircleIcon,
   EyeIcon,
 } from '@heroicons/react/24/outline';
-
-interface Booking {
-  id: string;
-  customer: string;
-  service: string;
-  date: string;
-  time: string;
-  status: 'confirmed' | 'pending' | 'completed' | 'cancelled';
-  amount: string;
-  phone?: string;
-}
+import type { Booking as BookingType, Gym } from '@/types';
 
 function PartnerBookingsContent() {
   const supabase = createClient();
   const [user, setUser] = useState<{ email?: string } | null>(null);
+  const [gym, setGym] = useState<Gym | null>(null);
+  const [bookings, setBookings] = useState<BookingType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState('all');
+  const [selectedBooking, setSelectedBooking] = useState<BookingType | null>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
-    async function loadUser() {
+    async function loadData() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
+
+      if (user) {
+        // ดึงข้อมูลค่ายมวยของ partner
+        const { data: gymData } = await supabase
+          .from('gyms')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+
+        setGym(gymData);
+
+        if (gymData) {
+          // ดึงข้อมูลการจองทั้งหมดของค่ายนี้
+          const { data: bookingsData, error } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('gym_id', gymData.id)
+            .order('created_at', { ascending: false });
+
+          if (error) {
+            console.error('Error loading bookings:', error);
+          } else {
+            setBookings(bookingsData || []);
+          }
+        }
+      }
+
       setIsLoading(false);
     }
-    loadUser();
+    loadData();
   }, [supabase]);
 
   const menuItems: MenuItem[] = [
+    { label: 'แดชบอร์ด', href: '/partner/dashboard', icon: ChartBarIcon },
     { label: 'ข้อมูลยิม', href: '/partner/dashboard/gym', icon: BuildingStorefrontIcon },
     { label: 'ประวัติการจอง', href: '/partner/dashboard/bookings', icon: CalendarIcon },
     { label: 'รายการธุรกรรม', href: '/partner/dashboard/transactions', icon: BanknotesIcon },
@@ -65,75 +93,60 @@ function PartnerBookingsContent() {
     { label: 'ตั้งค่า', href: '/partner/dashboard/settings', icon: Cog6ToothIcon },
   ];
 
-  // Mock bookings data
-  const mockBookings: Booking[] = [
-    {
-      id: 'BK001',
-      customer: 'สมชาย ใจดี',
-      service: 'มวยไทย - Private Class',
-      date: '2024-10-25',
-      time: '10:00-11:00',
-      status: 'confirmed',
-      amount: '฿500',
-      phone: '081-234-5678',
-    },
-    {
-      id: 'BK002',
-      customer: 'สมหญิง รักสุข',
-      service: 'คลาสกลุ่ม',
-      date: '2024-10-26',
-      time: '14:00-15:00',
-      status: 'pending',
-      amount: '฿300',
-      phone: '082-345-6789',
-    },
-    {
-      id: 'BK003',
-      customer: 'วิชัย มานะ',
-      service: 'Private Class',
-      date: '2024-10-20',
-      time: '09:00-10:00',
-      status: 'completed',
-      amount: '฿600',
-      phone: '083-456-7890',
-    },
-    {
-      id: 'BK004',
-      customer: 'สุดา สวย',
-      service: 'Fitness',
-      date: '2024-10-15',
-      time: '16:00-17:00',
-      status: 'cancelled',
-      amount: '฿400',
-      phone: '084-567-8901',
-    },
-  ];
+  const handleViewBooking = (booking: BookingType) => {
+    setSelectedBooking(booking);
+    onOpen();
+  };
 
-  const getStatusChip = (status: Booking['status']) => {
-    const statusConfig = {
+  const handleUpdateStatus = async (bookingId: string, newStatus: 'confirmed' | 'cancelled' | 'completed') => {
+    try {
+      const { error } = await supabase
+        .from('bookings')
+        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .eq('id', bookingId);
+
+      if (error) throw error;
+
+      // อัพเดทข้อมูลใน state
+      setBookings(bookings.map(b => 
+        b.id === bookingId ? { ...b, status: newStatus } : b
+      ));
+
+      // ถ้ากำลังดูรายละเอียด ให้อัพเดทด้วย
+      if (selectedBooking?.id === bookingId) {
+        setSelectedBooking({ ...selectedBooking, status: newStatus });
+      }
+    } catch (error) {
+      console.error('Error updating booking status:', error);
+      alert('เกิดข้อผิดพลาดในการอัพเดทสถานะ');
+    }
+  };
+
+  const getStatusChip = (status: string) => {
+    const statusConfig: Record<string, { label: string; color: 'success' | 'warning' | 'primary' | 'danger'; icon: React.ComponentType<{ className?: string }> }> = {
       confirmed: {
         label: 'ยืนยันแล้ว',
-        color: 'success' as const,
+        color: 'success',
         icon: CheckCircleIcon,
       },
       pending: {
         label: 'รอยืนยัน',
-        color: 'warning' as const,
+        color: 'warning',
         icon: ClockIcon,
       },
       completed: {
         label: 'เสร็จสิ้น',
-        color: 'primary' as const,
+        color: 'primary',
         icon: CheckCircleIcon,
       },
       cancelled: {
         label: 'ยกเลิก',
-        color: 'danger' as const,
+        color: 'danger',
         icon: XCircleIcon,
       },
     };
 
-    const config = statusConfig[status];
+    const config = statusConfig[status] || statusConfig.pending;
     const Icon = config.icon;
 
     return (
@@ -148,17 +161,49 @@ function PartnerBookingsContent() {
     );
   };
 
-  const filteredBookings = mockBookings.filter(booking => {
+  const getPaymentStatusChip = (status: string) => {
+    const statusConfig: Record<string, { label: string; color: 'success' | 'warning' | 'danger' | 'default' }> = {
+      paid: { label: 'ชำระแล้ว', color: 'success' },
+      pending: { label: 'รอชำระ', color: 'warning' },
+      failed: { label: 'ล้มเหลว', color: 'danger' },
+      refunded: { label: 'คืนเงินแล้ว', color: 'default' },
+    };
+
+    const config = statusConfig[status] || statusConfig.pending;
+
+    return (
+      <Chip color={config.color} variant="flat" size="sm">
+        {config.label}
+      </Chip>
+    );
+  };
+
+  const filteredBookings = bookings.filter(booking => {
     if (selectedTab === 'all') return true;
     return booking.status === selectedTab;
   });
 
   const stats = {
-    total: mockBookings.length,
-    confirmed: mockBookings.filter(b => b.status === 'confirmed').length,
-    pending: mockBookings.filter(b => b.status === 'pending').length,
-    completed: mockBookings.filter(b => b.status === 'completed').length,
-    cancelled: mockBookings.filter(b => b.status === 'cancelled').length,
+    total: bookings.length,
+    confirmed: bookings.filter(b => b.status === 'confirmed').length,
+    pending: bookings.filter(b => b.status === 'pending').length,
+    completed: bookings.filter(b => b.status === 'completed').length,
+    cancelled: bookings.filter(b => b.status === 'cancelled').length,
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('th-TH', {
+      style: 'currency',
+      currency: 'THB',
+    }).format(amount);
+  };
+
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('th-TH', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    });
   };
 
   if (isLoading) {
@@ -172,8 +217,27 @@ function PartnerBookingsContent() {
         userEmail={user?.email}
       >
         <div className="flex justify-center items-center py-20">
-          <div className="border-4 border-red-600 border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
+          <Spinner size="lg" color="secondary" />
         </div>
+      </DashboardLayout>
+    );
+  }
+
+  if (!gym) {
+    return (
+      <DashboardLayout
+        menuItems={menuItems}
+        headerTitle="ประวัติการจอง"
+        headerSubtitle="จัดการการจองของลูกค้า"
+        roleLabel="พาร์ทเนอร์"
+        roleColor="secondary"
+        userEmail={user?.email}
+      >
+        <Card className="bg-default-100/50 backdrop-blur-sm border-none">
+          <CardBody className="py-12 text-center">
+            <p className="text-default-500">ไม่พบข้อมูลค่ายมวย กรุณาสมัครเป็นพาร์ทเนอร์ก่อน</p>
+          </CardBody>
+        </Card>
       </DashboardLayout>
     );
   }
@@ -182,11 +246,44 @@ function PartnerBookingsContent() {
     <DashboardLayout
       menuItems={menuItems}
       headerTitle="ประวัติการจอง"
-      headerSubtitle="จัดการการจองของลูกค้า"
+      headerSubtitle={`จัดการการจองของ ${gym.gym_name}`}
       roleLabel="พาร์ทเนอร์"
       roleColor="secondary"
       userEmail={user?.email}
     >
+      {/* Stats Cards */}
+      <section className="gap-4 grid grid-cols-1 md:grid-cols-5 mb-6">
+        <Card className="bg-gradient-to-br from-blue-500 to-blue-600">
+          <CardBody className="text-center">
+            <p className="mb-1 text-white/80 text-sm">ทั้งหมด</p>
+            <p className="font-bold text-white text-3xl">{stats.total}</p>
+          </CardBody>
+        </Card>
+        <Card className="bg-gradient-to-br from-yellow-500 to-yellow-600">
+          <CardBody className="text-center">
+            <p className="mb-1 text-white/80 text-sm">รอยืนยัน</p>
+            <p className="font-bold text-white text-3xl">{stats.pending}</p>
+          </CardBody>
+        </Card>
+        <Card className="bg-gradient-to-br from-green-500 to-green-600">
+          <CardBody className="text-center">
+            <p className="mb-1 text-white/80 text-sm">ยืนยันแล้ว</p>
+            <p className="font-bold text-white text-3xl">{stats.confirmed}</p>
+          </CardBody>
+        </Card>
+        <Card className="bg-gradient-to-br from-purple-500 to-purple-600">
+          <CardBody className="text-center">
+            <p className="mb-1 text-white/80 text-sm">เสร็จสิ้น</p>
+            <p className="font-bold text-white text-3xl">{stats.completed}</p>
+          </CardBody>
+        </Card>
+        <Card className="bg-gradient-to-br from-red-500 to-red-600">
+          <CardBody className="text-center">
+            <p className="mb-1 text-white/80 text-sm">ยกเลิก</p>
+            <p className="font-bold text-white text-3xl">{stats.cancelled}</p>
+          </CardBody>
+        </Card>
+      </section>
 
       {/* Bookings Table */}
       <section>
@@ -198,11 +295,11 @@ function PartnerBookingsContent() {
               className="mb-6"
               color="secondary"
             >
-              <Tab key="all" title="ทั้งหมด" />
-              <Tab key="pending" title="รอยืนยัน" />
-              <Tab key="confirmed" title="ยืนยันแล้ว" />
-              <Tab key="completed" title="เสร็จสิ้น" />
-              <Tab key="cancelled" title="ยกเลิก" />
+              <Tab key="all" title={`ทั้งหมด (${stats.total})`} />
+              <Tab key="pending" title={`รอยืนยัน (${stats.pending})`} />
+              <Tab key="confirmed" title={`ยืนยันแล้ว (${stats.confirmed})`} />
+              <Tab key="completed" title={`เสร็จสิ้น (${stats.completed})`} />
+              <Tab key="cancelled" title={`ยกเลิก (${stats.cancelled})`} />
             </Tabs>
 
             <Table
@@ -215,25 +312,41 @@ function PartnerBookingsContent() {
                 <TableColumn>รหัสจอง</TableColumn>
                 <TableColumn>ลูกค้า</TableColumn>
                 <TableColumn>โทรศัพท์</TableColumn>
-                <TableColumn>บริการ</TableColumn>
-                <TableColumn>วันที่</TableColumn>
-                <TableColumn>เวลา</TableColumn>
+                <TableColumn>แพ็คเกจ</TableColumn>
+                <TableColumn>วันที่เริ่ม</TableColumn>
+                <TableColumn>วันที่สิ้นสุด</TableColumn>
                 <TableColumn>ยอดเงิน</TableColumn>
+                <TableColumn>สถานะการชำระ</TableColumn>
                 <TableColumn>สถานะ</TableColumn>
                 <TableColumn>การกระทำ</TableColumn>
               </TableHeader>
               <TableBody emptyContent="ไม่พบข้อมูลการจอง">
                 {filteredBookings.map((booking) => (
                   <TableRow key={booking.id}>
-                    <TableCell className="font-mono text-white">{booking.id}</TableCell>
-                    <TableCell className="font-semibold text-white">{booking.customer}</TableCell>
-                    <TableCell className="font-mono text-default-400 text-sm">{booking.phone}</TableCell>
-                    <TableCell className="text-default-400">{booking.service}</TableCell>
-                    <TableCell className="text-default-400">
-                      {new Date(booking.date).toLocaleDateString('th-TH')}
+                    <TableCell className="font-mono text-white text-xs">
+                      {booking.booking_number}
                     </TableCell>
-                    <TableCell className="text-default-400">{booking.time}</TableCell>
-                    <TableCell className="font-mono text-white">{booking.amount}</TableCell>
+                    <TableCell className="font-semibold text-white">
+                      {booking.customer_name}
+                    </TableCell>
+                    <TableCell className="font-mono text-default-400 text-sm">
+                      {booking.customer_phone || '-'}
+                    </TableCell>
+                    <TableCell className="text-default-400">
+                      {booking.package_name}
+                    </TableCell>
+                    <TableCell className="text-default-400">
+                      {formatDate(booking.start_date)}
+                    </TableCell>
+                    <TableCell className="text-default-400">
+                      {booking.end_date ? formatDate(booking.end_date) : '-'}
+                    </TableCell>
+                    <TableCell className="font-mono text-white">
+                      {formatCurrency(Number(booking.price_paid))}
+                    </TableCell>
+                    <TableCell>
+                      {getPaymentStatusChip(booking.payment_status)}
+                    </TableCell>
                     <TableCell>{getStatusChip(booking.status)}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
@@ -242,6 +355,7 @@ function PartnerBookingsContent() {
                           isIconOnly
                           variant="flat"
                           color="primary"
+                          onPress={() => handleViewBooking(booking)}
                         >
                           <EyeIcon className="w-4 h-4" />
                         </Button>
@@ -251,15 +365,17 @@ function PartnerBookingsContent() {
                               size="sm"
                               color="success"
                               variant="flat"
+                              onPress={() => handleUpdateStatus(booking.id, 'confirmed')}
                             >
-                              อนุมัติ
+                              ยืนยัน
                             </Button>
                             <Button
                               size="sm"
                               color="danger"
                               variant="flat"
+                              onPress={() => handleUpdateStatus(booking.id, 'cancelled')}
                             >
-                              ปฏิเสธ
+                              ยกเลิก
                             </Button>
                           </>
                         )}
@@ -268,6 +384,7 @@ function PartnerBookingsContent() {
                             size="sm"
                             color="primary"
                             variant="flat"
+                            onPress={() => handleUpdateStatus(booking.id, 'completed')}
                           >
                             เสร็จสิ้น
                           </Button>
@@ -281,6 +398,130 @@ function PartnerBookingsContent() {
           </CardBody>
         </Card>
       </section>
+
+      {/* Booking Detail Modal */}
+      <Modal isOpen={isOpen} onClose={onClose} size="2xl">
+        <ModalContent>
+          {(onClose) => (
+            <>
+              <ModalHeader className="flex flex-col gap-1">
+                รายละเอียดการจอง
+              </ModalHeader>
+              <ModalBody>
+                {selectedBooking && (
+                  <div className="space-y-4">
+                    <div className="gap-4 grid grid-cols-2">
+                      <div>
+                        <p className="text-default-500 text-sm">รหัสจอง</p>
+                        <p className="font-mono font-semibold">{selectedBooking.booking_number}</p>
+                      </div>
+                      <div>
+                        <p className="text-default-500 text-sm">สถานะ</p>
+                        <div className="mt-1">{getStatusChip(selectedBooking.status)}</div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <h4 className="mb-2 font-semibold">ข้อมูลลูกค้า</h4>
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-default-500 text-sm">ชื่อ</p>
+                          <p className="font-semibold">{selectedBooking.customer_name}</p>
+                        </div>
+                        <div>
+                          <p className="text-default-500 text-sm">อีเมล</p>
+                          <p>{selectedBooking.customer_email}</p>
+                        </div>
+                        <div>
+                          <p className="text-default-500 text-sm">โทรศัพท์</p>
+                          <p>{selectedBooking.customer_phone}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <h4 className="mb-2 font-semibold">รายละเอียดแพ็คเกจ</h4>
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-default-500 text-sm">แพ็คเกจ</p>
+                          <p className="font-semibold">{selectedBooking.package_name}</p>
+                        </div>
+                        <div>
+                          <p className="text-default-500 text-sm">ประเภท</p>
+                          <p>{selectedBooking.package_type === 'one_time' ? 'ครั้งเดียว' : 'แพ็คเกจ'}</p>
+                        </div>
+                        {selectedBooking.duration_months && (
+                          <div>
+                            <p className="text-default-500 text-sm">ระยะเวลา</p>
+                            <p>{selectedBooking.duration_months} เดือน</p>
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-default-500 text-sm">วันที่เริ่ม</p>
+                          <p>{formatDate(selectedBooking.start_date)}</p>
+                        </div>
+                        {selectedBooking.end_date && (
+                          <div>
+                            <p className="text-default-500 text-sm">วันที่สิ้นสุด</p>
+                            <p>{formatDate(selectedBooking.end_date)}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="pt-4 border-t">
+                      <h4 className="mb-2 font-semibold">การชำระเงิน</h4>
+                      <div className="space-y-2">
+                        <div>
+                          <p className="text-default-500 text-sm">ยอดเงิน</p>
+                          <p className="font-bold text-green-600 text-2xl">
+                            {formatCurrency(Number(selectedBooking.price_paid))}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-default-500 text-sm">สถานะการชำระเงิน</p>
+                          <div className="mt-1">{getPaymentStatusChip(selectedBooking.payment_status)}</div>
+                        </div>
+                        {selectedBooking.payment_method && (
+                          <div>
+                            <p className="text-default-500 text-sm">วิธีชำระเงิน</p>
+                            <p>{selectedBooking.payment_method}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {selectedBooking.special_requests && (
+                      <div className="pt-4 border-t">
+                        <h4 className="mb-2 font-semibold">คำขอพิเศษ</h4>
+                        <p className="text-default-600">{selectedBooking.special_requests}</p>
+                      </div>
+                    )}
+
+                    <div className="pt-4 border-t">
+                      <div className="gap-4 grid grid-cols-2 text-sm">
+                        <div>
+                          <p className="text-default-500">วันที่จอง</p>
+                          <p>{formatDate(selectedBooking.created_at)}</p>
+                        </div>
+                        <div>
+                          <p className="text-default-500">อัพเดทล่าสุด</p>
+                          <p>{formatDate(selectedBooking.updated_at)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </ModalBody>
+              <ModalFooter>
+                <Button color="danger" variant="light" onPress={onClose}>
+                  ปิด
+                </Button>
+              </ModalFooter>
+            </>
+          )}
+        </ModalContent>
+      </Modal>
     </DashboardLayout>
   );
 }

@@ -1,22 +1,41 @@
 import Stripe from 'stripe';
 
-// Check if Stripe is configured
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
+// Lazy load Stripe secret key
+function getStripeSecretKey(): string | null {
+  const key = process.env.STRIPE_SECRET_KEY;
 
-if (!STRIPE_SECRET_KEY) {
-  console.warn('⚠️ STRIPE_SECRET_KEY not found. Payment features will be disabled.');
+  if (!key && process.env.NODE_ENV === 'development') {
+    console.warn('⚠️ STRIPE_SECRET_KEY not found. Payment features will be disabled.');
+  }
+
+  return key || null;
 }
 
-// Initialize Stripe with the secret key (or use a dummy key if not configured)
-export const stripe = STRIPE_SECRET_KEY 
-  ? new Stripe(STRIPE_SECRET_KEY, {
-      apiVersion: '2025-09-30.clover',
-      typescript: true,
-    })
-  : null;
+// Initialize Stripe lazily
+let stripeInstance: Stripe | null | undefined = undefined;
+
+export const stripe: Stripe | null = new Proxy({} as Stripe, {
+  get(_, prop: keyof Stripe) {
+    if (stripeInstance === undefined) {
+      const key = getStripeSecretKey();
+      stripeInstance = key
+        ? new Stripe(key, {
+            apiVersion: '2025-09-30.clover',
+            typescript: true,
+          })
+        : null;
+    }
+
+    if (!stripeInstance) {
+      throw new Error('Stripe is not configured. Please set STRIPE_SECRET_KEY environment variable.');
+    }
+
+    return stripeInstance[prop];
+  }
+});
 
 // Helper to check if Stripe is configured
-export const isStripeConfigured = () => !!STRIPE_SECRET_KEY;
+export const isStripeConfigured = () => !!getStripeSecretKey();
 
 // Currency configuration
 export const CURRENCY = 'thb'; // Thai Baht

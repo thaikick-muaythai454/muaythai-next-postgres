@@ -12,68 +12,132 @@ import {
   CreditCardIcon,
   HomeIcon,
   ArrowRightIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
+
+interface BookingWithGym extends Booking {
+  gyms?: {
+    gym_name: string;
+    slug: string;
+  };
+}
 
 function BookingSuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const payment_intent = searchParams.get("payment_intent");
   const bookingId = searchParams.get("booking");
   const supabase = createClient();
 
   const [booking, setBooking] = useState<Booking | null>(null);
   const [gymName, setGymName] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchBooking() {
-      if (!bookingId) {
-        router.push("/");
+      // Support both payment_intent (from Stripe) and booking (direct)
+      if (!payment_intent && !bookingId) {
+        setError('ไม่พบข้อมูลการจอง');
+        setIsLoading(false);
         return;
       }
 
       try {
-        // ดึงข้อมูลการจอง
-        const { data: bookingData, error: bookingError } = await supabase
-          .from('bookings')
-          .select(`
-            *,
-            gyms:gym_id (
-              gym_name,
-              slug
-            )
-          `)
-          .eq('id', bookingId)
-          .single();
+        let bookingData: BookingWithGym | null = null;
 
-        if (bookingError || !bookingData) {
-          console.error('Error fetching booking:', bookingError);
-          router.push("/");
+        // If payment_intent is provided, find booking by payment_id
+        if (payment_intent) {
+          const { data, error: err } = await supabase
+            .from('bookings')
+            .select(`
+              *,
+              gyms:gym_id (
+                gym_name,
+                slug
+              )
+            `)
+            .eq('payment_id', payment_intent)
+            .maybeSingle();
+          
+          if (!err && data) {
+            bookingData = data as BookingWithGym;
+          }
+        }
+        
+        // If booking ID is provided, fetch directly
+        if (!bookingData && bookingId) {
+          const { data, error: err } = await supabase
+            .from('bookings')
+            .select(`
+              *,
+              gyms:gym_id (
+                gym_name,
+                slug
+              )
+            `)
+            .eq('id', bookingId)
+            .maybeSingle();
+          
+          if (!err && data) {
+            bookingData = data as BookingWithGym;
+          }
+        }
+
+        if (!bookingData) {
+          console.error('Booking not found');
+          setError('ไม่พบข้อมูลการจอง');
+          setIsLoading(false);
           return;
         }
 
         setBooking(bookingData);
-        setGymName(bookingData.gyms?.gym_name || "");
-      } catch (error) {
-        console.error('Error:', error);
-        router.push("/");
+        const gyms = Array.isArray(bookingData.gyms) ? bookingData.gyms[0] : bookingData.gyms;
+        setGymName(gyms?.gym_name || "");
+      } catch (err) {
+        console.error('Error fetching booking:', err);
+        setError('เกิดข้อผิดพลาดในการโหลดข้อมูล');
       } finally {
         setIsLoading(false);
       }
     }
 
     fetchBooking();
-  }, [bookingId, router, supabase]);
+  }, [payment_intent, bookingId, router, supabase]);
 
   if (isLoading) {
     return (
       <div className="flex justify-center items-center bg-zinc-900 min-h-screen">
-        <div className="border-4 border-red-600 border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
+        <div className="text-center">
+          <div className="inline-block mb-4 border-4 border-red-600 border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
+          <p className="text-zinc-300">กำลังโหลดข้อมูล...</p>
+        </div>
       </div>
     );
   }
 
-  if (!booking) {
-    return null;
+  if (error || !booking) {
+    return (
+      <div className="flex justify-center items-center bg-zinc-900 p-4 min-h-screen">
+        <div className="bg-zinc-800 shadow-xl p-8 border border-zinc-700 rounded-xl w-full max-w-md text-center">
+          <div className="inline-flex justify-center items-center bg-red-600 mb-4 rounded-full w-16 h-16">
+            <ExclamationTriangleIcon className="w-8 h-8 text-white" />
+          </div>
+          <h1 className="mb-2 font-bold text-white text-2xl">
+            ไม่พบข้อมูล
+          </h1>
+          <p className="mb-6 text-zinc-400">
+            {error || 'ไม่พบข้อมูลการจอง'}
+          </p>
+          <Link
+            href="/gyms"
+            className="inline-block bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg font-semibold text-white transition-colors"
+          >
+            กลับไปหน้าค่ายมวย
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (

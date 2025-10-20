@@ -19,6 +19,8 @@ curl -X POST "${SUPABASE_URL}/auth/v1/admin/users" \
     "email": "admin@muaythai.com",
     "password": "password123",
     "email_confirm": true,
+    "phone": "+66812345678",
+    "phone_confirm": true,
     "user_metadata": {
       "username": "admin",
       "full_name": "Admin User"
@@ -35,6 +37,8 @@ curl -X POST "${SUPABASE_URL}/auth/v1/admin/users" \
     "email": "user@muaythai.com",
     "password": "password123",
     "email_confirm": true,
+    "phone": "+66823456789",
+    "phone_confirm": true,
     "user_metadata": {
       "username": "regular_user",
       "full_name": "ผู้ใช้ทั่วไป"
@@ -51,6 +55,8 @@ curl -X POST "${SUPABASE_URL}/auth/v1/admin/users" \
     "email": "partner1@muaythai.com",
     "password": "password123",
     "email_confirm": true,
+    "phone": "+66834567890",
+    "phone_confirm": true,
     "user_metadata": {
       "username": "somchai_gym",
       "full_name": "สมชาย มวยไทย"
@@ -66,6 +72,8 @@ curl -X POST "${SUPABASE_URL}/auth/v1/admin/users" \
     "email": "partner2@muaythai.com",
     "password": "password123",
     "email_confirm": true,
+    "phone": "+66845678901",
+    "phone_confirm": true,
     "user_metadata": {
       "username": "somying_fitness",
       "full_name": "สมหญิง ฟิตเนส"
