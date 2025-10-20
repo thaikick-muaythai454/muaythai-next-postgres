@@ -140,7 +140,7 @@ function GymPageContent() {
         userEmail={user?.email}
       >
         <div className="flex justify-center items-center py-20">
-          <div className="border-4 border-t-transparent border-red-600 rounded-full w-12 h-12 animate-spin"></div>
+          <div className="border-4 border-red-600 border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
         </div>
       </DashboardLayout>
     );
@@ -194,10 +194,10 @@ function GymPageContent() {
               <p className="mb-2 text-default-400 text-sm">สถานะยิม</p>
               {getStatusChip(gym.status)}
             </div>
-            <div className="text-right">
+            {/* <div className="text-right">
               <p className="mb-1 text-default-400 text-sm">ID ยิม</p>
               <p className="font-mono text-white">{gym.id}</p>
-            </div>
+            </div> */}
           </div>
         </CardBody>
       </Card>

@@ -60,12 +60,19 @@ export default function BookingPage({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const supabase = createClient();
 
+  // Get tomorrow's date as default
+  const getTomorrowDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
+
   const [formData, setFormData] = useState<BookingFormData>({
     fullName: "",
     email: "",
     phone: "",
     nationality: "ไทย",
-    checkInDate: "",
+    checkInDate: getTomorrowDate(),
     checkOutDate: "",
     packageType: "",
     selectedServices: [],
@@ -388,7 +395,7 @@ export default function BookingPage({
                   className={`bg-zinc-700 px-4 py-3 border rounded-lg w-full text-white focus:border-red-500 focus:ring-2 focus:ring-red-500 focus:outline-none ${
                     errors.checkInDate ? "border-red-500" : "border-zinc-600"
                   }`}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={getTomorrowDate()}
                 />
                 {errors.checkInDate && (
                   <p className="mt-1 text-red-400 text-sm">{errors.checkInDate}</p>

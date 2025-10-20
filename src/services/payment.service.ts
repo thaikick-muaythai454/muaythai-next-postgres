@@ -135,7 +135,7 @@ export async function createPaymentIntent(
   }
 
   // Create payment intent with Stripe
-  // Support multiple payment methods: card, alipay, promptpay
+  // Use automatic_payment_methods to support multiple payment methods
   const paymentIntent = await stripe.paymentIntents.create({
     amount: formatAmountForStripe(data.amount),
     currency: CURRENCY,
@@ -145,7 +145,6 @@ export async function createPaymentIntent(
       enabled: true,
       allow_redirects: 'always', // Required for Alipay and PromptPay
     },
-    payment_method_types: ['card', 'alipay', 'promptpay'], // Explicitly enable payment methods
   });
 
   // Generate order number

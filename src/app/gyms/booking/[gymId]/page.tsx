@@ -84,8 +84,15 @@ export default function GymBookingPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Get tomorrow's date as default
+  const getTomorrowDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
+
   // Form data
-  const [startDate, setStartDate] = useState('');
+  const [startDate, setStartDate] = useState(getTomorrowDate());
   const [endDate, setEndDate] = useState('');
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [contactInfo, setContactInfo] = useState({
@@ -380,7 +387,7 @@ export default function GymBookingPage() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
+                    min={getTomorrowDate()}
                     className="px-4 py-2 border border-gray-300 focus:border-transparent rounded-lg focus:ring-2 focus:ring-blue-500 w-full"
                   />
                 </div>
@@ -543,6 +550,7 @@ export default function GymBookingPage() {
                 <PaymentWrapper
                   clientSecret={clientSecret}
                   returnUrl={`${process.env.NEXT_PUBLIC_APP_URL}/gyms/booking-success?orderId=${orderId}&orderNumber=${orderNumber}`}
+                  userPhone={contactInfo.phone}
                   onSuccess={handlePaymentSuccess}
                   onError={handlePaymentError}
                 />

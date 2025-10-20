@@ -7,6 +7,7 @@ import CheckoutForm from './CheckoutForm';
 interface PaymentWrapperProps {
   clientSecret: string;
   returnUrl?: string;
+  userPhone?: string;
   onSuccess?: (paymentIntentId: string) => void;
   onError?: (error: string) => void;
 }
@@ -14,6 +15,7 @@ interface PaymentWrapperProps {
 export default function PaymentWrapper({
   clientSecret,
   returnUrl,
+  userPhone,
   onSuccess,
   onError,
 }: PaymentWrapperProps) {
@@ -21,8 +23,8 @@ export default function PaymentWrapper({
 
   if (!stripePromise) {
     return (
-      <div className="rounded-md bg-red-50 p-4">
-        <p className="text-sm text-red-800">
+      <div className="bg-red-50 p-4 rounded-md">
+        <p className="text-red-800 text-sm">
           ไม่สามารถโหลดระบบชำระเงินได้ กรุณาลองใหม่อีกครั้ง
         </p>
       </div>
@@ -35,20 +37,37 @@ export default function PaymentWrapper({
       options={{
         clientSecret,
         appearance: {
-          theme: 'stripe',
+          theme: 'night',
           variables: {
-            colorPrimary: '#2563eb',
-            colorBackground: '#ffffff',
-            colorText: '#1f2937',
-            colorDanger: '#dc2626',
+            colorPrimary: '#dc2626',
+            colorBackground: '#27272a',
+            colorText: '#ffffff',
+            colorDanger: '#ef4444',
             fontFamily: 'Inter, system-ui, sans-serif',
             borderRadius: '8px',
+            colorTextPlaceholder: '#71717a',
+          },
+          rules: {
+            '.Label': {
+              color: '#ffffff',
+              fontWeight: '500',
+            },
+            '.Input': {
+              backgroundColor: '#3f3f46',
+              color: '#ffffff',
+              border: '1px solid #52525b',
+            },
+            '.Input:focus': {
+              border: '1px solid #dc2626',
+              boxShadow: '0 0 0 1px #dc2626',
+            },
           },
         },
       }}
     >
       <CheckoutForm
         returnUrl={returnUrl}
+        userPhone={userPhone}
         onSuccess={onSuccess}
         onError={onError}
       />

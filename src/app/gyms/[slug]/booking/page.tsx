@@ -58,10 +58,17 @@ export default function BookingPage({
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isCreatingPayment, setIsCreatingPayment] = useState(false);
+  const [bookingId, setBookingId] = useState<string | null>(null);
   const supabase = createClient();
+
+  // Get tomorrow's date as default
+  const getTomorrowDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  };
 
   const [formData, setFormData] = useState<BookingFormData>({
     packageType: "",
@@ -69,7 +76,7 @@ export default function BookingPage({
     fullName: "",
     email: "",
     phone: "",
-    startDate: "",
+    startDate: getTomorrowDate(),
     specialRequests: "",
     paymentMethod: "",
   });
@@ -197,11 +204,12 @@ export default function BookingPage({
   };
 
   const createPaymentIntent = async () => {
-    if (!formData.selectedPackage || !user) return;
+    if (!formData.selectedPackage || !user || !gym) return;
 
     setIsCreatingPayment(true);
     try {
-      const response = await fetch('/api/payments/create-payment-intent', {
+      // Step 1: Create payment intent
+      const paymentResponse = await fetch('/api/payments/create-payment-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -210,8 +218,8 @@ export default function BookingPage({
           amount: formData.selectedPackage.price,
           paymentType: 'gym_booking',
           metadata: {
-            gymId: gym?.id,
-            gymName: gym?.gym_name,
+            gymId: gym.id,
+            gymName: gym.gym_name,
             packageId: formData.selectedPackage.id,
             packageName: formData.selectedPackage.name,
             customerName: formData.fullName,
@@ -221,35 +229,16 @@ export default function BookingPage({
         }),
       });
 
-      const data = await response.json();
+      const paymentData = await paymentResponse.json();
 
-      if (!response.ok) {
-        throw new Error(data.details || data.error || 'Failed to create payment intent');
+      if (!paymentResponse.ok) {
+        throw new Error(paymentData.details || paymentData.error || 'Failed to create payment intent');
       }
 
-      setClientSecret(data.clientSecret);
-    } catch (error) {
-      console.error('Error creating payment intent:', error);
-      const errorMessage = error instanceof Error ? error.message : 'ไม่สามารถเริ่มการชำระเงินได้';
-      setErrors({
-        general: `เกิดข้อผิดพลาด: ${errorMessage}`
-      });
-    } finally {
-      setIsCreatingPayment(false);
-    }
-  };
+      setClientSecret(paymentData.clientSecret);
 
-  const handlePrevious = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
-  };
-
-  const handleSubmit = async () => {
-    if (!validateStep(currentStep) || !formData.selectedPackage) return;
-
-    setIsSubmitting(true);
-    try {
-      // Create booking via API
-      const response = await fetch('/api/bookings', {
+      // Step 2: Create booking with payment_id
+      const bookingResponse = await fetch('/api/bookings', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -262,26 +251,34 @@ export default function BookingPage({
           customer_phone: formData.phone,
           start_date: formData.startDate,
           special_requests: formData.specialRequests,
-          payment_method: formData.paymentMethod,
+          payment_id: paymentData.paymentIntentId, // Link to Stripe payment intent
+          payment_method: 'stripe',
         }),
       });
 
-      const result = await response.json();
+      const bookingResult = await bookingResponse.json();
 
-      if (!response.ok || !result.success) {
-        throw new Error(result.error || 'เกิดข้อผิดพลาดในการจอง');
+      if (!bookingResponse.ok || !bookingResult.success) {
+        throw new Error(bookingResult.error || 'Failed to create booking');
       }
 
-      // Redirect to success page
-      router.push(`/gyms/${slug}/booking/success?booking=${result.data.id}`);
+      // Store booking ID for redirect after payment
+      setBookingId(bookingResult.data.id);
+      console.log('Booking created:', bookingResult.data);
     } catch (error) {
-      console.error("Error submitting booking:", error);
-      setErrors({ 
-        general: error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการจอง กรุณาลองใหม่อีกครั้ง" 
+      console.error('Error creating payment intent:', error);
+      const errorMessage = error instanceof Error ? error.message : 'ไม่สามารถเริ่มการชำระเงินได้';
+      setErrors({
+        general: `เกิดข้อผิดพลาด: ${errorMessage}`
       });
+      setCurrentStep(2); // Go back to step 2
     } finally {
-      setIsSubmitting(false);
+      setIsCreatingPayment(false);
     }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
   const selectPackage = (pkg: GymPackage) => {
@@ -598,7 +595,7 @@ export default function BookingPage({
                   className={`bg-zinc-700 px-4 py-3 border rounded-lg w-full text-white focus:border-red-500 focus:ring-2 focus:ring-red-500 focus:outline-none ${
                     errors.startDate ? "border-red-500" : "border-zinc-600"
                   }`}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={getTomorrowDate()}
                 />
                 {errors.startDate && (
                   <p className="mt-1 text-red-400 text-sm">{errors.startDate}</p>
@@ -681,9 +678,10 @@ export default function BookingPage({
                   <h3 className="mb-4 font-semibold text-white">ชำระเงิน</h3>
                   <PaymentWrapper
                     clientSecret={clientSecret}
-                    returnUrl={`${process.env.NEXT_PUBLIC_APP_URL}/gyms/${slug}/booking/success`}
-                    onSuccess={(paymentIntentId) => {
-                      router.push(`/gyms/${slug}/booking/success?payment=${paymentIntentId}`);
+                    returnUrl={`${process.env.NEXT_PUBLIC_APP_URL}/gyms/${slug}/booking/success?booking=${bookingId}`}
+                    onSuccess={() => {
+                      // Redirect to success page with booking ID
+                      router.push(`/gyms/${slug}/booking/success?booking=${bookingId}`);
                     }}
                     onError={(error) => {
                       setErrors({ general: error });
