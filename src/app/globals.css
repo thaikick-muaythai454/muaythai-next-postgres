@@ -110,6 +110,20 @@ button {
   animation: modalSlideOut 0.2s ease-in forwards;
 }
 
+/* Marquee Animation */
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 20s linear infinite;
+}
+
 .container {
   @apply flex justify-center items-center px-4 sm:px-6 lg:px-8 py-8 w-full max-w-[2560px] min-h-[calc(100vh_-_132px)];
   background-color: var(--color-background);
