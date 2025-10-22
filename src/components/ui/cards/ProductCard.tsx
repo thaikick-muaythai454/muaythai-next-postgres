@@ -6,7 +6,7 @@ import { Product } from "@/types";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import { BaseCard } from "./BaseCard";
 
-interface ProductCardProps {
+export interface ProductCardProps {
   product: Product;
   showAddToCart?: boolean;
 }
@@ -14,7 +14,7 @@ interface ProductCardProps {
 export function ProductCard({ product, showAddToCart = true }: ProductCardProps) {
   const productName = product.nameEnglish || product.nameThai;
   const isOutOfStock = product.stock <= 0;
-  const imageUrl = product.images?.[0] || "/assets/images/fallback-img.jpg";
+  const imageUrl = product.images?.[0] || "/assets/images/fallback-img-1.jpg";
 
   return (
     <BaseCard>
@@ -24,6 +24,7 @@ export function ProductCard({ product, showAddToCart = true }: ProductCardProps)
             src={imageUrl}
             alt={productName || "Product image"}
             fill
+            sizes="100%"
             className="object-cover"
           />
           {isOutOfStock && (

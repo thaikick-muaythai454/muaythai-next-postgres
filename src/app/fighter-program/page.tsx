@@ -114,21 +114,21 @@ const testimonials = [
     role: "แชมป์เปี้ยนรุ่นไลท์เวท",
     quote:
       "โปรแกรมนี้เปลี่ยนชีวิตผมไปเลย จากนักมวยโนเนมสู่การเป็นแชมป์เปี้ยน ผมได้รับการสนับสนุนที่ดีที่สุดในทุกๆ ด้าน",
-    avatar: "/assets/images/fighters/fighter-1.jpg",
+    avatar: "/assets/images/fallback-img-3.jpg",
   },
   {
     name: "มานี ใจดี",
     role: "นักมวยหญิงดาวรุ่ง",
     quote:
       "โค้ชและทีมงานยอดเยี่ยมมากค่ะ พวกเขาผลักดันให้ฉันเก่งขึ้นทุกวัน และชุมชนที่นี่ก็อบอุ่นเหมือนครอบครัว",
-    avatar: "/assets/images/fighters/fighter-2.jpg",
+    avatar: "/assets/images/fallback-img-3.jpg",
   },
   {
     name: "วิชิต สิงห์สนาม",
     role: "นักมวยต่างชาติ",
     quote:
       "ในฐานะชาวต่างชาติ ผมรู้สึกได้รับการต้อนรับอย่างดีเยี่ยม ที่นี่มีทุกอย่างที่ผมต้องการเพื่อโฟกัสกับการชกมวย",
-    avatar: "/assets/images/fighters/fighter-3.jpg",
+    avatar: "/assets/images/fallback-img-3.jpg",
   },
 ];
 
@@ -182,13 +182,13 @@ const FaqItem = ({ faq }: { faq: { question: string; answer: string } }) => {
 
 export default function FighterProgramPage() {
   return (
-    <div className="bg-zinc-900 text-white">
+    <div className="text-white">
       {/* Hero Section */}
-      <section className="relative flex justify-center items-center px-4 h-[60vh] md:h-[80vh] text-center">
+      <section className="relative flex justify-center items-center px-4 border-white/10 border-b h-[60vh] md:h-[80vh] text-center">
         <div
           className="z-0 absolute inset-0 bg-cover bg-center"
           style={{
-            backgroundImage: "url('/assets/images/bg-main.jpg')",
+            backgroundImage: "url('/assets/images/bg-program.jpg')",
           }}
         >
           <div className="absolute inset-0 bg-black/70" />
@@ -224,7 +224,7 @@ export default function FighterProgramPage() {
             {benefits.map((benefit) => (
               <div
                 key={benefit.title}
-                className="flex flex-col items-center bg-zinc-800 shadow-lg p-8 rounded-2xl text-center hover:scale-105 transition-transform duration-300 transform"
+                className="flex flex-col items-center bg-zinc-900 shadow-lg p-8 rounded-2xl text-center hover:scale-105 transition-transform duration-300 transform"
               >
                 <div className="mb-4">{benefit.icon}</div>
                 <h3 className="mb-2 font-bold text-xl">{benefit.title}</h3>
@@ -343,6 +343,10 @@ export default function FighterProgramPage() {
                     className="mr-4 rounded-full w-12 h-12 object-cover"
                     src={testimonial.avatar}
                     alt={testimonial.name}
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/assets/images/fallback-img-3.jpg";
+                    }}
                   />
                   <div>
                     <p className="font-bold">{testimonial.name}</p>

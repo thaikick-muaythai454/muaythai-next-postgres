@@ -11,16 +11,7 @@ import Link from "next/link";
 import { Button } from "@heroui/react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { GymCard } from "@/components/ui/cards/GymCard";
-
-interface Gym {
-  id: string;
-  slug: string;
-  gym_name: string;
-  gym_name_english: string | null;
-  address: string | null;
-  gym_details: string | null;
-  gym_type: string | null;
-}
+import { Gym } from "@/types";
 
 export default function GymsPage() {
   const supabase = createClient();
@@ -78,7 +69,7 @@ export default function GymsPage() {
   ];
 
   return (
-    <div className="bg-zinc-950 min-h-screen">
+    <div className="min-h-screen">
       <PageHeader 
         title="ค่ายมวยไทย" 
         description="ค้นหาและจองค่ายมวยไทยที่เหมาะกับคุณ จากค่ายชั้นนำทั่วประเทศไทย"

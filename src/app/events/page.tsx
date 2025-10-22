@@ -55,7 +55,7 @@ export default function EventsPage() {
   );
 
   return (
-    <div className="bg-zinc-950 min-h-screen">
+    <div className="min-h-screen">
       <PageHeader 
         title="อีเวนต์" 
         description="จองตั๋วชมการแข่งขันมวยชั้นนำทั่วประเทศไทย"

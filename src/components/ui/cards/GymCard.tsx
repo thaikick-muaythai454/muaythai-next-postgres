@@ -6,12 +6,12 @@ import Image from "next/image";
 import { Gym } from "@/types";
 import { BaseCard } from "./BaseCard";
 
-interface GymCardProps {
+export interface GymCardProps {
   gym: Gym;
 }
 
 export function GymCard({ gym }: GymCardProps) {
-  const imageUrl = gym.images?.[0] || "/assets/images/fallback-img.jpg";
+  const imageUrl = gym.images?.[0] || "/assets/images/fallback-img-1.jpg";
 
   return (
     <BaseCard>
@@ -20,6 +20,7 @@ export function GymCard({ gym }: GymCardProps) {
           src={imageUrl}
           alt={gym.gym_name || "Gym image"}
           fill
+          sizes="100%"
           className="object-cover"
         />
       </div>
@@ -47,6 +48,7 @@ export function GymCard({ gym }: GymCardProps) {
             {gym.gym_details}
           </p>
         )}
+        <div></div>
 
         {/* CTA */}
         <div className="flex justify-between items-center pt-4 border-zinc-700 border-t">

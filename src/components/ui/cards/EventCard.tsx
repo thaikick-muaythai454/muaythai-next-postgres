@@ -13,7 +13,7 @@ import { BaseCard } from "./BaseCard";
 
 type ViewMode = "list" | "grid";
 
-interface EventCardProps {
+export interface EventCardProps {
   event: Event;
   viewMode: ViewMode;
 }
@@ -31,12 +31,12 @@ export function EventCard({ event, viewMode }: EventCardProps) {
     minute: "2-digit",
   });
 
-  const imageUrl = event.image || "/assets/images/fallback-img.jpg";
+  const imageUrl = event.image || "/assets/images/fallback-img-1.jpg";
 
   if (viewMode === "list") {
     return (
       <BaseCard className="p-6">
-        <div className="flex sm:flex-row flex-col justify-between items-start gap-4">
+        <div className="flex sm:flex-row flex-col justify-between items-start gap-4 h-full">
           <div className="flex-1">
             <h3 className="mb-2 font-bold text-white group-hover:text-red-400 text-xl transition-colors">
               {event.name}
@@ -83,6 +83,7 @@ export function EventCard({ event, viewMode }: EventCardProps) {
           src={imageUrl}
           alt={event.name || "Event image"}
           fill
+          sizes="100%"
           className="object-cover"
         />
         {event.price && (
