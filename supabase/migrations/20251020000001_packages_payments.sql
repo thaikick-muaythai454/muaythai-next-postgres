@@ -319,7 +319,7 @@ CREATE INDEX idx_gym_bookings_end_date ON gym_bookings(end_date);
 
 -- Function to generate booking number
 CREATE OR REPLACE FUNCTION generate_booking_number()
-RETURNS TEXT AS $
+RETURNS TEXT AS $$
 DECLARE
   new_number TEXT;
   year_month TEXT;
@@ -334,11 +334,11 @@ BEGIN
   
   RETURN new_number;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- Function to generate order number
 CREATE OR REPLACE FUNCTION generate_order_number()
-RETURNS TEXT AS $
+RETURNS TEXT AS $$
 DECLARE
   new_order_number TEXT;
   order_exists BOOLEAN;
@@ -358,16 +358,16 @@ BEGIN
 
   RETURN new_order_number;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- Function to update updated_at timestamp (if not already exists)
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = NOW();
   RETURN NEW;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- Triggers to update updated_at columns
 CREATE TRIGGER update_gym_packages_updated_at
@@ -613,7 +613,7 @@ GRANT UPDATE ON bookings TO authenticated;
 -- =============================================================================
 
 -- Insert sample packages for existing gyms
-DO $
+DO $$
 DECLARE
   sample_gym_id UUID;
 BEGIN
@@ -682,7 +682,7 @@ BEGIN
   ELSE
     RAISE NOTICE 'No approved gyms found. Please create gym packages manually.';
   END IF;
-END $;
+END $$;
 
 -- =============================================================================
 -- PART 8: COMMENTS AND DOCUMENTATION

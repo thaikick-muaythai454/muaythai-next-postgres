@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
+import { GamificationWidget } from '@/components/features/gamification/GamificationWidget';
 import Link from 'next/link';
 import {
   Card,
@@ -122,6 +123,8 @@ function DashboardContent() {
     { label: 'การจองของฉัน', href: '/dashboard/bookings', icon: CalendarIcon },
     { label: 'รายการโปรด', href: '/dashboard/favorites', icon: HeartIcon },
     { label: 'ประวัติการเงิน', href: '/dashboard/transactions', icon: BanknotesIcon },
+    { label: 'Gamification', href: '/dashboard/gamification', icon: HomeIcon },
+    { label: 'Affiliate', href: '/dashboard/affiliate', icon: UserIcon },
     { label: 'โปรไฟล์', href: '/dashboard/profile', icon: UserIcon },
   ];
 
@@ -238,6 +241,11 @@ function DashboardContent() {
           </Card>
         </section>
       )}
+
+      {/* Gamification Widget */}
+      <section className="mb-8">
+        <GamificationWidget />
+      </section>
 
       {/* Recent Bookings */}
       <section>

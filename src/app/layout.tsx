@@ -4,6 +4,7 @@ import "./globals.css";
 import { LayoutWrapper, ErrorBoundary } from "@/components/shared";
 import { Providers } from "./providers";
 import FixedBackground from "@/components/ui/FixedBackground";
+import { GamificationNotification } from "@/components/features/gamification/GamificationNotification";
 
 const baiJamjuree = Bai_Jamjuree({
   variable: "--font-bai-jamjuree",
@@ -29,6 +30,7 @@ export default function RootLayout({
         <Providers>
           <LayoutWrapper>
             <ErrorBoundary>{children}</ErrorBoundary>
+            <GamificationNotification />
           </LayoutWrapper>
         </Providers>
       </body>

@@ -8,14 +8,14 @@
 
 -- 1. Create reusable admin check function
 CREATE OR REPLACE FUNCTION is_admin(check_user_id UUID DEFAULT auth.uid())
-RETURNS BOOLEAN AS $
+RETURNS BOOLEAN AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM user_roles
     WHERE user_id = check_user_id AND role = 'admin'
   );
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 GRANT EXECUTE ON FUNCTION is_admin(UUID) TO authenticated, anon;
 
@@ -23,14 +23,14 @@ COMMENT ON FUNCTION is_admin IS 'Check if user has admin role. Reusable across a
 
 -- 2. Check if user is partner
 CREATE OR REPLACE FUNCTION is_partner(check_user_id UUID DEFAULT auth.uid())
-RETURNS BOOLEAN AS $
+RETURNS BOOLEAN AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM user_roles
     WHERE user_id = check_user_id AND role IN ('partner', 'admin')
   );
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 GRANT EXECUTE ON FUNCTION is_partner(UUID) TO authenticated, anon;
 
@@ -38,14 +38,14 @@ COMMENT ON FUNCTION is_partner IS 'Check if user has partner or admin role';
 
 -- 3. Check if user owns a gym
 CREATE OR REPLACE FUNCTION owns_gym(gym_id_param UUID, check_user_id UUID DEFAULT auth.uid())
-RETURNS BOOLEAN AS $
+RETURNS BOOLEAN AS $$
 BEGIN
   RETURN EXISTS (
     SELECT 1 FROM gyms
     WHERE id = gym_id_param AND user_id = check_user_id
   );
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 GRANT EXECUTE ON FUNCTION owns_gym(UUID, UUID) TO authenticated;
 
@@ -57,7 +57,7 @@ CREATE OR REPLACE FUNCTION generate_reference_number(
   date_format TEXT DEFAULT 'YYYYMMDD',
   random_digits INTEGER DEFAULT 4
 )
-RETURNS TEXT AS $
+RETURNS TEXT AS $$
 DECLARE
   new_number TEXT;
   date_part TEXT;
@@ -81,7 +81,7 @@ BEGIN
   
   RETURN new_number;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 GRANT EXECUTE ON FUNCTION generate_reference_number(TEXT, TEXT, INTEGER) TO authenticated;
 
@@ -89,18 +89,18 @@ COMMENT ON FUNCTION generate_reference_number IS 'Unified function to generate u
 
 -- 5. Update existing generator functions to use the unified one
 CREATE OR REPLACE FUNCTION generate_booking_number()
-RETURNS TEXT AS $
+RETURNS TEXT AS $$
 BEGIN
   RETURN generate_reference_number('BK', 'YYYYMM', 4);
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION generate_order_number()
-RETURNS TEXT AS $
+RETURNS TEXT AS $$
 BEGIN
   RETURN generate_reference_number('ORD-', 'YYYYMMDD-', 4);
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- ============================================================================
 -- PART 2: GYM HELPER FUNCTIONS
@@ -125,7 +125,7 @@ RETURNS TABLE (
   socials TEXT,
   status TEXT,
   created_at TIMESTAMPTZ
-) AS $
+) AS $$
 BEGIN
   RETURN QUERY
   SELECT
@@ -149,7 +149,7 @@ BEGIN
   WHERE g.slug = slug_param AND g.status = 'approved'
   LIMIT 1;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 GRANT EXECUTE ON FUNCTION get_gym_by_slug(TEXT) TO authenticated, anon;
 
@@ -167,7 +167,7 @@ RETURNS TABLE (
   duration_months INTEGER,
   features TEXT[],
   is_active BOOLEAN
-) AS $
+) AS $$
 BEGIN
   RETURN QUERY
   SELECT
@@ -189,7 +189,7 @@ BEGIN
     END,
     gp.duration_months NULLS FIRST;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 GRANT EXECUTE ON FUNCTION get_gym_packages(UUID) TO authenticated, anon;
 
@@ -216,7 +216,7 @@ RETURNS TABLE (
   status TEXT,
   is_confirmed BOOLEAN,
   created_at TIMESTAMPTZ
-) AS $
+) AS $$
 BEGIN
   RETURN QUERY
   SELECT
@@ -239,7 +239,7 @@ BEGIN
   WHERE b.user_id = user_id_param
   ORDER BY b.created_at DESC;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 GRANT EXECUTE ON FUNCTION get_user_bookings(UUID) TO authenticated;
 
@@ -264,7 +264,7 @@ RETURNS TABLE (
   checked_in BOOLEAN,
   checked_out BOOLEAN,
   created_at TIMESTAMPTZ
-) AS $
+) AS $$
 BEGIN
   -- Check if user owns this gym or is admin
   IF NOT (owns_gym(gym_id_param) OR is_admin()) THEN
@@ -293,7 +293,7 @@ BEGIN
   WHERE b.gym_id = gym_id_param
   ORDER BY b.created_at DESC;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 GRANT EXECUTE ON FUNCTION get_gym_bookings(UUID) TO authenticated;
 
@@ -307,7 +307,7 @@ RETURNS TABLE (
   pending_bookings BIGINT,
   total_revenue DECIMAL,
   active_packages INTEGER
-) AS $
+) AS $$
 BEGIN
   -- Check if user owns this gym or is admin
   IF NOT (owns_gym(gym_id_param) OR is_admin()) THEN
@@ -326,7 +326,7 @@ BEGIN
   LEFT JOIN gym_packages gp ON gp.gym_id = g.id AND gp.is_active = true
   WHERE g.id = gym_id_param;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 GRANT EXECUTE ON FUNCTION get_gym_stats(UUID) TO authenticated;
 
@@ -338,7 +338,7 @@ CREATE OR REPLACE FUNCTION validate_booking_dates(
   end_date_param DATE,
   package_type_param TEXT
 )
-RETURNS BOOLEAN AS $
+RETURNS BOOLEAN AS $$
 BEGIN
   -- Start date must be in the future
   IF start_date_param < CURRENT_DATE THEN
@@ -361,7 +361,7 @@ BEGIN
   
   RETURN TRUE;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 GRANT EXECUTE ON FUNCTION validate_booking_dates(DATE, DATE, TEXT) TO authenticated;
 
@@ -438,7 +438,7 @@ COMMENT ON COLUMN bookings.checked_in IS 'Whether customer has checked in';
 COMMENT ON COLUMN bookings.checked_out IS 'Whether customer has checked out';
 
 -- Migrate data from gym_bookings to bookings (if gym_bookings exists and has data)
-DO $
+DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'gym_bookings') THEN
     -- Insert gym_bookings data into bookings
@@ -516,7 +516,7 @@ BEGIN
     
     RAISE NOTICE 'Migrated data from gym_bookings to bookings';
   END IF;
-END $;
+END $$;
 
 -- Drop gym_bookings table if it exists (after migration)
 DROP TABLE IF EXISTS gym_bookings CASCADE;
@@ -529,7 +529,7 @@ COMMENT ON TABLE bookings IS 'Unified bookings table for all gym reservations (c
 
 -- Function to automatically add updated_at trigger to any table
 CREATE OR REPLACE FUNCTION add_updated_at_trigger(table_name TEXT)
-RETURNS VOID AS $
+RETURNS VOID AS $$
 DECLARE
   trigger_name TEXT;
 BEGIN
@@ -547,12 +547,12 @@ BEGIN
   
   RAISE NOTICE 'Created trigger % on table %', trigger_name, table_name;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 COMMENT ON FUNCTION add_updated_at_trigger IS 'Helper to add updated_at trigger to any table';
 
 -- Apply to all tables that need updated_at triggers
-DO $
+DO $$
 DECLARE
   tables TEXT[] := ARRAY[
     'user_roles',
@@ -578,11 +578,11 @@ BEGIN
       PERFORM add_updated_at_trigger(tbl_name);
     END IF;
   END LOOP;
-END $;
+END $$;
 
 -- Optimize handle_new_user to be more robust
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
   -- Create profile (with conflict handling)
   INSERT INTO public.profiles (user_id, username, full_name, phone, avatar_url)
@@ -607,13 +607,13 @@ BEGIN
   
   RETURN NEW;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 COMMENT ON FUNCTION handle_new_user IS 'Auto-create profile and user_role on signup (with conflict handling)';
 
 -- Optimize handle_gym_application to be more robust
 CREATE OR REPLACE FUNCTION public.handle_gym_application()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
   -- Update user role to 'partner' when they submit a gym application
   -- Only upgrade from authenticated to partner (not downgrade from admin)
@@ -629,20 +629,20 @@ BEGIN
   
   RETURN NEW;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 COMMENT ON FUNCTION handle_gym_application IS 'Auto-promote user to partner role on gym application';
 
 -- Function to auto-generate booking number if not provided
 CREATE OR REPLACE FUNCTION auto_generate_booking_number()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.booking_number IS NULL OR NEW.booking_number = '' THEN
     NEW.booking_number := generate_booking_number();
   END IF;
   RETURN NEW;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- Drop and recreate trigger
 DROP TRIGGER IF EXISTS trigger_auto_generate_booking_number ON bookings;
@@ -656,14 +656,14 @@ COMMENT ON FUNCTION auto_generate_booking_number IS 'Auto-generate booking_numbe
 
 -- Function to auto-generate order number if not provided
 CREATE OR REPLACE FUNCTION auto_generate_order_number()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
   IF NEW.order_number IS NULL OR NEW.order_number = '' THEN
     NEW.order_number := generate_order_number();
   END IF;
   RETURN NEW;
 END;
-$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql;
 
 -- Drop and recreate trigger
 DROP TRIGGER IF EXISTS trigger_auto_generate_order_number ON orders;
@@ -800,7 +800,7 @@ ANALYZE ticket_bookings;
 -- PART 10: VALIDATION AND TESTING
 -- ============================================================================
 
-DO $
+DO $$
 DECLARE
   test_result BOOLEAN;
   test_count INTEGER := 0;
@@ -1027,7 +1027,7 @@ BEGIN
     RAISE NOTICE '⚠️  Some tests failed (%.0f%% passed). Please review.', (pass_count::FLOAT / test_count * 100);
   END IF;
   
-END $;
+END $$;
 
 -- ============================================================================
 -- SUMMARY

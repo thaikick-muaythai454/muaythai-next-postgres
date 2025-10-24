@@ -129,7 +129,7 @@ GRANT SELECT ON profiles TO anon, public;
 
 -- Update the handle_new_user function to include phone and improved error handling
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
   -- Create profile with phone number and enhanced metadata handling
   INSERT INTO public.profiles (user_id, username, full_name, phone, avatar_url)
@@ -147,7 +147,7 @@ BEGIN
   
   RETURN NEW;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- ============================================
 -- ENHANCED HELPER FUNCTIONS
@@ -159,9 +159,9 @@ RETURNS TEXT
 LANGUAGE sql
 SECURITY DEFINER
 SET search_path = public
-AS $
+AS $$
   SELECT role FROM user_roles WHERE user_id = target_user_id;
-$;
+$$;
 
 -- Grant execute permission on get_user_role function
 GRANT EXECUTE ON FUNCTION get_user_role(UUID) TO authenticated;
@@ -173,7 +173,7 @@ RETURNS TABLE (
   user_id UUID,
   email TEXT,
   username TEXT
-) AS $
+) AS $$
 BEGIN
   RETURN QUERY
   SELECT
@@ -185,7 +185,7 @@ BEGIN
   WHERE p.username = identifier OR u.email = identifier
   LIMIT 1;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Grant execute permission on get_user_by_username_or_email function
 GRANT EXECUTE ON FUNCTION public.get_user_by_username_or_email(TEXT) TO authenticated;

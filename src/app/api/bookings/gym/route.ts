@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
+import { awardPoints, updateUserStreak } from '@/services/gamification.service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -79,6 +80,46 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to create gym booking' },
         { status: 500 }
       );
+    }
+
+    // Award gamification points for booking
+    try {
+      // Check if this is user's first booking
+      const { data: existingBookings } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      const isFirstBooking = !existingBookings || existingBookings.length === 0;
+
+      // Award points based on booking type and duration
+      let pointsToAward = isFirstBooking ? 100 : 50;
+      
+      // Bonus points for long-term packages
+      if (packageType === 'package' && durationDays >= 180) {
+        pointsToAward += 75; // Long-term package bonus
+      }
+
+      await awardPoints({
+        user_id: user.id,
+        points: pointsToAward,
+        action_type: 'booking',
+        action_description: isFirstBooking ? 'จองค่ายมวยครั้งแรก' : 
+                           packageType === 'package' ? 'จองแพ็คเกจระยะยาว' : 'จองค่ายมวย',
+        reference_id: booking.id,
+        reference_type: 'booking',
+      });
+
+      // Update booking streak
+      await updateUserStreak({
+        user_id: user.id,
+        streak_type: 'booking',
+      });
+
+    } catch (gamificationError) {
+      // Don't fail the booking if gamification fails
+      console.warn('Gamification error (booking still successful):', gamificationError);
     }
 
     return NextResponse.json(booking);
