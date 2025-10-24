@@ -1,4 +1,4 @@
-import { HeroSection, QuickSearchBar, FeaturedSection, LatestProducts } from "@/components/features/sections";
+import { HeroSection, QuickSearchBar, FeaturedSection, LatestProducts, NewsBanner } from "@/components/features/sections";
 import Marquee from "@/components/ui/Marquee";
 import { GYMS, EVENTS, PRODUCTS } from "@/lib/data";
 
@@ -7,6 +7,9 @@ export default function Home() {
     <>
       {/* Hero Section with Video */}
       <HeroSection />
+      
+      {/* News Banner */}
+      <NewsBanner />
       
       <Marquee />
 

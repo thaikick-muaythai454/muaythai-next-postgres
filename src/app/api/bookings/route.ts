@@ -9,6 +9,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { NextRequest } from 'next/server';
 import { getBookings, createBooking } from '@/services';
+import { awardPoints, updateUserStreak } from '@/services/gamification.service';
 
 /**
  * GET /api/bookings
@@ -94,6 +95,40 @@ export async function POST(request: NextRequest) {
       special_requests,
       payment_method,
     });
+
+    // Award gamification points for booking
+    try {
+      // Check if this is user's first booking
+      const { data: existingBookings } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('user_id', user.id)
+        .limit(1);
+
+      const isFirstBooking = !existingBookings || existingBookings.length === 0;
+
+      // Award points based on booking type
+      const pointsToAward = isFirstBooking ? 100 : 50; // First booking gets more points
+      
+      await awardPoints({
+        user_id: user.id,
+        points: pointsToAward,
+        action_type: 'booking',
+        action_description: isFirstBooking ? 'จองค่ายมวยครั้งแรก' : 'จองค่ายมวย',
+        reference_id: booking.id,
+        reference_type: 'booking',
+      });
+
+      // Update booking streak
+      await updateUserStreak({
+        user_id: user.id,
+        streak_type: 'booking',
+      });
+
+    } catch (gamificationError) {
+      // Don't fail the booking if gamification fails
+      console.warn('Gamification error (booking still successful):', gamificationError);
+    }
 
     return NextResponse.json({
       success: true,

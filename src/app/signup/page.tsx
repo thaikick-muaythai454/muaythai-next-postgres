@@ -25,6 +25,7 @@ interface SignupFormData {
   phone: string;
   password: string;
   confirmPassword: string;
+  referralCode: string;
 }
 
 /**
@@ -37,6 +38,7 @@ interface FormErrors {
   phone?: string;
   password?: string;
   confirmPassword?: string;
+  referralCode?: string;
   general?: string;
 }
 
@@ -70,6 +72,7 @@ export default function SignupPage() {
     phone: "",
     password: "",
     confirmPassword: "",
+    referralCode: "",
   });
 
   // UI state
@@ -101,6 +104,15 @@ export default function SignupPage() {
 
     checkAuthentication();
   }, [supabase, router]);
+
+  // Check for referral code in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      setFormData(prev => ({ ...prev, referralCode: refCode }));
+    }
+  }, []);
 
   /**
    * Get password strength indicator
@@ -272,6 +284,36 @@ export default function SignupPage() {
         try {
           // Wait a bit for the trigger to complete
           await new Promise(resolve => setTimeout(resolve, 1000));
+
+          // Process referral code if provided
+          if (formData.referralCode.trim()) {
+            try {
+              const response = await fetch('/api/affiliate/validate', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code: formData.referralCode }),
+              });
+
+              if (response.ok) {
+                // Award referral points to the referrer
+                await fetch('/api/affiliate', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    referredUserId: data.user.id,
+                    referralCode: formData.referralCode,
+                  }),
+                });
+              }
+            } catch (error) {
+              console.error('Error processing referral:', error);
+              // Don't fail the signup if referral processing fails
+            }
+          }
 
           // Fetch user role
           const { data: roleData } = await supabase
@@ -565,6 +607,41 @@ export default function SignupPage() {
                 <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
                   <ExclamationTriangleIcon className="w-4 h-4" />
                   {errors.confirmPassword}
+                </p>
+              )}
+            </div>
+
+            {/* Referral Code Field */}
+            <div className="space-y-2">
+              <label
+                htmlFor="referralCode"
+                className="block text-zinc-300 text-sm font-medium"
+              >
+                โค้ดแนะนำ (ไม่บังคับ)
+              </label>
+              <div className="relative">
+                <AtSymbolIcon className="w-5 h-5 absolute left-3 top-3.5 text-zinc-500" />
+                <input
+                  type="text"
+                  id="referralCode"
+                  name="referralCode"
+                  value={formData.referralCode}
+                  onChange={handleInputChange}
+                  className={`w-full bg-zinc-700 border ${
+                    errors.referralCode ? "border-red-500" : "border-zinc-600"
+                  } rounded-lg px-4 py-3 pl-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
+                  placeholder="MT12345678"
+                />
+              </div>
+              {errors.referralCode && (
+                <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                  <ExclamationTriangleIcon className="w-4 h-4" />
+                  {errors.referralCode}
+                </p>
+              )}
+              {formData.referralCode && (
+                <p className="text-green-400 text-sm">
+                  🎁 คุณจะได้รับสิทธิพิเศษเมื่อใช้โค้ดแนะนำ!
                 </p>
               )}
             </div>

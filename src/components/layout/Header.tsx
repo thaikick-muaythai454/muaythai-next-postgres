@@ -28,6 +28,7 @@ export default function Header() {
     { text: "อีเวนต์", href: "/events" },
     { text: "โปรแกรม", href: "/fighter-program" },
     { text: "ร้านค้า", href: "/shop" },
+    { text: "Affiliate", href: "/affiliate" },
     {
       text: "ข้อมูล",
       dropdown: [
