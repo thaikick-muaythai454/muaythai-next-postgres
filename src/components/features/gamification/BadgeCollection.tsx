@@ -30,7 +30,7 @@ export function BadgeCollection({ badges, showAll = true, className = '' }: Badg
         setAllBadges(result.data);
       }
     } catch (error) {
-      console.error('Error fetching badges:', error);
+      // Error fetching badges
     } finally {
       setLoading(false);
     }

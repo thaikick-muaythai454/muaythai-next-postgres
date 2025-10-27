@@ -142,7 +142,7 @@ function PartnerDashboardContent() {
         setPackages(result.data.packages);
       }
     } catch (error) {
-      console.error('Error loading packages:', error);
+      // Error loading packages
     }
   };
 
@@ -239,7 +239,7 @@ function PartnerDashboardContent() {
         toast.error(result.error || 'เกิดข้อผิดพลาด');
       }
     } catch (error) {
-      console.error('Error saving package:', error);
+      // Error saving package
       toast.error('เกิดข้อผิดพลาดในการบันทึก');
     }
   };
@@ -261,7 +261,7 @@ function PartnerDashboardContent() {
         toast.error(result.error);
       }
     } catch (error) {
-      console.error('Error toggling package:', error);
+      // Error toggling package
       toast.error('เกิดข้อผิดพลาด');
     }
   };
@@ -285,7 +285,7 @@ function PartnerDashboardContent() {
         toast.error(result.error);
       }
     } catch (error) {
-      console.error('Error deleting package:', error);
+      // Error deleting package
       toast.error('เกิดข้อผิดพลาด');
     }
   };

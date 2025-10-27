@@ -310,7 +310,7 @@ export default function SignupPage() {
                 });
               }
             } catch (error) {
-              console.error('Error processing referral:', error);
+              // Error processing referral
               // Don't fail the signup if referral processing fails
             }
           }

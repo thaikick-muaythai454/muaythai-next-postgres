@@ -138,7 +138,7 @@ export default function GymBookingPage() {
         });
       }
     } catch (err) {
-      console.error('Error loading user profile:', err);
+      // Error loading user profile
     }
   };
 
@@ -150,7 +150,7 @@ export default function GymBookingPage() {
       setGymData(data);
     } catch (err) {
       setError('ไม่สามารถโหลดข้อมูลค่ายมวยได้');
-      console.error(err);
+      // Error occurred
     } finally {
       setLoading(false);
     }
@@ -242,7 +242,7 @@ export default function GymBookingPage() {
       await createGymBooking(data.orderId, totalAmount, duration);
     } catch (err) {
       setError('ไม่สามารถเริ่มการชำระเงินได้');
-      console.error(err);
+      // Error occurred
     }
   };
 
@@ -270,7 +270,7 @@ export default function GymBookingPage() {
         }),
       });
     } catch (err) {
-      console.error('Error creating gym booking:', err);
+      // Error creating gym booking
     }
   };
 
