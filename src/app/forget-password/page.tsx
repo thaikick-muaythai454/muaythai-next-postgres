@@ -65,13 +65,7 @@ function TokenHandler({
       onShowTokenInfo(true);
       
       // Log token information to console for debugging
-      console.log('🔑 Password Reset Token Information:');
-      console.log('Token:', token);
-      console.log('Type:', type);
-      console.log('Access Token:', access_token);
-      console.log('Refresh Token:', refresh_token);
-      console.log('Full URL:', window.location.href);
-      console.log('Search Params:', Object.fromEntries(searchParams.entries()));
+      // Token information available for processing
     }
   }, [searchParams, onTokenInfo, onShowTokenInfo]);
 
@@ -176,11 +170,8 @@ function ForgetPasswordPageContent() {
 
     try {
       // Debug: Log environment variables and Supabase client info
-      console.log('🔍 Debug Info:');
-      console.log('Supabase URL:', process.env.NEXT_PUBLIC_SUPABASE_URL);
-      console.log('Supabase Anon Key exists:', !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
-      console.log('Current origin:', window.location.origin);
-      console.log('Redirect URL:', `${window.location.origin}/reset-password`);
+      // Debug information processed
+      // Environment validation completed
 
       // Check if Supabase client is properly initialized
       if (!supabase) {
@@ -188,19 +179,19 @@ function ForgetPasswordPageContent() {
       }
 
       // Send password reset email
-      console.log('📧 Sending password reset email to:', formData.email);
+      // Sending password reset email
       
-      const { data, error } = await supabase.auth.resetPasswordForEmail(
+      const { error } = await supabase.auth.resetPasswordForEmail(
         formData.email,
         {
           redirectTo: `${window.location.origin}/reset-password`,
         }
       );
 
-      console.log('📧 Password reset response:', { data, error });
+      // Password reset response received
 
       if (error) {
-        console.error('❌ Password reset error:', error);
+        // Password reset error occurred
         
         // Handle specific errors
         if (error.message.includes("rate limit")) {
@@ -224,10 +215,10 @@ function ForgetPasswordPageContent() {
       }
 
       // Success
-      console.log('✅ Password reset email sent successfully');
+      // Password reset email sent successfully
       setIsSuccess(true);
     } catch (error) {
-      console.error('❌ Unexpected error:', error);
+      // Unexpected error occurred
       
       // Handle different types of errors
       if (error instanceof Error) {

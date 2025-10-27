@@ -85,7 +85,7 @@ function LoginForm() {
           router.push(redirectTo);
         }
       } catch (error) {
-        console.log(error);
+        // Error occurred during login
         // Silently handle errors
       } finally {
         setIsCheckingAuth(false);
@@ -167,7 +167,7 @@ function LoginForm() {
           .rpc('get_user_by_username_or_email', { identifier: formData.identifier });
 
         if (rpcError) {
-          console.error('RPC Error:', rpcError);
+          // RPC Error occurred
           setErrors({
             general: `เกิดข้อผิดพลาดในการค้นหาผู้ใช้: ${rpcError.message}`,
           });
@@ -216,7 +216,7 @@ function LoginForm() {
         router.refresh(); // Refresh to update server components
       }
     } catch (error) {
-      console.log(error)
+      // Login error occurred
       setErrors({
         general: "เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง",
       });
