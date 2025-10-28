@@ -2,6 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { UserBadge, Badge } from '@/types/gamification.types';
+import { 
+  GamificationCard, 
+  GamificationLoadingState, 
+  GamificationEmptyState,
+  useBadgeDisplay,
+  getRarityColor,
+  getRarityIcon
+} from './shared';
 
 interface BadgeCollectionProps {
   badges: UserBadge[];
@@ -9,7 +17,7 @@ interface BadgeCollectionProps {
   className?: string;
 }
 
-export function BadgeCollection({ badges, showAll = true, className = '' }: BadgeCollectionProps) {
+export default function BadgeCollection({ badges, showAll = true, className = '' }: BadgeCollectionProps) {
   const [allBadges, setAllBadges] = useState<Badge[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<'all' | 'earned' | 'available'>('all');
@@ -36,26 +44,6 @@ export function BadgeCollection({ badges, showAll = true, className = '' }: Badg
     }
   };
 
-  const getRarityColor = (rarity: string) => {
-    switch (rarity) {
-      case 'common': return 'text-gray-600 bg-gray-100';
-      case 'rare': return 'text-blue-600 bg-blue-100';
-      case 'epic': return 'text-purple-600 bg-purple-100';
-      case 'legendary': return 'text-yellow-600 bg-yellow-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
-
-  const getRarityIcon = (rarity: string) => {
-    switch (rarity) {
-      case 'common': return '🥉';
-      case 'rare': return '🥈';
-      case 'epic': return '🥇';
-      case 'legendary': return '💎';
-      default: return '🏅';
-    }
-  };
-
   const getCategoryIcon = (category: string) => {
     switch (category) {
       case 'booking': return '📅';
@@ -76,12 +64,7 @@ export function BadgeCollection({ badges, showAll = true, className = '' }: Badg
   }) : badges.map(b => b.badge).filter(Boolean) as Badge[];
 
   if (loading) {
-    return (
-      <div className={`flex items-center justify-center p-8 ${className}`}>
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">กำลังโหลดเหรียญ...</span>
-      </div>
-    );
+    return <GamificationLoadingState message="กำลังโหลดเหรียญ..." className={className} />;
   }
 
   return (
@@ -125,14 +108,16 @@ export function BadgeCollection({ badges, showAll = true, className = '' }: Badg
         {filteredBadges.map((badge) => {
           const isEarned = earnedBadgeIds.has(badge.id);
           const earnedAt = badges.find(b => b.badge_id === badge.id)?.earned_at;
+          const badgeDisplay = useBadgeDisplay(badge, isEarned, earnedAt);
           
           return (
-            <div
+            <GamificationCard
               key={badge.id}
-              className={`relative bg-white rounded-lg border p-4 transition-all duration-200 hover:shadow-lg ${
+              variant={isEarned ? 'bordered' : 'default'}
+              className={`relative ${
                 isEarned 
                   ? 'border-green-300 bg-green-50' 
-                  : 'border-gray-200 hover:border-blue-300'
+                  : 'hover:border-blue-300'
               }`}
             >
               {/* Badge Icon */}
@@ -150,8 +135,8 @@ export function BadgeCollection({ badges, showAll = true, className = '' }: Badg
                 </div>
                 
                 {/* Rarity Badge */}
-                <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getRarityColor(badge.rarity)}`}>
-                  {getRarityIcon(badge.rarity)} {badge.rarity}
+                <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${badgeDisplay.rarityColor}`}>
+                  {badgeDisplay.rarityIcon} {badge.rarity}
                 </div>
               </div>
 
@@ -170,15 +155,15 @@ export function BadgeCollection({ badges, showAll = true, className = '' }: Badg
                 </div>
 
                 {/* Earned Status */}
-                {isEarned && earnedAt && (
+                {badgeDisplay.isEarned && badgeDisplay.formattedEarnedDate && (
                   <div className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                    ได้รับเมื่อ {new Date(earnedAt).toLocaleDateString('th-TH')}
+                    ได้รับเมื่อ {badgeDisplay.formattedEarnedDate}
                   </div>
                 )}
               </div>
 
               {/* Earned Overlay */}
-              {isEarned && (
+              {badgeDisplay.isEarned && (
                 <div className="absolute top-2 right-2">
                   <div className="bg-green-500 text-white rounded-full p-1">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -187,16 +172,16 @@ export function BadgeCollection({ badges, showAll = true, className = '' }: Badg
                   </div>
                 </div>
               )}
-            </div>
+            </GamificationCard>
           );
         })}
       </div>
 
       {filteredBadges.length === 0 && (
-        <div className="text-center py-8 text-gray-500">
-          <div className="text-4xl mb-2">🏅</div>
-          <p>ไม่พบเหรียญที่ตรงกับเงื่อนไข</p>
-        </div>
+        <GamificationEmptyState 
+          type="badges" 
+          message="ไม่พบเหรียญที่ตรงกับเงื่อนไข"
+        />
       )}
     </div>
   );

@@ -21,22 +21,50 @@ export interface PaymentIntentResult {
   orderNumber: string;
 }
 
+// Validation constants
+const MIN_AMOUNT = 1;
+const MAX_AMOUNT = 999999;
+const VALID_PAYMENT_TYPES = ['gym_booking', 'product', 'ticket'] as const;
+
 /**
- * Validate payment data
+ * Validate payment data with enhanced validation
  */
 export function validatePaymentData(data: CreatePaymentIntentInput): string[] {
   const errors: string[] = [];
 
-  if (!data.amount || typeof data.amount !== 'number' || data.amount <= 0) {
-    errors.push('Invalid amount');
+  // Amount validation
+  if (!data.amount || typeof data.amount !== 'number') {
+    errors.push('Invalid amount format');
+  } else if (data.amount < MIN_AMOUNT) {
+    errors.push(`Amount must be at least ${MIN_AMOUNT}`);
+  } else if (data.amount > MAX_AMOUNT) {
+    errors.push(`Amount cannot exceed ${MAX_AMOUNT}`);
   }
 
+  // Payment type validation
   if (!data.payment_type) {
     errors.push('Missing payment type');
+  } else if (!VALID_PAYMENT_TYPES.includes(data.payment_type as any)) {
+    errors.push('Invalid payment type');
   }
 
-  if (!data.metadata) {
-    errors.push('Missing metadata');
+  // User data validation
+  if (!data.user_id?.trim()) {
+    errors.push('Missing user ID');
+  }
+
+  if (!data.user_email?.trim()) {
+    errors.push('Missing user email');
+  } else {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(data.user_email.trim())) {
+      errors.push('Invalid email format');
+    }
+  }
+
+  // Metadata validation
+  if (!data.metadata || typeof data.metadata !== 'object') {
+    errors.push('Missing or invalid metadata');
   }
 
   return errors;
@@ -80,7 +108,7 @@ export async function getOrCreateStripeCustomer(
 }
 
 /**
- * Generate order number
+ * Generate order number with better uniqueness
  */
 export async function generateOrderNumber(): Promise<string> {
   const supabase = await createClient();
@@ -92,12 +120,39 @@ export async function generateOrderNumber(): Promise<string> {
     return orderNumberData;
   }
 
-  // Fallback to timestamp-based order number
-  return `ORD-${Date.now()}`;
+  // Enhanced fallback with date and random component
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const timestamp = now.getTime().toString().slice(-6);
+  const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+  
+  return `ORD-${year}${month}${day}-${timestamp}${random}`;
 }
 
 /**
- * Create payment intent
+ * Prepare payment metadata for Stripe
+ */
+function preparePaymentMetadata(data: CreatePaymentIntentInput): Record<string, string> {
+  const paymentMetadata: Record<string, string> = {
+    type: data.payment_type,
+    userId: data.user_id,
+    userEmail: data.user_email.trim().toLowerCase(),
+  };
+
+  // Convert all metadata values to strings
+  if (data.metadata) {
+    Object.entries(data.metadata).forEach(([key, value]) => {
+      paymentMetadata[key] = String(value);
+    });
+  }
+
+  return paymentMetadata;
+}
+
+/**
+ * Create payment intent with optimized flow
  */
 export async function createPaymentIntent(
   data: CreatePaymentIntentInput
@@ -117,25 +172,14 @@ export async function createPaymentIntent(
 
   const supabase = await createClient();
 
-  // Get or create Stripe customer
-  const stripeCustomerId = await getOrCreateStripeCustomer(data.user_id, data.user_email);
-
-  // Prepare metadata - Stripe requires all values to be strings
-  const paymentMetadata: Record<string, string> = {
-    type: data.payment_type,
-    userId: data.user_id,
-    userEmail: data.user_email,
-  };
-
-  // Convert all metadata values to strings
-  if (data.metadata) {
-    Object.entries(data.metadata).forEach(([key, value]) => {
-      paymentMetadata[key] = String(value);
-    });
-  }
+  // Prepare metadata and get customer in parallel
+  const [paymentMetadata, stripeCustomerId, orderNumber] = await Promise.all([
+    Promise.resolve(preparePaymentMetadata(data)),
+    getOrCreateStripeCustomer(data.user_id, data.user_email),
+    generateOrderNumber(),
+  ]);
 
   // Create payment intent with Stripe
-  // Use automatic_payment_methods to support multiple payment methods
   const paymentIntent = await stripe.paymentIntents.create({
     amount: formatAmountForStripe(data.amount),
     currency: CURRENCY,
@@ -143,45 +187,47 @@ export async function createPaymentIntent(
     metadata: paymentMetadata,
     automatic_payment_methods: {
       enabled: true,
-      allow_redirects: 'always', // Required for Alipay and PromptPay
+      allow_redirects: 'always',
     },
   });
 
-  // Generate order number
-  const orderNumber = await generateOrderNumber();
+  // Create payment and order records in parallel
+  const [paymentResult, orderResult] = await Promise.all([
+    supabase
+      .from('payments')
+      .insert({
+        user_id: data.user_id,
+        stripe_payment_intent_id: paymentIntent.id,
+        stripe_customer_id: stripeCustomerId,
+        amount: data.amount,
+        currency: CURRENCY,
+        status: 'pending',
+        payment_type: data.payment_type,
+        metadata: paymentMetadata,
+      })
+      .select()
+      .single(),
+    
+    // We'll create the order after payment is created to get payment.id
+    Promise.resolve(null)
+  ]);
 
-  // Create payment record in database
-  const { data: payment, error: paymentError } = await supabase
-    .from('payments')
-    .insert({
-      user_id: data.user_id,
-      stripe_payment_intent_id: paymentIntent.id,
-      stripe_customer_id: stripeCustomerId,
-      amount: data.amount,
-      currency: CURRENCY,
-      status: 'pending',
-      payment_type: data.payment_type,
-      metadata: paymentMetadata,
-    })
-    .select()
-    .single();
-
-  if (paymentError) {
-    throw new Error(`Failed to create payment record: ${paymentError.message}`);
+  if (paymentResult.error) {
+    throw new Error(`Failed to create payment record: ${paymentResult.error.message}`);
   }
 
-  // Create order record
+  // Create order record with payment ID
   const { data: order, error: orderError } = await supabase
     .from('orders')
     .insert({
       user_id: data.user_id,
-      payment_id: payment.id,
+      payment_id: paymentResult.data.id,
       order_number: orderNumber,
       total_amount: data.amount,
       currency: CURRENCY,
       status: 'pending',
       customer_name: data.metadata.userName || '',
-      customer_email: data.user_email,
+      customer_email: data.user_email.trim().toLowerCase(),
       metadata: paymentMetadata,
     })
     .select()
@@ -261,16 +307,40 @@ export async function updatePaymentStatus(
 }
 
 /**
- * Get user payments
+ * Update order status
  */
-export async function getUserPayments(userId: string) {
+export async function updateOrderStatus(
+  id: string,
+  status: 'pending' | 'processing' | 'completed' | 'cancelled'
+) {
+  const supabase = await createClient();
+
+  const { data: order, error } = await supabase
+    .from('orders')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update order status: ${error.message}`);
+  }
+
+  return order;
+}
+
+/**
+ * Get user payments with optional pagination
+ */
+export async function getUserPayments(userId: string, limit: number = 50, offset: number = 0) {
   const supabase = await createClient();
 
   const { data: payments, error } = await supabase
     .from('payments')
     .select('*')
     .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
 
   if (error) {
     throw new Error(`Failed to fetch user payments: ${error.message}`);
@@ -293,29 +363,6 @@ export async function getOrderById(id: string) {
 
   if (error) {
     throw new Error(`Failed to fetch order: ${error.message}`);
-  }
-
-  return order;
-}
-
-/**
- * Update order status
- */
-export async function updateOrderStatus(
-  id: string,
-  status: 'pending' | 'processing' | 'completed' | 'cancelled'
-) {
-  const supabase = await createClient();
-
-  const { data: order, error } = await supabase
-    .from('orders')
-    .update({ status, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(`Failed to update order status: ${error.message}`);
   }
 
   return order;

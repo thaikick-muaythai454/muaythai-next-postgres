@@ -2,18 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { GamificationDashboard as GamificationDashboardType } from '@/types/gamification.types';
-import { LevelDisplay } from './LevelDisplay';
-import { BadgeCollection } from './BadgeCollection';
-import { ChallengeList } from './ChallengeList';
-import { LeaderboardWidget } from './LeaderboardWidget';
-import { StreakDisplay } from './StreakDisplay';
-import { PointsHistory } from './PointsHistory';
+import LevelDisplay from './LevelDisplay';
+import BadgeCollection from './BadgeCollection';
+import ChallengeList from './ChallengeList';
+import LeaderboardWidget from './LeaderboardWidget';
+import StreakDisplay from './StreakDisplay';
+import PointsHistory from './PointsHistory';
 
 interface GamificationDashboardProps {
   className?: string;
 }
 
-export function GamificationDashboard({ className = '' }: GamificationDashboardProps) {
+export default function GamificationDashboard({ className = '' }: GamificationDashboardProps) {
   const [dashboard, setDashboard] = useState<GamificationDashboardType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

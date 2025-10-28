@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
-import { showSuccessToast, showErrorToast } from '@/lib/utils';
+import { makeApiCall, filterBySearch, filterByStatus } from '../shared/adminUtils';
 import type { Gym } from '@/types';
 import { TOAST_MESSAGES } from '.';
 
@@ -38,20 +38,12 @@ export function useGymManagement() {
     let filtered = gyms;
 
     // Filter by status tab
-    if (selectedTab !== 'all') {
-      filtered = filtered.filter((gym) => gym.status === selectedTab);
-    }
+    filtered = filterByStatus(filtered, selectedTab);
 
     // Filter by search query
     if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (gym) =>
-          gym.gym_name.toLowerCase().includes(query) ||
-          gym.contact_name.toLowerCase().includes(query) ||
-          gym.phone.includes(query) ||
-          gym.location.toLowerCase().includes(query)
-      );
+      const searchFields: (keyof Gym)[] = ['gym_name', 'contact_name', 'phone', 'location'];
+      filtered = filterBySearch(filtered, searchQuery, searchFields);
     }
 
     setFilteredGyms(filtered);
@@ -60,115 +52,80 @@ export function useGymManagement() {
   // Handle approve gym
   const handleApprove = async (gymId: string) => {
     setIsProcessing(true);
-    try {
-      const response = await fetch(`/api/partner-applications/${gymId}`, {
+    const result = await makeApiCall(
+      `/api/partner-applications/${gymId}`,
+      {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'approved' }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await loadGyms();
-        showSuccessToast(TOAST_MESSAGES.APPROVE_SUCCESS);
-        return true;
-      } else {
-        showErrorToast('เกิดข้อผิดพลาด: ' + result.error);
-        return false;
-      }
-    } catch (error) {
-      console.error('Error approving gym:', error);
-      showErrorToast('เกิดข้อผิดพลาดในการอนุมัติยิม');
-      return false;
-    } finally {
-      setIsProcessing(false);
+      },
+      TOAST_MESSAGES.APPROVE_SUCCESS
+    );
+    
+    if (result.success) {
+      await loadGyms();
     }
+    
+    setIsProcessing(false);
+    return result.success;
   };
 
   // Handle reject gym
   const handleReject = async (gymId: string) => {
     setIsProcessing(true);
-    try {
-      const response = await fetch(`/api/partner-applications/${gymId}`, {
+    const result = await makeApiCall(
+      `/api/partner-applications/${gymId}`,
+      {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'denied' }),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await loadGyms();
-        showSuccessToast(TOAST_MESSAGES.REJECT_SUCCESS);
-        return true;
-      } else {
-        showErrorToast('เกิดข้อผิดพลาด: ' + result.error);
-        return false;
-      }
-    } catch (error) {
-      console.error('Error rejecting gym:', error);
-      showErrorToast('เกิดข้อผิดพลาดในการปฏิเสธยิม');
-      return false;
-    } finally {
-      setIsProcessing(false);
+      },
+      TOAST_MESSAGES.REJECT_SUCCESS
+    );
+    
+    if (result.success) {
+      await loadGyms();
     }
+    
+    setIsProcessing(false);
+    return result.success;
   };
 
   // Handle edit gym
   const handleEdit = async (gymId: string, data: Partial<Gym>) => {
     setIsProcessing(true);
-    try {
-      const response = await fetch(`/api/gyms/${gymId}`, {
+    const result = await makeApiCall(
+      `/api/gyms/${gymId}`,
+      {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await loadGyms();
-        showSuccessToast(TOAST_MESSAGES.EDIT_SUCCESS);
-        return true;
-      } else {
-        showErrorToast('เกิดข้อผิดพลาด: ' + (result.error || 'Unknown error'));
-        return false;
-      }
-    } catch (error) {
-      console.error('Error editing gym:', error);
-      showErrorToast('เกิดข้อผิดพลาดในการแก้ไขข้อมูลยิม');
-      return false;
-    } finally {
-      setIsProcessing(false);
+      },
+      TOAST_MESSAGES.EDIT_SUCCESS
+    );
+    
+    if (result.success) {
+      await loadGyms();
     }
+    
+    setIsProcessing(false);
+    return result.success;
   };
 
   // Handle delete gym
   const handleDelete = async (gymId: string) => {
     setIsProcessing(true);
-    try {
-      const response = await fetch(`/api/gyms/${gymId}`, {
+    const result = await makeApiCall(
+      `/api/gyms/${gymId}`,
+      {
         method: 'DELETE',
-      });
-
-      const result = await response.json();
-
-      if (result.success) {
-        await loadGyms();
-        showSuccessToast(TOAST_MESSAGES.DELETE_SUCCESS);
-        return true;
-      } else {
-        showErrorToast('เกิดข้อผิดพลาด: ' + result.error);
-        return false;
-      }
-    } catch (error) {
-      console.error('Error deleting gym:', error);
-      showErrorToast('เกิดข้อผิดพลาดในการลบยิม');
-      return false;
-    } finally {
-      setIsProcessing(false);
+      },
+      TOAST_MESSAGES.DELETE_SUCCESS
+    );
+    
+    if (result.success) {
+      await loadGyms();
     }
+    
+    setIsProcessing(false);
+    return result.success;
   };
 
   return {

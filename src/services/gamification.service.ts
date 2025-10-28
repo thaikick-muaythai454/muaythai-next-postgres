@@ -11,7 +11,6 @@ import type {
   Challenge,
   UserChallenge,
   Leaderboard,
-  LeaderboardEntry,
   GamificationStats,
   LeaderboardData,
   BadgeProgress,
@@ -24,9 +23,6 @@ import type {
   StreakUpdateResponse,
   ChallengeJoinResponse,
   GamificationDashboard,
-  BadgeDisplay,
-  LevelDisplay,
-  StreakDisplay,
 } from '@/types/gamification.types';
 
 // ============================================
@@ -255,31 +251,25 @@ export async function getUserBadges(userId: string): Promise<UserBadge[]> {
 }
 
 /**
- * Get badge progress for user
+ * Get badge progress for user (optimized with single query)
  */
 export async function getBadgeProgress(userId: string): Promise<BadgeProgress[]> {
   const supabase = await createClient();
 
   try {
-    // Get all badges
-    const badges = await getAllBadges();
-    
-    // Get user's earned badges
-    const userBadges = await getUserBadges(userId);
+    // Get all data in parallel for better performance
+    const [badges, userBadges, userPointsData] = await Promise.all([
+      getAllBadges(),
+      getUserBadges(userId),
+      supabase
+        .from('user_points')
+        .select('total_points')
+        .eq('user_id', userId)
+        .single()
+    ]);
+
     const earnedBadgeIds = new Set(userBadges.map(ub => ub.badge_id));
-
-    // Get user's total points
-    const { data: userPoints, error: pointsError } = await supabase
-      .from('user_points')
-      .select('total_points')
-      .eq('user_id', userId)
-      .single();
-
-    if (pointsError && pointsError.code !== 'PGRST116') {
-      throw new Error(`Failed to get user points: ${pointsError.message}`);
-    }
-
-    const totalPoints = userPoints?.total_points || 0;
+    const totalPoints = userPointsData.data?.total_points || 0;
 
     return badges.map(badge => {
       const isEarned = earnedBadgeIds.has(badge.id);
@@ -663,35 +653,36 @@ export async function getAllLeaderboards(): Promise<Leaderboard[]> {
 // ============================================
 
 /**
- * Get complete gamification dashboard data
+ * Get complete gamification dashboard data (optimized)
  */
 export async function getGamificationDashboard(userId: string): Promise<GamificationDashboard | null> {
   try {
-    // Get all dashboard data in parallel
+    // Get user stats first as it's required
+    const userStats = await getUserGamificationStats(userId);
+    if (!userStats) {
+      return null;
+    }
+
+    // Get remaining data in parallel
     const [
-      userStats,
       recentBadges,
       activeChallenges,
       leaderboards,
       upcomingEvents,
     ] = await Promise.all([
-      getUserGamificationStats(userId),
-      getUserBadges(userId).then(badges => badges.slice(0, 5)), // Recent 5 badges
+      getUserBadges(userId).then(badges => badges.slice(0, 5)),
       getUserChallengeProgress(userId).then(challenges => 
-        challenges.filter(c => !c.is_completed).slice(0, 3) // Active 3 challenges
+        challenges.filter(c => !c.is_completed).slice(0, 3)
       ),
       getAllLeaderboards().then(async (leaderboards) => {
+        const topLeaderboards = leaderboards.slice(0, 3);
         const leaderboardData = await Promise.all(
-          leaderboards.slice(0, 3).map(lb => getLeaderboardData(lb.id, userId))
+          topLeaderboards.map(lb => getLeaderboardData(lb.id, userId))
         );
         return leaderboardData.filter(Boolean) as LeaderboardData[];
       }),
-      getActiveChallenges().then(challenges => challenges.slice(0, 5)), // Upcoming 5 events
+      getActiveChallenges().then(challenges => challenges.slice(0, 5)),
     ]);
-
-    if (!userStats) {
-      return null;
-    }
 
     return {
       user_stats: userStats,
@@ -711,85 +702,12 @@ export async function getGamificationDashboard(userId: string): Promise<Gamifica
 // ============================================
 
 /**
- * Get level display information
+ * Calculate level progress percentage
  */
-export function getLevelDisplay(userPoints: UserPoints): LevelDisplay {
-  const levelTitles = [
-    'นักชกหน้าใหม่', 'นักชกฝึกหัด', 'นักชกมือใหม่', 'นักชกประจำ', 'นักชกมืออาชีพ',
-    'นักชกแชมป์', 'นักชกตำนาน', 'นักชกเทพ', 'นักชกอมตะ', 'นักชกสูงสุด'
-  ];
-
-  const levelIcons = [
-    '🥊', '🥋', '👊', '💪', '🏆', '👑', '⭐', '🌟', '✨', '💎'
-  ];
-
-  const levelIndex = Math.min(userPoints.current_level - 1, levelTitles.length - 1);
-  const progressPercentage = Math.min(
+function calculateLevelProgress(userPoints: UserPoints): number {
+  return Math.min(
     ((userPoints.total_points - ((userPoints.current_level - 1) ** 2 * 100)) / 
      (userPoints.points_to_next_level - ((userPoints.current_level - 1) ** 2 * 100))) * 100,
     100
   );
-
-  return {
-    current_level: userPoints.current_level,
-    current_points: userPoints.total_points,
-    points_to_next_level: userPoints.points_to_next_level,
-    progress_percentage: progressPercentage,
-    level_title: levelTitles[levelIndex] || 'นักชกสูงสุด',
-    level_icon: levelIcons[levelIndex] || '💎',
-  };
-}
-
-/**
- * Get badge display information
- */
-export function getBadgeDisplay(badge: Badge, isEarned: boolean = false, earnedAt?: string): BadgeDisplay {
-  const rarityColors = {
-    common: 'text-gray-600',
-    rare: 'text-blue-600',
-    epic: 'text-purple-600',
-    legendary: 'text-yellow-600',
-  };
-
-  const rarityIcons = {
-    common: '🥉',
-    rare: '🥈',
-    epic: '🥇',
-    legendary: '💎',
-  };
-
-  return {
-    badge,
-    is_earned: isEarned,
-    earned_at: earnedAt,
-    rarity_color: rarityColors[badge.rarity],
-    rarity_icon: rarityIcons[badge.rarity],
-  };
-}
-
-/**
- * Get streak display information
- */
-export function getStreakDisplay(streak: UserStreak): StreakDisplay {
-  const streakIcons = {
-    booking: '📅',
-    login: '🔑',
-    review: '⭐',
-    article_read: '📖',
-  };
-
-  const streakColors = {
-    booking: 'text-green-600',
-    login: 'text-blue-600',
-    review: 'text-yellow-600',
-    article_read: 'text-purple-600',
-  };
-
-  return {
-    streak_type: streak.streak_type,
-    current_streak: streak.current_streak,
-    longest_streak: streak.longest_streak,
-    streak_icon: streakIcons[streak.streak_type] || '🔥',
-    streak_color: streakColors[streak.streak_type] || 'text-gray-600',
-  };
 }

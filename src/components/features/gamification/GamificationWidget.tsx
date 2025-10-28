@@ -8,7 +8,7 @@ interface GamificationWidgetProps {
   className?: string;
 }
 
-export function GamificationWidget({ className = '' }: GamificationWidgetProps) {
+export default function GamificationWidget({ className = '' }: GamificationWidgetProps) {
   const { stats, loading, error } = useGamification();
 
   if (loading) {

@@ -5,15 +5,7 @@ import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout } from '@/components/shared';
 import { adminMenuItems } from '@/components/features/admin/adminMenuItems';
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Button,
-  Input,
-  Switch,
-  Textarea,
-} from '@heroui/react';
+import { Card, CardBody, CardHeader, Button, Input, Switch, Textarea } from '@heroui/react';
 import {
   GlobeAltIcon,
   BellIcon,

@@ -1,10 +1,5 @@
 import { useState, useEffect } from 'react';
 import {
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
   Button,
   Input,
   Textarea,
@@ -13,6 +8,7 @@ import {
   Chip,
 } from '@heroui/react';
 import type { Gym } from '@/types';
+import AdminFormModal from '../../shared/AdminFormModal';
 import type {
   GymEditModalProps,
   GymFormData,
@@ -65,7 +61,7 @@ export default function GymEditModal({
 
   const handleChange = (name: keyof GymFormData, value: string) => {
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Validate on change
     const error = validateField(name, value);
     setErrors(prev => ({
@@ -93,7 +89,7 @@ export default function GymEditModal({
 
   const validateForm = (): boolean => {
     const newErrors: GymFormErrors = {};
-    
+
     newErrors.gym_name = validateField('gym_name', formData.gym_name);
     newErrors.gym_name_english = validateField('gym_name_english', formData.gym_name_english);
     newErrors.contact_name = validateField('contact_name', formData.contact_name);
@@ -131,251 +127,216 @@ export default function GymEditModal({
   };
 
   const isFormValid = Object.keys(errors).length === 0 &&
-    formData.gym_name.trim() &&
-    formData.contact_name.trim() &&
-    formData.phone.trim() &&
-    formData.email.trim() &&
-    formData.location.trim();
+    !!formData.gym_name.trim() &&
+    !!formData.contact_name.trim() &&
+    !!formData.phone.trim() &&
+    !!formData.email.trim() &&
+    !!formData.location.trim();
 
   if (!gym) return null;
 
   return (
-    <Modal
+    <AdminFormModal
       isOpen={isOpen}
       onClose={onClose}
+      title="แก้ไขข้อมูลยิม"
+      subtitle={gym.gym_name}
       size="3xl"
-      scrollBehavior="inside"
-      backdrop="blur"
-      classNames={{
-        backdrop: "bg-black/50 backdrop-blur-sm",
-        wrapper: "z-[100]",
-        base: 'bg-zinc-950 border border-zinc-800',
-        header: 'border-b border-zinc-800',
-        body: 'py-6',
-        footer: 'border-t border-zinc-800',
-      }}
+      onSubmit={handleSubmit}
+      isProcessing={isProcessing}
+      isFormValid={isFormValid}
     >
-      <ModalContent>
-        {(onClose) => (
-          <>
-            <ModalHeader className="flex flex-col gap-1">
-              <h3 className="text-white text-xl">แก้ไขข้อมูลยิม</h3>
-              <p className="text-default-400 text-sm">{gym.gym_name}</p>
-            </ModalHeader>
-            <ModalBody>
-              <div className="space-y-4">
-                {/* Gym Name */}
-                <Input
-                  label="ชื่อยิม (ไทย)"
-                  placeholder="กรอกชื่อยิม"
-                  value={formData.gym_name}
-                  onValueChange={(value) => handleChange('gym_name', value)}
-                  isInvalid={!!errors.gym_name}
-                  errorMessage={errors.gym_name}
-                  isRequired
-                  classNames={{
-                    input: 'text-white',
-                    label: 'text-default-400',
-                  }}
-                />
+      <div className="space-y-4">
+        {/* Gym Name */}
+        <Input
+          label="ชื่อยิม (ไทย)"
+          placeholder="กรอกชื่อยิม"
+          value={formData.gym_name}
+          onValueChange={(value) => handleChange('gym_name', value)}
+          isInvalid={!!errors.gym_name}
+          errorMessage={errors.gym_name}
+          isRequired
+          classNames={{
+            input: 'text-white',
+            label: 'text-default-400',
+          }}
+        />
 
-                {/* Gym Name English */}
-                <Input
-                  label="ชื่อยิม (อังกฤษ)"
-                  placeholder="Enter gym name in English"
-                  value={formData.gym_name_english}
-                  onValueChange={(value) => handleChange('gym_name_english', value)}
-                  isInvalid={!!errors.gym_name_english}
-                  errorMessage={errors.gym_name_english}
-                  description={formData.gym_name_english ? `Slug: ${previewSlug(formData.gym_name_english)}` : 'ใช้สำหรับสร้าง URL ของยิม'}
-                  classNames={{
-                    input: 'text-white',
-                    label: 'text-default-400',
-                  }}
-                />
+        {/* Gym Name English */}
+        <Input
+          label="ชื่อยิม (อังกฤษ)"
+          placeholder="Enter gym name in English"
+          value={formData.gym_name_english}
+          onValueChange={(value) => handleChange('gym_name_english', value)}
+          isInvalid={!!errors.gym_name_english}
+          errorMessage={errors.gym_name_english}
+          description={formData.gym_name_english ? `Slug: ${previewSlug(formData.gym_name_english)}` : 'ใช้สำหรับสร้าง URL ของยิม'}
+          classNames={{
+            input: 'text-white',
+            label: 'text-default-400',
+          }}
+        />
 
-                {/* Current Slug Display */}
-                {gym?.slug && (
-                  <div className="bg-default-100/50 px-3 py-2 rounded-lg">
-                    <p className="mb-1 text-default-400 text-xs">Slug ปัจจุบัน:</p>
-                    <p className="font-mono text-white text-sm">{gym.slug}</p>
-                  </div>
-                )}
-
-                {/* Contact Name */}
-                <Input
-                  label="ชื่อผู้ติดต่อ"
-                  placeholder="กรอกชื่อผู้ติดต่อ"
-                  value={formData.contact_name}
-                  onValueChange={(value) => handleChange('contact_name', value)}
-                  isInvalid={!!errors.contact_name}
-                  errorMessage={errors.contact_name}
-                  isRequired
-                  classNames={{
-                    input: 'text-white',
-                    label: 'text-default-400',
-                  }}
-                />
-
-                {/* Phone */}
-                <Input
-                  label="เบอร์โทรศัพท์"
-                  placeholder="02-123-4567 หรือ 0812345678"
-                  value={formData.phone}
-                  onValueChange={(value) => handleChange('phone', value)}
-                  isInvalid={!!errors.phone}
-                  errorMessage={errors.phone}
-                  isRequired
-                  classNames={{
-                    input: 'text-white',
-                    label: 'text-default-400',
-                  }}
-                />
-
-                {/* Email */}
-                <Input
-                  label="อีเมล"
-                  type="email"
-                  placeholder="example@email.com"
-                  value={formData.email}
-                  onValueChange={(value) => handleChange('email', value)}
-                  isInvalid={!!errors.email}
-                  errorMessage={errors.email}
-                  isRequired
-                  classNames={{
-                    input: 'text-white',
-                    label: 'text-default-400',
-                  }}
-                />
-
-                {/* Website */}
-                <Input
-                  label="เว็บไซต์"
-                  type="url"
-                  placeholder="https://example.com"
-                  value={formData.website}
-                  onValueChange={(value) => handleChange('website', value)}
-                  isInvalid={!!errors.website}
-                  errorMessage={errors.website}
-                  classNames={{
-                    input: 'text-white',
-                    label: 'text-default-400',
-                  }}
-                />
-
-                {/* Location */}
-                <Textarea
-                  label="ที่อยู่"
-                  placeholder="กรอกที่อยู่ยิม"
-                  value={formData.location}
-                  onValueChange={(value) => handleChange('location', value)}
-                  isInvalid={!!errors.location}
-                  errorMessage={errors.location}
-                  isRequired
-                  minRows={2}
-                  classNames={{
-                    input: 'text-white',
-                    label: 'text-default-400',
-                  }}
-                />
-
-                {/* Gym Details */}
-                <Textarea
-                  label="รายละเอียดยิม"
-                  placeholder="กรอกรายละเอียดเพิ่มเติม"
-                  value={formData.gym_details}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, gym_details: value }))}
-                  minRows={3}
-                  classNames={{
-                    input: 'text-white',
-                    label: 'text-default-400',
-                  }}
-                />
-
-                {/* Services */}
-                <div>
-                  <label className="block mb-2 text-default-400 text-sm">บริการ</label>
-                  <div className="flex gap-2 mb-2">
-                    <Input
-                      placeholder="เพิ่มบริการ"
-                      value={serviceInput}
-                      onValueChange={setServiceInput}
-                      onKeyPress={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddService();
-                        }
-                      }}
-                      classNames={{
-                        input: 'text-white',
-                      }}
-                    />
-                    <Button
-                      color="primary"
-                      onPress={handleAddService}
-                      isDisabled={!serviceInput.trim()}
-                    >
-                      เพิ่ม
-                    </Button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.services.map((service, index) => (
-                      <Chip
-                        key={index}
-                        onClose={() => handleRemoveService(service)}
-                        variant="flat"
-                        color="primary"
-                      >
-                        {service}
-                      </Chip>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Status */}
-                <Select
-                  label="สถานะ"
-                  selectedKeys={[formData.status]}
-                  onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as GymFormData['status'] }))}
-                  classNames={{
-                    trigger: 'bg-default-100',
-                    label: 'text-default-400',
-                    value: 'text-white',
-                  }}
-                >
-                  <SelectItem key="pending">
-                    รอการตรวจสอบ
-                  </SelectItem>
-                  <SelectItem key="approved">
-                    อนุมัติแล้ว
-                  </SelectItem>
-                  <SelectItem key="rejected">
-                    ไม่อนุมัติ
-                  </SelectItem>
-                </Select>
-              </div>
-            </ModalBody>
-            <ModalFooter>
-              <Button
-                color="default"
-                variant="light"
-                onPress={onClose}
-                isDisabled={isProcessing}
-              >
-                ยกเลิก
-              </Button>
-              <Button
-                color="primary"
-                onPress={handleSubmit}
-                isLoading={isProcessing}
-                isDisabled={!isFormValid || isProcessing}
-              >
-                บันทึก
-              </Button>
-            </ModalFooter>
-          </>
+        {/* Current Slug Display */}
+        {gym?.slug && (
+          <div className="bg-default-100/50 px-3 py-2 rounded-lg">
+            <p className="mb-1 text-default-400 text-xs">Slug ปัจจุบัน:</p>
+            <p className="font-mono text-white text-sm">{gym.slug}</p>
+          </div>
         )}
-      </ModalContent>
-    </Modal>
+
+        {/* Contact Name */}
+        <Input
+          label="ชื่อผู้ติดต่อ"
+          placeholder="กรอกชื่อผู้ติดต่อ"
+          value={formData.contact_name}
+          onValueChange={(value) => handleChange('contact_name', value)}
+          isInvalid={!!errors.contact_name}
+          errorMessage={errors.contact_name}
+          isRequired
+          classNames={{
+            input: 'text-white',
+            label: 'text-default-400',
+          }}
+        />
+
+        {/* Phone */}
+        <Input
+          label="เบอร์โทรศัพท์"
+          placeholder="02-123-4567 หรือ 0812345678"
+          value={formData.phone}
+          onValueChange={(value) => handleChange('phone', value)}
+          isInvalid={!!errors.phone}
+          errorMessage={errors.phone}
+          isRequired
+          classNames={{
+            input: 'text-white',
+            label: 'text-default-400',
+          }}
+        />
+
+        {/* Email */}
+        <Input
+          label="อีเมล"
+          type="email"
+          placeholder="example@email.com"
+          value={formData.email}
+          onValueChange={(value) => handleChange('email', value)}
+          isInvalid={!!errors.email}
+          errorMessage={errors.email}
+          isRequired
+          classNames={{
+            input: 'text-white',
+            label: 'text-default-400',
+          }}
+        />
+
+        {/* Website */}
+        <Input
+          label="เว็บไซต์"
+          type="url"
+          placeholder="https://example.com"
+          value={formData.website}
+          onValueChange={(value) => handleChange('website', value)}
+          isInvalid={!!errors.website}
+          errorMessage={errors.website}
+          classNames={{
+            input: 'text-white',
+            label: 'text-default-400',
+          }}
+        />
+
+        {/* Location */}
+        <Textarea
+          label="ที่อยู่"
+          placeholder="กรอกที่อยู่ยิม"
+          value={formData.location}
+          onValueChange={(value) => handleChange('location', value)}
+          isInvalid={!!errors.location}
+          errorMessage={errors.location}
+          isRequired
+          minRows={2}
+          classNames={{
+            input: 'text-white',
+            label: 'text-default-400',
+          }}
+        />
+
+        {/* Gym Details */}
+        <Textarea
+          label="รายละเอียดยิม"
+          placeholder="กรอกรายละเอียดเพิ่มเติม"
+          value={formData.gym_details}
+          onValueChange={(value) => setFormData(prev => ({ ...prev, gym_details: value }))}
+          minRows={3}
+          classNames={{
+            input: 'text-white',
+            label: 'text-default-400',
+          }}
+        />
+
+        {/* Services */}
+        <div>
+          <label className="block mb-2 text-default-400 text-sm">บริการ</label>
+          <div className="flex gap-2 mb-2">
+            <Input
+              placeholder="เพิ่มบริการ"
+              value={serviceInput}
+              onValueChange={setServiceInput}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  handleAddService();
+                }
+              }}
+              classNames={{
+                input: 'text-white',
+              }}
+            />
+            <Button
+              color="primary"
+              onPress={handleAddService}
+              isDisabled={!serviceInput.trim()}
+            >
+              เพิ่ม
+            </Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {formData.services.map((service, index) => (
+              <Chip
+                key={index}
+                onClose={() => handleRemoveService(service)}
+                variant="flat"
+                color="primary"
+              >
+                {service}
+              </Chip>
+            ))}
+          </div>
+        </div>
+
+        {/* Status */}
+        <Select
+          label="สถานะ"
+          selectedKeys={[formData.status]}
+          onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as GymFormData['status'] }))}
+          classNames={{
+            trigger: 'bg-default-100',
+            label: 'text-default-400',
+            value: 'text-white',
+          }}
+        >
+          <SelectItem key="pending">
+            รอการตรวจสอบ
+          </SelectItem>
+          <SelectItem key="approved">
+            อนุมัติแล้ว
+          </SelectItem>
+          <SelectItem key="rejected">
+            ไม่อนุมัติ
+          </SelectItem>
+        </Select>
+      </div>
+    </AdminFormModal>
   );
 }

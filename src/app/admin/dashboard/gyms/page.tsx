@@ -6,22 +6,7 @@ import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout } from '@/components/shared';
 import { adminMenuItems } from '@/components/features/admin/adminMenuItems';
-import {
-  Card,
-  CardBody,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Chip,
-  Button,
-  Input,
-  Tabs,
-  Tab,
-  useDisclosure,
-} from '@heroui/react';
+import { Card, CardBody, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Button, Input, Tabs, Tab, useDisclosure } from '@heroui/react';
 import {
   MagnifyingGlassIcon,
   EyeIcon,

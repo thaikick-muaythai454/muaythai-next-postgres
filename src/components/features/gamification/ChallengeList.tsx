@@ -2,38 +2,28 @@
 
 import React, { useState } from 'react';
 import { Challenge, ChallengeProgress } from '@/types/gamification.types';
+import { 
+  GamificationCard, 
+  GamificationEmptyState,
+  GamificationProgressBar,
+  useChallengeDisplay,
+  getChallengeTypeIcon,
+  getChallengeTypeColor
+} from './shared';
 
 interface ChallengeListProps {
   challenges: Challenge[] | ChallengeProgress[];
   className?: string;
 }
 
-export function ChallengeList({ challenges, className = '' }: ChallengeListProps) {
+export default function ChallengeList({ challenges, className = '' }: ChallengeListProps) {
   const [joiningChallenge, setJoiningChallenge] = useState<string | null>(null);
 
   const isChallengeProgress = (challenge: Challenge | ChallengeProgress): challenge is ChallengeProgress => {
     return 'progress_percentage' in challenge;
   };
 
-  const getChallengeTypeIcon = (type: string) => {
-    switch (type) {
-      case 'daily': return '📅';
-      case 'weekly': return '📊';
-      case 'monthly': return '🗓️';
-      case 'special': return '🎉';
-      default: return '🎯';
-    }
-  };
 
-  const getChallengeTypeColor = (type: string) => {
-    switch (type) {
-      case 'daily': return 'bg-blue-100 text-blue-800';
-      case 'weekly': return 'bg-green-100 text-green-800';
-      case 'monthly': return 'bg-purple-100 text-purple-800';
-      case 'special': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   const handleJoinChallenge = async (challengeId: string) => {
     try {
@@ -67,12 +57,7 @@ export function ChallengeList({ challenges, className = '' }: ChallengeListProps
   };
 
   if (challenges.length === 0) {
-    return (
-      <div className={`text-center py-8 text-gray-500 ${className}`}>
-        <div className="text-4xl mb-2">🎯</div>
-        <p>ไม่มีความท้าทายในขณะนี้</p>
-      </div>
-    );
+    return <GamificationEmptyState type="challenges" className={className} />;
   }
 
   return (
@@ -80,23 +65,24 @@ export function ChallengeList({ challenges, className = '' }: ChallengeListProps
       {challenges.map((challenge) => {
         const challengeData = isChallengeProgress(challenge) ? challenge.challenge : challenge;
         const progress = isChallengeProgress(challenge) ? challenge : null;
+        const challengeDisplay = useChallengeDisplay(challenge);
         
         return (
-          <div
+          <GamificationCard
             key={challengeData.id}
-            className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+            variant="default"
           >
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center space-x-3">
                 <div className="text-2xl">
-                  {getChallengeTypeIcon(challengeData.challenge_type)}
+                  {challengeDisplay.typeIcon}
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">
                     {challengeData.title}
                   </h3>
                   <div className="flex items-center space-x-2 mt-1">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getChallengeTypeColor(challengeData.challenge_type)}`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${challengeDisplay.typeColor}`}>
                       {challengeData.challenge_type}
                     </span>
                     <span className="text-sm text-gray-600">
@@ -122,19 +108,15 @@ export function ChallengeList({ challenges, className = '' }: ChallengeListProps
             </p>
 
             {/* Progress Bar for joined challenges */}
-            {progress && (
+            {challengeDisplay.isProgress && (
               <div className="mb-3">
-                <div className="flex justify-between text-sm text-gray-600 mb-1">
-                  <span>ความคืบหน้า</span>
-                  <span>{Math.round(progress.progress_percentage)}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${progress.progress_percentage}%` }}
-                  ></div>
-                </div>
-                {progress.is_completed && (
+                <GamificationProgressBar
+                  progress={challengeDisplay.progressPercentage}
+                  label="ความคืบหน้า"
+                  showPercentage={true}
+                  variant="default"
+                />
+                {challengeDisplay.isCompleted && (
                   <div className="mt-2 text-green-600 text-sm font-medium">
                     ✅ เสร็จสิ้นแล้ว!
                   </div>
@@ -145,14 +127,14 @@ export function ChallengeList({ challenges, className = '' }: ChallengeListProps
             {/* Challenge Dates */}
             <div className="flex items-center justify-between text-sm text-gray-500">
               <div className="flex items-center space-x-4">
-                {challengeData.start_date && (
+                {challengeDisplay.formattedStartDate && (
                   <span>
-                    เริ่ม: {new Date(challengeData.start_date).toLocaleDateString('th-TH')}
+                    เริ่ม: {challengeDisplay.formattedStartDate}
                   </span>
                 )}
-                {challengeData.end_date && (
+                {challengeDisplay.formattedEndDate && (
                   <span>
-                    สิ้นสุด: {new Date(challengeData.end_date).toLocaleDateString('th-TH')}
+                    สิ้นสุด: {challengeDisplay.formattedEndDate}
                   </span>
                 )}
               </div>
@@ -163,7 +145,7 @@ export function ChallengeList({ challenges, className = '' }: ChallengeListProps
                 </span>
               )}
             </div>
-          </div>
+          </GamificationCard>
         );
       })}
     </div>

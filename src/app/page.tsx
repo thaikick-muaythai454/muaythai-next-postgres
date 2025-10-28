@@ -1,4 +1,4 @@
-import { HeroSection, QuickSearchBar, FeaturedSection, LatestProducts, NewsBanner } from "@/components/features/sections";
+import { HeroSection, QuickSearchBar, FeaturedSection, LatestProducts, NewsBanner } from "@/components/features/homepage";
 import Marquee from "@/components/ui/Marquee";
 import { GYMS, EVENTS, PRODUCTS } from "@/lib/data";
 

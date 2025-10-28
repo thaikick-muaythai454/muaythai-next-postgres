@@ -14,8 +14,8 @@ import {
   ListBulletIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { EventCard } from "@/components/ui/cards/EventCard";
+import { PageHeader } from "@/components/shared";
+import { EventCard } from "@/components/shared";
 
 type ViewMode = "list" | "grid";
 

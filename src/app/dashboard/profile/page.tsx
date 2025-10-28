@@ -4,15 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  Button,
-  Input,
-  Avatar,
-  Chip,
-} from '@heroui/react';
+import { Card, CardBody, CardHeader, Button, Input, Avatar, Chip } from '@heroui/react';
 import {
   UserIcon,
   CalendarIcon,

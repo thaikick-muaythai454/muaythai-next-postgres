@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { GamificationDashboard } from '@/components/features/gamification/GamificationDashboard';
+import GamificationDashboard from '@/components/features/gamification/GamificationDashboard';
 
 export const metadata: Metadata = {
   title: 'Gamification | MUAYTHAI Platform',

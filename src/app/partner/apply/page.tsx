@@ -81,8 +81,6 @@ export default function PartnerApplyPage() {
   
   // Authentication and user state
   const [user, setUser] = useState<User | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [applicationStatus, setApplicationStatus] = useState<ApplicationStatus>("none");
   const [existingGym, setExistingGym] = useState<GymData | null>(null);

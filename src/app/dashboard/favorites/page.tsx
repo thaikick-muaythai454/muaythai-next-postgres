@@ -6,14 +6,7 @@ import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  Card,
-  CardBody,
-  CardHeader,
-  CardFooter,
-  Button,
-  Chip,
-} from '@heroui/react';
+import { Card, CardBody, CardHeader, CardFooter, Button, Chip } from '@heroui/react';
 import {
   UserIcon,
   CalendarIcon,

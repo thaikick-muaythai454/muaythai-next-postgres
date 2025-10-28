@@ -144,14 +144,21 @@ export function validateGymData(
 }
 
 /**
- * Get all gyms with optional filters
+ * Get all gyms with optional filters (optimized with single query)
  */
 export async function getGyms(filters?: GymFilters) {
   const supabase = await createClient();
 
   let query = supabase
     .from('gyms')
-    .select('*')
+    .select(`
+      *,
+      profiles:user_id (
+        user_id,
+        username,
+        full_name
+      )
+    `)
     .order('created_at', { ascending: false });
 
   // Apply filters
@@ -160,31 +167,14 @@ export async function getGyms(filters?: GymFilters) {
   }
 
   if (filters?.search) {
-    query = query.or(`gym_name.ilike.%${filters.search}%,gym_name_english.ilike.%${filters.search}%`);
+    const searchTerm = filters.search.trim();
+    query = query.or(`gym_name.ilike.%${searchTerm}%,gym_name_english.ilike.%${searchTerm}%`);
   }
 
   const { data: gyms, error } = await query;
 
   if (error) {
     throw new Error(`Failed to fetch gyms: ${error.message}`);
-  }
-
-  // Fetch profiles for all gym owners
-  const userIds = [...new Set(gyms?.map(g => g.user_id) || [])];
-  
-  if (userIds.length > 0) {
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('user_id, username, full_name')
-      .in('user_id', userIds);
-
-    // Merge profiles with gyms
-    const gymsWithProfiles = gyms?.map(gym => ({
-      ...gym,
-      profiles: profiles?.find(p => p.user_id === gym.user_id) || null
-    })) || [];
-
-    return gymsWithProfiles;
   }
 
   return gyms || [];
@@ -210,7 +200,47 @@ export async function getGymById(id: string): Promise<Gym | null> {
 }
 
 /**
- * Create new gym
+ * Sanitize gym data
+ */
+function sanitizeGymData(data: CreateGymInput | UpdateGymInput) {
+  const sanitized: Record<string, any> = {};
+  
+  if ('gym_name' in data && data.gym_name !== undefined) {
+    sanitized.gym_name = data.gym_name.trim();
+  }
+  if ('gym_name_english' in data && data.gym_name_english !== undefined) {
+    sanitized.gym_name_english = data.gym_name_english?.trim() || null;
+  }
+  if ('contact_name' in data && data.contact_name !== undefined) {
+    sanitized.contact_name = data.contact_name.trim();
+  }
+  if ('phone' in data && data.phone !== undefined) {
+    sanitized.phone = data.phone.trim();
+  }
+  if ('email' in data && data.email !== undefined) {
+    sanitized.email = data.email.trim().toLowerCase();
+  }
+  if ('website' in data && data.website !== undefined) {
+    sanitized.website = data.website?.trim() || null;
+  }
+  if ('location' in data && data.location !== undefined) {
+    sanitized.location = data.location.trim();
+  }
+  if ('gym_details' in data && data.gym_details !== undefined) {
+    sanitized.gym_details = data.gym_details?.trim() || null;
+  }
+  if ('services' in data && data.services !== undefined) {
+    sanitized.services = data.services || [];
+  }
+  if ('status' in data && data.status !== undefined) {
+    sanitized.status = data.status;
+  }
+  
+  return sanitized;
+}
+
+/**
+ * Create new gym with sanitized data
  */
 export async function createGym(data: CreateGymInput): Promise<Gym> {
   // Validate data
@@ -222,18 +252,11 @@ export async function createGym(data: CreateGymInput): Promise<Gym> {
   }
 
   const supabase = await createClient();
+  const sanitizedData = sanitizeGymData(data);
 
   const newGym = {
     user_id: data.user_id,
-    gym_name: data.gym_name.trim(),
-    gym_name_english: data.gym_name_english?.trim() || null,
-    contact_name: data.contact_name.trim(),
-    phone: data.phone.trim(),
-    email: data.email.trim(),
-    website: data.website?.trim() || null,
-    location: data.location.trim(),
-    gym_details: data.gym_details?.trim() || null,
-    services: data.services || [],
+    ...sanitizedData,
     images: [],
     status: data.status || 'approved',
     created_at: new Date().toISOString(),
@@ -254,7 +277,7 @@ export async function createGym(data: CreateGymInput): Promise<Gym> {
 }
 
 /**
- * Update gym
+ * Update gym with optimized validation and sanitization
  */
 export async function updateGym(id: string, data: UpdateGymInput): Promise<Gym> {
   // Validate data
@@ -273,21 +296,12 @@ export async function updateGym(id: string, data: UpdateGymInput): Promise<Gym> 
     throw new Error('ไม่พบยิมที่ต้องการ');
   }
 
-  // Build update object
-  const updateData: Record<string, string | string[] | null> = {
+  // Sanitize and build update object
+  const sanitizedData = sanitizeGymData(data);
+  const updateData = {
+    ...sanitizedData,
     updated_at: new Date().toISOString(),
   };
-
-  if (data.gym_name !== undefined) updateData.gym_name = data.gym_name.trim();
-  if (data.gym_name_english !== undefined) updateData.gym_name_english = data.gym_name_english?.trim() || null;
-  if (data.contact_name !== undefined) updateData.contact_name = data.contact_name.trim();
-  if (data.phone !== undefined) updateData.phone = data.phone.trim();
-  if (data.email !== undefined) updateData.email = data.email.trim();
-  if (data.website !== undefined) updateData.website = data.website?.trim() || null;
-  if (data.location !== undefined) updateData.location = data.location.trim();
-  if (data.gym_details !== undefined) updateData.gym_details = data.gym_details?.trim() || null;
-  if (data.services !== undefined) updateData.services = data.services;
-  if (data.status !== undefined) updateData.status = data.status;
 
   const { data: updatedGym, error } = await supabase
     .from('gyms')
@@ -326,15 +340,25 @@ export async function deleteGym(id: string): Promise<void> {
 }
 
 /**
- * Approve gym
+ * Update gym status (consolidated function for approve/reject)
  */
-export async function approveGym(id: string): Promise<Gym> {
-  return updateGym(id, { status: 'approved' });
+export async function updateGymStatus(
+  id: string, 
+  status: 'pending' | 'approved' | 'rejected'
+): Promise<Gym> {
+  return updateGym(id, { status });
 }
 
 /**
- * Reject gym
+ * Approve gym (convenience function)
+ */
+export async function approveGym(id: string): Promise<Gym> {
+  return updateGymStatus(id, 'approved');
+}
+
+/**
+ * Reject gym (convenience function)
  */
 export async function rejectGym(id: string): Promise<Gym> {
-  return updateGym(id, { status: 'rejected' });
+  return updateGymStatus(id, 'rejected');
 }

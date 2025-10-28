@@ -9,8 +9,8 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { Button } from "@heroui/react";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { GymCard } from "@/components/ui/cards/GymCard";
+import { PageHeader } from "@/components/shared";
+import { GymCard } from "@/components/shared";
 
 interface Gym {
   id: string;

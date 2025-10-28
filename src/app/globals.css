@@ -1,7 +1,4 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "leaflet/dist/leaflet.css";
-@import "leaflet-defaulticon-compatibility/dist/leaflet-defaulticon-compatibility.css";
 
 @theme {
   --background: #0F0F0F;
@@ -35,8 +32,25 @@ body {
   display: none;
 }
 
+/* Global Button Styles - Ensures consistent animations across all buttons */
 button {
   cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+/* Standardized button animations */
+button:hover {
+  transform: scale(1.02);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: rgb(239 68 68 / 0.5);
 }
 
 /* Custom Scrollbar Styles */

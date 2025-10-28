@@ -7,27 +7,19 @@ import {
   useElements,
 } from '@stripe/react-stripe-js';
 import { useRouter } from 'next/navigation';
-import {
-  ExclamationTriangleIcon,
-  XCircleIcon,
-  ArrowPathIcon,
-} from '@heroicons/react/24/outline';
+import { Button } from '@/components/shared';
+import { 
+  parseStripeError, 
+  isValidPhoneNumber,
+  PaymentError,
+  PaymentErrorDisplay
+} from './shared';
 
 interface CheckoutFormProps {
   returnUrl?: string;
   userPhone?: string;
   onSuccess?: (paymentIntentId: string) => void;
   onError?: (error: string) => void;
-}
-
-type ErrorType = 'card_declined' | 'insufficient_funds' | 'expired_card' | 'incorrect_cvc' | 'processing_error' | 'network_error' | 'generic';
-
-interface PaymentError {
-  type: ErrorType;
-  title: string;
-  message: string;
-  retryable: boolean;
-  suggestion?: string;
 }
 
 export default function CheckoutForm({
@@ -45,62 +37,7 @@ export default function CheckoutForm({
   const [phoneNumber, setPhoneNumber] = useState<string>(userPhone || '');
   const [retryCount, setRetryCount] = useState(0);
 
-  // Map Stripe error codes to user-friendly messages
-  const parseStripeError = (error: { code?: string; decline_code?: string; message?: string }): PaymentError => {
-    const code = error.code || error.decline_code;
 
-    switch (code) {
-      case 'card_declined':
-        return {
-          type: 'card_declined',
-          title: 'บัตรถูกปฏิเสธ',
-          message: 'ธนาคารของคุณปฏิเสธการทำรายการ',
-          retryable: true,
-          suggestion: 'กรุณาลองใช้บัตรอื่น หรือติดต่อธนาคารของคุณ',
-        };
-      case 'insufficient_funds':
-        return {
-          type: 'insufficient_funds',
-          title: 'ยอดเงินไม่เพียงพอ',
-          message: 'บัตรของคุณมีวงเงินไม่เพียงพอสำหรับการทำรายการนี้',
-          retryable: true,
-          suggestion: 'กรุณาใช้บัตรอื่น หรือเติมเงินในบัญชีของคุณ',
-        };
-      case 'expired_card':
-        return {
-          type: 'expired_card',
-          title: 'บัตรหมดอายุ',
-          message: 'บัตรของคุณหมดอายุแล้ว',
-          retryable: false,
-          suggestion: 'กรุณาใช้บัตรที่ยังไม่หมดอายุ',
-        };
-      case 'incorrect_cvc':
-      case 'invalid_cvc':
-        return {
-          type: 'incorrect_cvc',
-          title: 'รหัส CVV ไม่ถูกต้อง',
-          message: 'รหัส CVV ที่คุณกรอกไม่ถูกต้อง',
-          retryable: true,
-          suggestion: 'กรุณาตรวจสอบรหัส CVV 3 หลักด้านหลังบัตร',
-        };
-      case 'processing_error':
-        return {
-          type: 'processing_error',
-          title: 'เกิดข้อผิดพลาดในการประมวลผล',
-          message: 'ธนาคารไม่สามารถดำเนินการได้ในขณะนี้',
-          retryable: true,
-          suggestion: 'กรุณาลองใหม่อีกครั้งในภายหลัง',
-        };
-      default:
-        return {
-          type: 'generic',
-          title: 'เกิดข้อผิดพลาด',
-          message: error.message || 'ไม่สามารถดำเนินการชำระเงินได้',
-          retryable: true,
-          suggestion: 'กรุณาตรวจสอบข้อมูลและลองใหม่อีกครั้ง',
-        };
-    }
-  };
 
   const handleRetry = () => {
     setPaymentError(null);
@@ -115,7 +52,7 @@ export default function CheckoutForm({
     }
 
     // Validate phone number
-    if (!phoneNumber || phoneNumber.length < 9) {
+    if (!isValidPhoneNumber(phoneNumber)) {
       setPaymentError({
         type: 'generic',
         title: 'ข้อมูลไม่ครบถ้วน',
@@ -205,62 +142,23 @@ export default function CheckoutForm({
 
       {/* Error Display */}
       {paymentError && (
-        <div className={`rounded-lg border p-6 ${
-          paymentError.retryable
-            ? 'bg-yellow-600/10 border-yellow-600/50'
-            : 'bg-red-600/10 border-red-600/50'
-        }`}>
-          <div className="flex items-start gap-4">
-            <div className="flex-shrink-0">
-              {paymentError.retryable ? (
-                <ExclamationTriangleIcon className="w-8 h-8 text-yellow-400" />
-              ) : (
-                <XCircleIcon className="w-8 h-8 text-red-400" />
-              )}
-            </div>
-            <div className="flex-1">
-              <h3 className={`font-semibold text-lg mb-2 ${
-                paymentError.retryable ? 'text-yellow-400' : 'text-red-400'
-              }`}>
-                {paymentError.title}
-              </h3>
-              <p className="mb-3 text-white text-sm">
-                {paymentError.message}
-              </p>
-              {paymentError.suggestion && (
-                <div className="bg-zinc-950/50 mb-3 p-3 rounded-md">
-                  <p className="text-zinc-300 text-xs">
-                    💡 <strong>คำแนะนำ:</strong> {paymentError.suggestion}
-                  </p>
-                </div>
-              )}
-              {paymentError.retryable && (
-                <button
-                  type="button"
-                  onClick={handleRetry}
-                  className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg font-semibold text-white text-sm transition-colors"
-                >
-                  <ArrowPathIcon className="w-4 h-4" />
-                  ลองใหม่อีกครั้ง
-                </button>
-              )}
-              {retryCount > 0 && (
-                <p className="mt-2 text-zinc-400 text-xs">
-                  จำนวนครั้งที่ลอง: {retryCount + 1}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
+        <PaymentErrorDisplay
+          error={paymentError}
+          retryCount={retryCount}
+          onRetry={handleRetry}
+        />
       )}
 
-      <button
+      <Button
         type="submit"
         disabled={!stripe || isProcessing}
-        className="bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 disabled:opacity-50 px-4 py-3 rounded-lg w-full font-semibold text-white transition-colors disabled:cursor-not-allowed"
+        loading={isProcessing}
+        loadingText="กำลังดำเนินการ..."
+        fullWidth
+        size="lg"
       >
-        {isProcessing ? 'กำลังดำเนินการ...' : 'ชำระเงิน'}
-      </button>
+        ชำระเงิน
+      </Button>
     </form>
   );
 }

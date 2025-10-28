@@ -1,22 +1,21 @@
 import type { GymFormData } from './types';
+import {
+  validateTitle,
+  validateName,
+  validatePhone,
+  validateEmail,
+  validateUrl,
+  validateAddress,
+  validateForm as validateFormGeneric,
+  type ValidationRule,
+} from '../shared/adminValidation';
 
 /**
- * Validation rules and functions for gym forms
+ * Gym-specific validation functions using shared validation utilities
  */
 
-// Regex patterns
-const PHONE_REGEX = /^0\d{1,2}-?\d{3,4}-?\d{4}$/;
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// Validation constraints
-export const VALIDATION_RULES = {
-  GYM_NAME: { min: 3, max: 100 },
-  CONTACT_NAME: { min: 2, max: 100 },
-  LOCATION: { min: 10 },
-} as const;
-
 /**
- * Validate a single form field
+ * Validate a single gym form field
  */
 export function validateField(
   name: keyof GymFormData,
@@ -24,93 +23,48 @@ export function validateField(
 ): string | undefined {
   switch (name) {
     case 'gym_name':
-      if (!value || value.trim().length < VALIDATION_RULES.GYM_NAME.min) {
-        return `ชื่อยิมต้องมีความยาวอย่างน้อย ${VALIDATION_RULES.GYM_NAME.min} ตัวอักษร`;
-      }
-      if (value.trim().length > VALIDATION_RULES.GYM_NAME.max) {
-        return `ชื่อยิมต้องมีความยาวไม่เกิน ${VALIDATION_RULES.GYM_NAME.max} ตัวอักษร`;
-      }
-      break;
+      return validateTitle(value, 'ชื่อยิม');
 
     case 'gym_name_english':
-      if (value && value.trim()) {
-        if (value.trim().length < VALIDATION_RULES.GYM_NAME.min) {
-          return `ชื่อภาษาอังกฤษต้องมีความยาวอย่างน้อย ${VALIDATION_RULES.GYM_NAME.min} ตัวอักษร`;
-        }
-        if (value.trim().length > VALIDATION_RULES.GYM_NAME.max) {
-          return `ชื่อภาษาอังกฤษต้องมีความยาวไม่เกิน ${VALIDATION_RULES.GYM_NAME.max} ตัวอักษร`;
-        }
-      }
-      break;
+      if (!value || !value.trim()) return undefined; // Optional field
+      return validateTitle(value, 'ชื่อภาษาอังกฤษ');
 
     case 'contact_name':
-      if (!value || value.trim().length < VALIDATION_RULES.CONTACT_NAME.min) {
-        return `ชื่อผู้ติดต่อต้องมีความยาวอย่างน้อย ${VALIDATION_RULES.CONTACT_NAME.min} ตัวอักษร`;
-      }
-      if (value.trim().length > VALIDATION_RULES.CONTACT_NAME.max) {
-        return `ชื่อผู้ติดต่อต้องมีความยาวไม่เกิน ${VALIDATION_RULES.CONTACT_NAME.max} ตัวอักษร`;
-      }
-      break;
+      return validateName(value, 'ชื่อผู้ติดต่อ');
 
     case 'phone':
-      if (!value) {
-        return 'กรุณากรอกเบอร์โทรศัพท์';
-      }
-      if (!PHONE_REGEX.test(value.replace(/\s/g, ''))) {
-        return 'รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (ตัวอย่าง: 02-123-4567 หรือ 0812345678)';
-      }
-      break;
+      return validatePhone(value);
 
     case 'email':
-      if (!value) {
-        return 'กรุณากรอกอีเมล';
-      }
-      if (!EMAIL_REGEX.test(value)) {
-        return 'รูปแบบอีเมลไม่ถูกต้อง';
-      }
-      break;
+      return validateEmail(value);
 
     case 'website':
-      if (value) {
-        try {
-          new URL(value);
-        } catch {
-          return 'รูปแบบ URL ไม่ถูกต้อง';
-        }
-      }
-      break;
+      return validateUrl(value);
 
     case 'location':
-      if (!value || value.trim().length < VALIDATION_RULES.LOCATION.min) {
-        return `ที่อยู่ต้องมีความยาวอย่างน้อย ${VALIDATION_RULES.LOCATION.min} ตัวอักษร`;
-      }
-      break;
-  }
+      return validateAddress(value);
 
-  return undefined;
+    default:
+      return undefined;
+  }
 }
 
 /**
- * Validate entire form
+ * Validation rules for gym form
+ */
+const GYM_VALIDATION_RULES: ValidationRule<GymFormData>[] = [
+  { field: 'gym_name', validator: (value) => validateField('gym_name', value) },
+  { field: 'gym_name_english', validator: (value) => validateField('gym_name_english', value) },
+  { field: 'contact_name', validator: (value) => validateField('contact_name', value) },
+  { field: 'phone', validator: (value) => validateField('phone', value) },
+  { field: 'email', validator: (value) => validateField('email', value) },
+  { field: 'website', validator: (value) => validateField('website', value) },
+  { field: 'location', validator: (value) => validateField('location', value) },
+];
+
+/**
+ * Validate entire gym form
  */
 export function validateForm(data: GymFormData): Record<string, string> {
-  const errors: Record<string, string> = {};
-
-  const fields: (keyof GymFormData)[] = [
-    'gym_name',
-    'contact_name',
-    'phone',
-    'email',
-    'website',
-    'location',
-  ];
-
-  fields.forEach((field) => {
-    const error = validateField(field, data[field] as string);
-    if (error) {
-      errors[field] = error;
-    }
-  });
-
-  return errors;
+  return validateFormGeneric(data, GYM_VALIDATION_RULES);
 }

@@ -264,7 +264,7 @@ export default function BookingPage({
 
       // Store booking ID for redirect after payment
       setBookingId(bookingResult.data.id);
-      console.log('Booking created:', bookingResult.data);
+      // Booking created successfully
     } catch (error) {
       console.error('Error creating payment intent:', error);
       const errorMessage = error instanceof Error ? error.message : 'ไม่สามารถเริ่มการชำระเงินได้';
