@@ -8,7 +8,7 @@ import {
   ClockIcon,
   PaperAirplaneIcon
 } from "@heroicons/react/24/outline";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { PageHeader } from "@/components/shared";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({

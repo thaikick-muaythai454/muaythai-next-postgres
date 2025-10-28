@@ -4,21 +4,7 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGamification } from '@/lib/hooks/useGamification';
-import { 
-  Card, 
-  CardBody, 
-  CardHeader, 
-  Button, 
-  Input, 
-  Chip,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Divider
-} from '@heroui/react';
+import { Card, CardBody, CardHeader, Button, Input, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Divider } from '@heroui/react';
 import {
   ShareIcon,
   UserPlusIcon,

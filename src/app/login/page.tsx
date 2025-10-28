@@ -5,13 +5,13 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/database/supabase/client";
 import {
-  EnvelopeIcon,
-  LockClosedIcon,
   ExclamationTriangleIcon,
   EyeIcon,
   EyeSlashIcon,
   ArrowRightIcon,
 } from "@heroicons/react/24/outline";
+import AuthLayout from "@/components/shared/layout/AuthLayout";
+import { Button } from "@/components/shared";
 
 /**
  * Interface for login form data
@@ -84,7 +84,7 @@ function LoginForm() {
           // User is already logged in, redirect them
           router.push(redirectTo);
         }
-      } catch (error) {
+      } catch {
         // Error occurred during login
         // Silently handle errors
       } finally {
@@ -215,7 +215,7 @@ function LoginForm() {
         router.push(redirectTo);
         router.refresh(); // Refresh to update server components
       }
-    } catch (error) {
+    } catch {
       // Login error occurred
       setErrors({
         general: "เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง",
@@ -247,159 +247,132 @@ function LoginForm() {
   }
 
   return (
-    <div className="min-h-[calc(100vh-128px)] flex items-center justify-center py-8">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="mb-2 font-bold text-white text-3xl">
-            เข้าสู่ระบบ
-          </h1>
-          <p className="text-zinc-400 text-base">
-            ยินดีต้อนรับกลับมา
-          </p>
+    <AuthLayout
+      title="เข้าสู่ระบบ"
+      subtitle="ยินดีต้อนรับกลับสู่ Muay Thai Community"
+    >
+      <form onSubmit={handleSubmit} className="space-y-6 pr-6">
+        {/* General Error Message */}
+        {errors.general && (
+          <div className="bg-red-500/20 p-4 border border-red-500 rounded-lg">
+            <div className="flex items-center gap-3">
+              <ExclamationTriangleIcon className="flex-shrink-0 w-6 h-6 text-red-400" />
+              <p className="text-red-400 text-sm">{errors.general}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Email or Username Field */}
+        <div>
+          <label
+            htmlFor="identifier"
+            className="block mb-2 font-medium text-zinc-300 text-sm"
+          >
+            อีเมลหรือ Username
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              id="identifier"
+              name="identifier"
+              value={formData.identifier}
+              onChange={handleInputChange}
+                  className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
+                    errors.identifier ? "border-red-500/70 shadow-red-500/20" : "border-zinc-600/50 hover:border-zinc-500/70"
+                  } rounded-xl px-4 py-3 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono text-sm`}
+              placeholder="your@email.com or username"
+              autoComplete="username"
+            />
+          </div>
+          {errors.identifier && (
+            <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+              <ExclamationTriangleIcon className="w-4 h-4" />
+              {errors.identifier}
+            </p>
+          )}
         </div>
 
-        {/* Login Form */}
-        <div className="bg-zinc-950 shadow-2xl p-6 rounded-2xl">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* General Error Message */}
-            {errors.general && (
-              <div className="bg-red-500/20 p-4 border border-red-500 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <ExclamationTriangleIcon className="flex-shrink-0 w-6 h-6 text-red-400" />
-                  <p className="text-red-400 text-sm">{errors.general}</p>
-                </div>
-              </div>
-            )}
-
-            {/* Email or Username Field */}
-            <div>
-              <label
-                htmlFor="identifier"
-                className="block mb-2 font-medium text-zinc-300 text-sm"
-              >
-                อีเมลหรือ Username
-              </label>
-              <div className="relative">
-                <EnvelopeIcon className="top-3.5 left-3 absolute w-5 h-5 text-zinc-500" />
-                <input
-                  type="text"
-                  id="identifier"
-                  name="identifier"
-                  value={formData.identifier}
-                  onChange={handleInputChange}
-                  className={`w-full bg-zinc-700 border ${
-                    errors.identifier ? "border-red-500" : "border-zinc-600"
-                  } rounded-lg px-4 py-3 pl-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
-                  placeholder="your@email.com or username"
-                  autoComplete="username"
-                />
-              </div>
-              {errors.identifier && (
-                <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  {errors.identifier}
-                </p>
-              )}
-            </div>
-
-            {/* Password Field */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block mb-2 font-medium text-zinc-300 text-sm"
-              >
-                รหัสผ่าน
-              </label>
-              <div className="relative">
-                <LockClosedIcon className="top-3.5 left-3 absolute w-5 h-5 text-zinc-500" />
+        {/* Password Field */}
+        <div>
+          <label
+            htmlFor="password"
+            className="block mb-2 font-medium text-zinc-300 text-sm"
+          >
+            รหัสผ่าน
+          </label>
+            <div className="relative group">
                 <input
                   type={showPassword ? "text" : "password"}
                   id="password"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className={`w-full bg-zinc-700 border ${
-                    errors.password ? "border-red-500" : "border-zinc-600"
-                  } rounded-lg px-4 py-3 pl-10 pr-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
+                  className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
+                    errors.password ? "border-red-500/70 shadow-red-500/20" : "border-zinc-600/50 hover:border-zinc-500/70 group-hover:border-zinc-500/50"
+                  } rounded-xl px-4 py-3 pr-12 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono text-sm`}
                   placeholder="••••••••"
                   autoComplete="current-password"
                 />
-                <button
+                <Button
                   type="button"
                   onClick={togglePasswordVisibility}
-                  className="top-3.5 right-3 absolute focus:outline-none text-zinc-500 hover:text-zinc-400"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-3 right-4 text-zinc-400 hover:text-zinc-300 p-1"
                 >
                   {showPassword ? (
                     <EyeSlashIcon className="w-5 h-5" />
                   ) : (
                     <EyeIcon className="w-5 h-5" />
                   )}
-                </button>
+                </Button>
               </div>
-              {errors.password && (
-                <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  {errors.password}
-                </p>
-              )}
-            </div>
-
-            {/* Forgot Password Link */}
-            <div className="flex justify-end">
-              <Link
-                href="/forget-password"
-                className="text-red-500 hover:text-red-400 text-sm transition-colors"
-              >
-                ลืมรหัสผ่าน?
-              </Link>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex justify-center items-center gap-3 bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 shadow-lg px-8 py-4 rounded-lg w-full font-bold text-white text-lg transition-all disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <>
-                  <div className="border border-white border-t-transparent rounded-full w-6 h-6 animate-spin"></div>
-                  กำลังเข้าสู่ระบบ...
-                </>
-              ) : (
-                <>
-                  เข้าสู่ระบบ
-                  <ArrowRightIcon className="w-5 h-5" />
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Sign Up Link */}
-          <div className="mt-4 text-center">
-            <p className="text-zinc-400 text-sm">
-              ยังไม่มีบัญชี?{" "}
-              <Link
-                href="/signup"
-                className="font-semibold text-red-500 hover:text-red-400 transition-colors"
-              >
-                สมัครสมาชิก
-              </Link>
+          {errors.password && (
+            <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+              <ExclamationTriangleIcon className="w-4 h-4" />
+              {errors.password}
             </p>
-          </div>
+          )}
         </div>
 
-        {/* Back to Home Link */}
-        <div className="text-center mt-4">
+        {/* Forgot Password Link */}
+        <div className="flex justify-end">
           <Link
-            href="/"
-            className="text-zinc-500 hover:text-zinc-400 text-sm transition-colors"
+            href="/forget-password"
+            className="text-red-500 hover:text-red-400 text-sm transition-colors"
           >
-            ← กลับหน้าหลัก
+            ลืมรหัสผ่าน?
           </Link>
         </div>
+
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          disabled={isLoading}
+          loading={isLoading}
+          loadingText="กำลังเข้าสู่ระบบ..."
+          rightIcon={<ArrowRightIcon className="w-5 h-5" />}
+          fullWidth
+          size="lg"
+        >
+          เข้าสู่ระบบ
+        </Button>
+      </form>
+
+      {/* Sign Up Link */}
+      <div className="mt-6 text-center">
+        <p className="text-zinc-400 text-sm">
+          ยังไม่มีบัญชี?{" "}
+          <Link
+            href="/signup"
+            className="font-semibold text-red-500 hover:text-red-400 transition-colors"
+          >
+            สมัครสมาชิก
+          </Link>
+        </p>
       </div>
-    </div>
+
+    </AuthLayout>
   );
 }
 

@@ -110,8 +110,7 @@ async function handlePaymentSuccess(
   supabase: any,
   paymentIntent: Stripe.PaymentIntent
 ) {
-  console.log('💳 Payment succeeded:', paymentIntent.id);
-  console.log('💳 Payment metadata:', paymentIntent.metadata);
+  // Payment succeeded - process the payment
 
   try {
     // Option 1: Update via payments table (if payment record exists)
@@ -126,7 +125,7 @@ async function handlePaymentSuccess(
     }
 
     if (payment) {
-      console.log('✅ Payment record found, updating status...');
+      // Payment record found, updating status
 
       // Update payment status
       const { error: paymentUpdateError } = await supabase
@@ -157,7 +156,7 @@ async function handlePaymentSuccess(
           })
           .eq('id', order.id);
 
-        console.log('✅ Order updated:', order.id);
+        // Order updated successfully
       }
     }
 
@@ -165,7 +164,7 @@ async function handlePaymentSuccess(
     const bookingId = paymentIntent.metadata?.bookingId;
 
     if (bookingId) {
-      console.log('📋 Updating booking directly:', bookingId);
+      // Updating booking directly
 
       const { error: bookingUpdateError } = await supabase
         .from('bookings')
@@ -178,14 +177,12 @@ async function handlePaymentSuccess(
 
       if (bookingUpdateError) {
         console.error('❌ Error updating booking:', bookingUpdateError);
-      } else {
-        console.log('✅ Booking payment status updated successfully');
       }
-    } else {
-      console.warn('⚠️ No bookingId in metadata, skipping direct booking update');
+      // Booking payment status updated successfully
     }
+    // No bookingId in metadata, skipping direct booking update
 
-    console.log('✅ Payment success handler completed');
+    // Payment success handler completed
   } catch (error) {
     console.error('❌ Error in handlePaymentSuccess:', error);
     // Don't throw - we don't want to fail the webhook

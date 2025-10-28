@@ -4,7 +4,7 @@ import "./globals.css";
 import { LayoutWrapper, ErrorBoundary } from "@/components/shared";
 import { Providers } from "./providers";
 import FixedBackground from "@/components/ui/FixedBackground";
-import { GamificationNotification } from "@/components/features/gamification/GamificationNotification";
+import GamificationNotification from "@/components/features/gamification/GamificationNotification";
 
 const baiJamjuree = Bai_Jamjuree({
   variable: "--font-bai-jamjuree",

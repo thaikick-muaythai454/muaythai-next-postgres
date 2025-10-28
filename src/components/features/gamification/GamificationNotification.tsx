@@ -18,7 +18,7 @@ interface Notification {
   show: boolean;
 }
 
-export function GamificationNotification({ className = '' }: GamificationNotificationProps) {
+export default function GamificationNotification({ className = '' }: GamificationNotificationProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   // Listen for gamification events

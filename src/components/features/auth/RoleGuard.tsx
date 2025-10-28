@@ -65,25 +65,17 @@ export default function RoleGuard({
           return;
         }
         
-        // Debug logging
-        console.log('[RoleGuard] User:', user.email);
-        console.log('[RoleGuard] User Role:', userRole);
-        console.log('[RoleGuard] Required Role:', allowedRole);
-        console.log('[RoleGuard] Exact match:', userRole === allowedRole);
-
         // Check if user has the exact required role
         // For dashboard routes, we use exact matching to prevent role escalation
         // (e.g., admin cannot access partner dashboard, partner cannot access user dashboard)
         if (userRole !== allowedRole) {
           // User doesn't have the required role - redirect to their own dashboard
-          console.warn(`[RoleGuard] Access denied. User has '${userRole}' but needs '${allowedRole}'`);
           const redirectPath = redirectTo || getDashboardPath(userRole);
           router.push(redirectPath);
           return;
         }
 
         // User is authorized
-        console.log('[RoleGuard] Access granted');
         setIsAuthorized(true);
       } catch (error) {
         console.error('Role check error:', error);

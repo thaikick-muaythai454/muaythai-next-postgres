@@ -1,9 +1,10 @@
 import type { StatusConfig } from './types';
+import { ADMIN_STATUS_CONFIG, formatThaiDate } from '../shared/adminUtils';
 
 export const STATUS_CONFIG: Record<string, StatusConfig> = {
-  pending: { label: 'รอการตรวจสอบ', color: 'warning' },
-  approved: { label: 'อนุมัติแล้ว', color: 'success' },
-  rejected: { label: 'ไม่อนุมัติ', color: 'danger' },
+  pending: ADMIN_STATUS_CONFIG.pending,
+  approved: ADMIN_STATUS_CONFIG.approved,
+  rejected: ADMIN_STATUS_CONFIG.rejected,
 };
 
 export const STATS_CARDS = [
@@ -43,14 +44,5 @@ export const TOAST_MESSAGES = {
   GENERIC_ERROR: 'เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง',
 } as const;
 
-// Utility function for formatting dates
-export function formatDate(dateString: string | null | undefined): string {
-  if (!dateString) return '-';
-  return new Date(dateString).toLocaleDateString('th-TH', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+// Re-export the shared date formatting function
+export const formatDate = formatThaiDate;

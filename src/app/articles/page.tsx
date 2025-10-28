@@ -12,7 +12,7 @@ import {
   MagnifyingGlassIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { PageHeader } from "@/components/shared";
 
 // Helper function to get appropriate image based on category
 function getArticleImage(category: string) {

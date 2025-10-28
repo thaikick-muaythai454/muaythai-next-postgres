@@ -23,24 +23,41 @@ export interface BookingFilters {
   status?: string;
 }
 
+// Validation constants
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^0\d{1,2}-?\d{3,4}-?\d{4}$/;
+
 /**
- * Validate booking data
+ * Validate booking data with enhanced validation
  */
 export function validateBookingData(data: CreateBookingInput): string[] {
   const errors: string[] = [];
 
+  // Required field validation
   if (!data.gym_id) errors.push('กรุณาเลือกค่ายมวย');
   if (!data.package_id) errors.push('กรุณาเลือกแพ็คเกจ');
-  if (!data.customer_name) errors.push('กรุณากรอกชื่อผู้จอง');
-  if (!data.customer_email) errors.push('กรุณากรอกอีเมล');
-  if (!data.customer_phone) errors.push('กรุณากรอกเบอร์โทรศัพท์');
+  if (!data.customer_name?.trim()) errors.push('กรุณากรอกชื่อผู้จอง');
+  if (!data.customer_email?.trim()) errors.push('กรุณากรอกอีเมล');
+  if (!data.customer_phone?.trim()) errors.push('กรุณากรอกเบอร์โทรศัพท์');
   if (!data.start_date) errors.push('กรุณาเลือกวันที่เริ่มต้น');
 
-  // Validate email format
-  if (data.customer_email) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(data.customer_email)) {
-      errors.push('รูปแบบอีเมลไม่ถูกต้อง');
+  // Format validation
+  if (data.customer_email && !EMAIL_REGEX.test(data.customer_email.trim())) {
+    errors.push('รูปแบบอีเมลไม่ถูกต้อง');
+  }
+
+  if (data.customer_phone && !PHONE_REGEX.test(data.customer_phone.replace(/\s/g, ''))) {
+    errors.push('รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง');
+  }
+
+  // Date validation
+  if (data.start_date) {
+    const startDate = new Date(data.start_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (startDate < today) {
+      errors.push('วันที่เริ่มต้นต้องไม่เป็นวันที่ผ่านมาแล้ว');
     }
   }
 
@@ -48,13 +65,15 @@ export function validateBookingData(data: CreateBookingInput): string[] {
 }
 
 /**
- * Generate booking number
+ * Generate booking number with better uniqueness
  */
 export function generateBookingNumber(): string {
-  const year = new Date().getFullYear();
-  const month = String(new Date().getMonth() + 1).padStart(2, '0');
-  const random = String(Math.floor(Math.random() * 10000)).padStart(4, '0');
-  return `BK${year}${month}${random}`;
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  const timestamp = now.getTime().toString().slice(-4);
+  return `BK${year}${month}${day}${timestamp}`;
 }
 
 /**
@@ -138,7 +157,7 @@ export async function getBookingById(id: string) {
 }
 
 /**
- * Create new booking
+ * Create new booking with optimized validation
  */
 export async function createBooking(data: CreateBookingInput) {
   // Validate data
@@ -151,38 +170,39 @@ export async function createBooking(data: CreateBookingInput) {
 
   const supabase = await createClient();
 
-  // Verify gym exists and is approved
-  const { data: gym, error: gymError } = await supabase
+  // Verify gym and package in a single optimized query
+  const { data: gymWithPackage, error: verificationError } = await supabase
     .from('gyms')
-    .select('id, gym_name, status')
+    .select(`
+      id,
+      gym_name,
+      status,
+      gym_packages!inner(
+        id,
+        name,
+        price,
+        package_type,
+        duration_months,
+        is_active
+      )
+    `)
     .eq('id', data.gym_id)
     .eq('status', 'approved')
+    .eq('gym_packages.id', data.package_id)
+    .eq('gym_packages.is_active', true)
     .maybeSingle();
 
-  if (gymError || !gym) {
-    throw new Error('ไม่พบค่ายมวยที่ต้องการ');
+  if (verificationError || !gymWithPackage || !gymWithPackage.gym_packages?.length) {
+    throw new Error('ไม่พบค่ายมวยหรือแพ็คเกจที่ต้องการ');
   }
 
-  // Verify package exists and is active
-  const { data: gymPackage, error: packageError } = await supabase
-    .from('gym_packages')
-    .select('*')
-    .eq('id', data.package_id)
-    .eq('gym_id', data.gym_id)
-    .eq('is_active', true)
-    .maybeSingle();
-
-  if (packageError || !gymPackage) {
-    throw new Error('ไม่พบแพ็คเกจที่ต้องการ');
-  }
-
-  // Calculate end date
+  const gymPackage = gymWithPackage.gym_packages[0];
+  
+  // Calculate end date and generate booking number
   const end_date = calculateEndDate(data.start_date, gymPackage.duration_months);
-
-  // Generate booking number
   const bookingNumber = generateBookingNumber();
 
-  // Create booking
+  // Create booking with sanitized data
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
     .insert({
@@ -190,16 +210,16 @@ export async function createBooking(data: CreateBookingInput) {
       gym_id: data.gym_id,
       package_id: data.package_id,
       booking_number: bookingNumber,
-      customer_name: data.customer_name,
-      customer_email: data.customer_email,
-      customer_phone: data.customer_phone,
+      customer_name: data.customer_name.trim(),
+      customer_email: data.customer_email.trim().toLowerCase(),
+      customer_phone: data.customer_phone.trim(),
       start_date: data.start_date,
       end_date,
       price_paid: gymPackage.price,
       package_name: gymPackage.name,
       package_type: gymPackage.package_type,
       duration_months: gymPackage.duration_months,
-      special_requests: data.special_requests || null,
+      special_requests: data.special_requests?.trim() || null,
       payment_method: data.payment_method || null,
       payment_status: 'pending',
       status: 'pending',
@@ -215,53 +235,48 @@ export async function createBooking(data: CreateBookingInput) {
 }
 
 /**
- * Update booking status
+ * Update booking status and/or payment status
  */
 export async function updateBookingStatus(
   id: string,
-  status: 'pending' | 'confirmed' | 'cancelled' | 'completed'
+  status?: 'pending' | 'confirmed' | 'cancelled' | 'completed',
+  paymentStatus?: 'pending' | 'paid' | 'failed' | 'refunded'
 ) {
   const supabase = await createClient();
 
+  const updateData: Record<string, string> = {
+    updated_at: new Date().toISOString()
+  };
+
+  if (status) updateData.status = status;
+  if (paymentStatus) updateData.payment_status = paymentStatus;
+
   const { data: booking, error } = await supabase
     .from('bookings')
-    .update({ status, updated_at: new Date().toISOString() })
+    .update(updateData)
     .eq('id', id)
     .select()
     .single();
 
   if (error) {
-    throw new Error(`Failed to update booking status: ${error.message}`);
+    throw new Error(`Failed to update booking: ${error.message}`);
   }
 
   return booking;
 }
 
 /**
- * Update booking payment status
+ * Update booking payment status (convenience function)
  */
 export async function updateBookingPaymentStatus(
   id: string,
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded'
 ) {
-  const supabase = await createClient();
-
-  const { data: booking, error } = await supabase
-    .from('bookings')
-    .update({ payment_status: paymentStatus, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error) {
-    throw new Error(`Failed to update booking payment status: ${error.message}`);
-  }
-
-  return booking;
+  return updateBookingStatus(id, undefined, paymentStatus);
 }
 
 /**
- * Cancel booking
+ * Cancel booking (convenience function)
  */
 export async function cancelBooking(id: string) {
   return updateBookingStatus(id, 'cancelled');

@@ -6,6 +6,7 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon 
 } from "@heroicons/react/24/outline";
+import { Button } from "@/components/shared";
 
 export default function ContactForm() {
   const [formData, setFormData] = useState({
@@ -164,23 +165,17 @@ export default function ContactForm() {
         />
       </div>
 
-      <button
+      <Button
         type="submit"
         disabled={isSubmitting}
-        className="flex justify-center items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 px-6 py-3 rounded-lg w-full font-semibold text-white transition-colors disabled:cursor-not-allowed"
+        loading={isSubmitting}
+        loadingText="กำลังส่ง..."
+        leftIcon={<PaperAirplaneIcon className="w-5 h-5" />}
+        fullWidth
+        size="lg"
       >
-        {isSubmitting ? (
-          <>
-            <div className="border-white border-b-2 rounded-full w-5 h-5 animate-spin"></div>
-            กำลังส่ง...
-          </>
-        ) : (
-          <>
-            <PaperAirplaneIcon className="w-5 h-5" />
-            ส่งข้อความ
-          </>
-        )}
-      </button>
+        ส่งข้อความ
+      </Button>
     </form>
   );
 }

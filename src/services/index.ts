@@ -1,16 +1,35 @@
 /**
  * Services Index
- * Central export point for all service modules
+ * Optimized exports for better tree-shaking
  */
 
-// Auth Service
-export * from './auth.service';
+// Most commonly used service functions
+export { 
+  getGyms, 
+  createGym, 
+  getGymById, 
+  updateGym, 
+  deleteGym 
+} from './gym.service';
 
-// Gym Service
-export * from './gym.service';
+export { 
+  getBookings, 
+  createBooking, 
+  updateBookingStatus 
+} from './booking.service';
 
-// Booking Service
-export * from './booking.service';
+export { 
+  createPaymentIntent, 
+  getUserPayments, 
+  getPaymentById 
+} from './payment.service';
 
-// Payment Service
-export * from './payment.service';
+export { 
+  signUp, 
+  signIn, 
+  signOut, 
+  getCurrentUser 
+} from './auth.service';
+
+// For less common functions, import directly from specific service files
+// e.g., import { specificFunction } from '@/services/gym.service';

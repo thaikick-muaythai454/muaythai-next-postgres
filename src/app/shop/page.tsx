@@ -2,8 +2,8 @@
 
 import { useState, ChangeEvent } from "react";
 import { PRODUCTS } from "@/lib/data";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { ProductCard } from "@/components/ui/cards/ProductCard";
+import { PageHeader } from "@/components/shared";
+import { ProductCard } from "@/components/shared";
 import { MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
 
 const getUniqueCategories = () => [

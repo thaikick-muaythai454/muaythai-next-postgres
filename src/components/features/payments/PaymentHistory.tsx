@@ -1,123 +1,26 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
 import { 
-  CheckCircleIcon, 
   XCircleIcon, 
-  ClockIcon,
   EyeIcon,
   CalendarIcon,
   CurrencyDollarIcon
 } from '@heroicons/react/24/outline';
-
-interface PaymentRecord {
-  id: string;
-  amount: number;
-  status: 'completed' | 'pending' | 'failed' | 'cancelled';
-  paymentType: 'gym_booking' | 'product' | 'ticket';
-  orderNumber: string;
-  createdAt: string;
-  description: string;
-  metadata?: Record<string, any>;
-}
+import { 
+  usePaymentData,
+  PaymentStatusDisplay,
+  getPaymentTypeText,
+  formatPaymentDate,
+  formatAmount,
+  PaymentRecord
+} from './shared';
 
 export default function PaymentHistory() {
-  const { user } = useAuth();
-  const [payments, setPayments] = useState<PaymentRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { payments, loading, error, refreshPayments } = usePaymentData();
   const [selectedPayment, setSelectedPayment] = useState<PaymentRecord | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchPaymentHistory();
-    }
-  }, [user]);
 
-  const fetchPaymentHistory = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/payments/history');
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch payment history');
-      }
-      
-      const data = await response.json();
-      setPayments(data.payments || []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch payment history');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return <CheckCircleIcon className="w-5 h-5 text-green-500" />;
-      case 'pending':
-        return <ClockIcon className="w-5 h-5 text-yellow-500" />;
-      case 'failed':
-      case 'cancelled':
-        return <XCircleIcon className="w-5 h-5 text-red-500" />;
-      default:
-        return <ClockIcon className="w-5 h-5 text-gray-500" />;
-    }
-  };
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'สำเร็จ';
-      case 'pending':
-        return 'รอดำเนินการ';
-      case 'failed':
-        return 'ล้มเหลว';
-      case 'cancelled':
-        return 'ยกเลิก';
-      default:
-        return 'ไม่ทราบสถานะ';
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed':
-        return 'text-green-400';
-      case 'pending':
-        return 'text-yellow-400';
-      case 'failed':
-      case 'cancelled':
-        return 'text-red-400';
-      default:
-        return 'text-gray-400';
-    }
-  };
-
-  const getPaymentTypeText = (type: string) => {
-    switch (type) {
-      case 'gym_booking':
-        return 'จองค่ายมวย';
-      case 'product':
-        return 'ซื้อสินค้า';
-      case 'ticket':
-        return 'ซื้อตั๋ว';
-      default:
-        return 'ไม่ทราบประเภท';
-    }
-  };
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('th-TH', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   if (loading) {
     return (
@@ -138,7 +41,7 @@ export default function PaymentHistory() {
           <h3 className="text-xl font-semibold text-white mb-2">เกิดข้อผิดพลาด</h3>
           <p className="text-zinc-400 mb-6">{error}</p>
           <button
-            onClick={fetchPaymentHistory}
+            onClick={refreshPayments}
             className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
           >
             ลองใหม่
@@ -179,24 +82,21 @@ export default function PaymentHistory() {
             <div key={payment.id} className="bg-zinc-800 rounded-lg p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  {getStatusIcon(payment.status)}
+                  <PaymentStatusDisplay status={payment.status} size="md" />
                   <div>
                     <div className="flex items-center space-x-2">
                       <h4 className="text-lg font-semibold text-white">
-                        {getPaymentTypeText(payment.paymentType)}
+                        {getPaymentTypeText(payment.payment_type)}
                       </h4>
-                      <span className={`text-sm font-medium ${getStatusColor(payment.status)}`}>
-                        {getStatusText(payment.status)}
-                      </span>
                     </div>
                     <p className="text-zinc-400 text-sm">
-                      หมายเลขคำสั่งซื้อ: {payment.orderNumber}
+                      หมายเลขคำสั่งซื้อ: {payment.order_number}
                     </p>
                     <div className="flex items-center space-x-4 mt-2">
                       <div className="flex items-center space-x-1">
                         <CalendarIcon className="w-4 h-4 text-zinc-500" />
                         <span className="text-zinc-400 text-sm">
-                          {formatDate(payment.createdAt)}
+                          {formatPaymentDate(payment.created_at)}
                         </span>
                       </div>
                     </div>
@@ -204,7 +104,7 @@ export default function PaymentHistory() {
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-white">
-                    ฿{payment.amount.toLocaleString()}
+                    {formatAmount(payment.amount)}
                   </p>
                   <button
                     onClick={() => setSelectedPayment(payment)}
@@ -238,34 +138,25 @@ export default function PaymentHistory() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="text-zinc-400 text-sm">หมายเลขคำสั่งซื้อ</label>
-                  <p className="text-white font-mono">{selectedPayment.orderNumber}</p>
+                  <p className="text-white font-mono">{selectedPayment.order_number}</p>
                 </div>
                 <div>
                   <label className="text-zinc-400 text-sm">สถานะ</label>
-                  <div className="flex items-center space-x-2">
-                    {getStatusIcon(selectedPayment.status)}
-                    <span className={`font-medium ${getStatusColor(selectedPayment.status)}`}>
-                      {getStatusText(selectedPayment.status)}
-                    </span>
-                  </div>
+                  <PaymentStatusDisplay status={selectedPayment.status} size="md" />
                 </div>
                 <div>
                   <label className="text-zinc-400 text-sm">ประเภท</label>
-                  <p className="text-white">{getPaymentTypeText(selectedPayment.paymentType)}</p>
+                  <p className="text-white">{getPaymentTypeText(selectedPayment.payment_type)}</p>
                 </div>
                 <div>
                   <label className="text-zinc-400 text-sm">จำนวนเงิน</label>
                   <p className="text-white text-xl font-bold">
-                    ฿{selectedPayment.amount.toLocaleString()}
+                    {formatAmount(selectedPayment.amount)}
                   </p>
                 </div>
                 <div>
                   <label className="text-zinc-400 text-sm">วันที่สร้าง</label>
-                  <p className="text-white">{formatDate(selectedPayment.createdAt)}</p>
-                </div>
-                <div>
-                  <label className="text-zinc-400 text-sm">รายละเอียด</label>
-                  <p className="text-white">{selectedPayment.description}</p>
+                  <p className="text-white">{formatPaymentDate(selectedPayment.created_at)}</p>
                 </div>
               </div>
 

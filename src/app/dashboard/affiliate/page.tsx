@@ -3,21 +3,7 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { 
-  Card, 
-  CardBody, 
-  CardHeader, 
-  Button, 
-  Chip,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Divider,
-  Progress
-} from '@heroui/react';
+import { Card, CardBody, CardHeader, Button, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Divider, Progress } from '@heroui/react';
 import {
   ShareIcon,
   UserPlusIcon,

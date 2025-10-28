@@ -7,10 +7,9 @@ import {
   CreditCardIcon, 
   BanknotesIcon, 
   DevicePhoneMobileIcon,
-  QrCodeIcon,
-  CheckCircleIcon,
-  XCircleIcon
+  QrCodeIcon
 } from '@heroicons/react/24/outline';
+import { generatePaymentReference, formatAmount } from './shared';
 
 interface PaymentMethodsProps {
   amount: number;
@@ -93,7 +92,7 @@ export default function PaymentMethods({
         accountNumber: '1234567890',
         accountName: 'ค่ายมวยไทย',
         amount: amount,
-        reference: `MT-${Date.now()}`,
+        reference: generatePaymentReference(),
       };
 
       // Store bank transfer info in session storage
@@ -115,7 +114,7 @@ export default function PaymentMethods({
       const promptPayInfo = {
         phoneNumber: '0812345678',
         amount: amount,
-        reference: `MT-${Date.now()}`,
+        reference: generatePaymentReference(),
       };
 
       // Store PromptPay info in session storage
@@ -274,7 +273,7 @@ export default function PaymentMethods({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-zinc-400">จำนวนเงิน:</span>
-                      <span className="text-white font-semibold">฿{amount.toLocaleString()}</span>
+                      <span className="text-white font-semibold">{formatAmount(amount)}</span>
                     </div>
                   </div>
                 </div>
@@ -305,7 +304,7 @@ export default function PaymentMethods({
                     </div>
                     <div className="flex justify-between">
                       <span className="text-zinc-400">จำนวนเงิน:</span>
-                      <span className="text-white font-semibold">฿{amount.toLocaleString()}</span>
+                      <span className="text-white font-semibold">{formatAmount(amount)}</span>
                     </div>
                   </div>
                 </div>
@@ -332,7 +331,7 @@ export default function PaymentMethods({
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-zinc-400">จำนวนเงิน:</span>
-                      <span className="text-white font-semibold">฿{amount.toLocaleString()}</span>
+                      <span className="text-white font-semibold">{formatAmount(amount)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-zinc-400">สถานที่:</span>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { PageHeader } from "@/components/shared";
 
 const faqData = [
   {

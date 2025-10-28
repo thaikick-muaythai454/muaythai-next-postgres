@@ -5,15 +5,12 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/database/supabase/client";
 import {
-  EnvelopeIcon,
-  LockClosedIcon,
-  UserIcon,
-  AtSymbolIcon,
   ExclamationTriangleIcon,
   EyeIcon,
   EyeSlashIcon,
-  DevicePhoneMobileIcon,
 } from "@heroicons/react/24/outline";
+import AuthLayout from "@/components/shared/layout/AuthLayout";
+import { Button } from "@/components/shared";
 
 /**
  * Interface for signup form data
@@ -89,7 +86,9 @@ export default function SignupPage() {
   useEffect(() => {
     const checkAuthentication = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
 
         if (session) {
           // User is already logged in, redirect them
@@ -108,9 +107,9 @@ export default function SignupPage() {
   // Check for referral code in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const refCode = urlParams.get('ref');
+    const refCode = urlParams.get("ref");
     if (refCode) {
-      setFormData(prev => ({ ...prev, referralCode: refCode }));
+      setFormData((prev) => ({ ...prev, referralCode: refCode }));
     }
   }, []);
 
@@ -122,8 +121,13 @@ export default function SignupPage() {
   const getPasswordStrength = (password: string) => {
     if (!password) return { level: "", color: "" };
     if (password.length < 6) return { level: "อ่อน", color: "text-red-400" };
-    if (password.length < 10) return { level: "ปานกลาง", color: "text-yellow-400" };
-    if (password.length >= 10 && /[A-Z]/.test(password) && /[0-9]/.test(password)) {
+    if (password.length < 10)
+      return { level: "ปานกลาง", color: "text-yellow-400" };
+    if (
+      password.length >= 10 &&
+      /[A-Z]/.test(password) &&
+      /[0-9]/.test(password)
+    ) {
       return { level: "แข็งแรง", color: "text-green-400" };
     }
     return { level: "ปานกลาง", color: "text-yellow-400" };
@@ -142,7 +146,8 @@ export default function SignupPage() {
     } else if (formData.username.trim().length < 3) {
       newErrors.username = "Username ต้องมีอย่างน้อย 3 ตัวอักษร";
     } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      newErrors.username = "Username ต้องประกอบด้วย ตัวอักษร ตัวเลข และ _ เท่านั้น";
+      newErrors.username =
+        "Username ต้องประกอบด้วย ตัวอักษร ตัวเลข และ _ เท่านั้น";
     }
 
     // Full name validation
@@ -224,9 +229,9 @@ export default function SignupPage() {
     try {
       // Check if username already exists
       const { data: existingProfiles } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', formData.username);
+        .from("profiles")
+        .select("username")
+        .eq("username", formData.username);
 
       // Ignore "no rows" error as it means username is available
       if (existingProfiles && existingProfiles.length > 0) {
@@ -283,25 +288,25 @@ export default function SignupPage() {
         // Note: profile and user_role are created automatically by database trigger
         try {
           // Wait a bit for the trigger to complete
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
 
           // Process referral code if provided
           if (formData.referralCode.trim()) {
             try {
-              const response = await fetch('/api/affiliate/validate', {
-                method: 'POST',
+              const response = await fetch("/api/affiliate/validate", {
+                method: "POST",
                 headers: {
-                  'Content-Type': 'application/json',
+                  "Content-Type": "application/json",
                 },
                 body: JSON.stringify({ code: formData.referralCode }),
               });
 
               if (response.ok) {
                 // Award referral points to the referrer
-                await fetch('/api/affiliate', {
-                  method: 'POST',
+                await fetch("/api/affiliate", {
+                  method: "POST",
                   headers: {
-                    'Content-Type': 'application/json',
+                    "Content-Type": "application/json",
                   },
                   body: JSON.stringify({
                     referredUserId: data.user.id,
@@ -309,7 +314,7 @@ export default function SignupPage() {
                   }),
                 });
               }
-            } catch (error) {
+            } catch {
               // Error processing referral
               // Don't fail the signup if referral processing fails
             }
@@ -317,23 +322,23 @@ export default function SignupPage() {
 
           // Fetch user role
           const { data: roleData } = await supabase
-            .from('user_roles')
-            .select('role')
-            .eq('user_id', data.user.id)
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", data.user.id)
             .maybeSingle();
 
           // Redirect based on role
-          if (roleData?.role === 'admin') {
-            router.push('/admin/dashboard');
-          } else if (roleData?.role === 'partner') {
-            router.push('/partner/dashboard');
+          if (roleData?.role === "admin") {
+            router.push("/admin/dashboard");
+          } else if (roleData?.role === "partner") {
+            router.push("/partner/dashboard");
           } else {
             // Default to user dashboard or home
-            router.push('/dashboard');
+            router.push("/dashboard");
           }
         } catch {
           // If role fetch fails, redirect to home
-          router.push('/');
+          router.push("/");
         }
       }
     } catch {
@@ -376,317 +381,308 @@ export default function SignupPage() {
   const passwordStrength = getPasswordStrength(formData.password);
 
   return (
-    <div className="min-h-[calc(100vh-128px)] flex items-center justify-center py-8">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-6">
-          <h1 className="mb-2 font-bold text-white text-3xl">
-            สมัครสมาชิก
-          </h1>
-        </div>
-
-        {/* Signup Form */}
-        <div className="bg-zinc-950 shadow-2xl p-6 rounded-2xl max-h-[calc(100vh-200px)] overflow-y-auto">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* General Error Message */}
-            {errors.general && (
-              <div className="bg-red-500/20 p-4 border border-red-500 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <ExclamationTriangleIcon className="flex-shrink-0 w-6 h-6 text-red-400" />
-                  <p className="text-red-400 text-sm">{errors.general}</p>
-                </div>
+    <AuthLayout
+      title="สมัครสมาชิก"
+      subtitle="เข้าร่วมชุมชนนักมวยไทยที่ใหญ่ที่สุด"
+    >
+      <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="space-y-4 pr-4">
+          {/* General Error Message */}
+          {errors.general && (
+            <div className="bg-red-500/20 p-4 border border-red-500/70 shadow-red-500/20 rounded-lg">
+              <div className="flex items-center gap-3">
+                <ExclamationTriangleIcon className="flex-shrink-0 w-6 h-6 text-red-400" />
+                <p className="text-red-400 text-sm">{errors.general}</p>
               </div>
-            )}
-
-            {/* Username Field */}
-            <div>
-              <label
-                htmlFor="username"
-                className="block mb-2 font-medium text-zinc-300 text-sm"
-              >
-                Username
-              </label>
-              <div className="relative">
-                <AtSymbolIcon className="top-3.5 left-3 absolute w-5 h-5 text-zinc-500" />
-                <input
-                  type="text"
-                  id="username"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleInputChange}
-                  className={`w-full bg-zinc-700 border ${
-                    errors.username ? "border-red-500" : "border-zinc-600"
-                  } rounded-lg px-4 py-3 pl-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
-                  placeholder="john_doe123"
-                  autoComplete="username"
-                />
-              </div>
-              {errors.username && (
-                <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  {errors.username}
-                </p>
-              )}
             </div>
+          )}
 
-            {/* Full Name Field */}
-            <div>
-              <label
-                htmlFor="fullName"
-                className="block mb-2 font-medium text-zinc-300 text-sm"
-              >
-                ชื่อ-นามสกุล
-              </label>
-              <div className="relative">
-                <UserIcon className="top-3.5 left-3 absolute w-5 h-5 text-zinc-500" />
-                <input
-                  type="text"
-                  id="fullName"
-                  name="fullName"
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  className={`w-full bg-zinc-700 border ${
-                    errors.fullName ? "border-red-500" : "border-zinc-600"
-                  } rounded-lg px-4 py-3 pl-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
-                  placeholder="สมชาย ใจดี"
-                  autoComplete="name"
-                />
-              </div>
-              {errors.fullName && (
-                <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  {errors.fullName}
-                </p>
-              )}
-            </div>
-
-            {/* Email Field */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block mb-2 font-medium text-zinc-300 text-sm"
-              >
-                อีเมล
-              </label>
-              <div className="relative">
-                <EnvelopeIcon className="top-3.5 left-3 absolute w-5 h-5 text-zinc-500" />
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={`w-full bg-zinc-700 border ${
-                    errors.email ? "border-red-500" : "border-zinc-600"
-                  } rounded-lg px-4 py-3 pl-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
-                  placeholder="your@email.com"
-                  autoComplete="email"
-                />
-              </div>
-              {errors.email && (
-                <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  {errors.email}
-                </p>
-              )}
-            </div>
-
-            {/* Phone Field */}
-            <div>
-              <label
-                htmlFor="phone"
-                className="block mb-2 font-medium text-zinc-300 text-sm"
-              >
-                เบอร์โทรศัพท์
-              </label>
-              <div className="relative">
-                <DevicePhoneMobileIcon className="top-3.5 left-3 absolute w-5 h-5 text-zinc-500" />
-                <input
-                  type="tel"
-                  id="phone"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className={`w-full bg-zinc-700 border ${
-                    errors.phone ? "border-red-500" : "border-zinc-600"
-                  } rounded-lg px-4 py-3 pl-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
-                  placeholder="0812345678"
-                  autoComplete="tel"
-                />
-              </div>
-              {errors.phone && (
-                <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  {errors.phone}
-                </p>
-              )}
-            </div>
-
-            {/* Password Field */}
-            <div>
-              <label
-                htmlFor="password"
-                className="block mb-2 font-medium text-zinc-300 text-sm"
-              >
-                รหัสผ่าน
-              </label>
-              <div className="relative">
-                <LockClosedIcon className="top-3.5 left-3 absolute w-5 h-5 text-zinc-500" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={`w-full bg-zinc-700 border ${
-                    errors.password ? "border-red-500" : "border-zinc-600"
-                  } rounded-lg px-4 py-3 pl-10 pr-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  onClick={togglePasswordVisibility}
-                  className="top-3.5 right-3 absolute focus:outline-none text-zinc-500 hover:text-zinc-400"
-                >
-                  {showPassword ? (
-                    <EyeSlashIcon className="w-5 h-5" />
-                  ) : (
-                    <EyeIcon className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-              {formData.password && !errors.password && (
-                <p className={`mt-2 text-sm ${passwordStrength.color}`}>
-                  ความแข็งแรง: {passwordStrength.level}
-                </p>
-              )}
-              {errors.password && (
-                <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  {errors.password}
-                </p>
-              )}
-            </div>
-
-            {/* Confirm Password Field */}
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block mb-2 font-medium text-zinc-300 text-sm"
-              >
-                ยืนยันรหัสผ่าน
-              </label>
-              <div className="relative">
-                <LockClosedIcon className="top-3.5 left-3 absolute w-5 h-5 text-zinc-500" />
-                <input
-                  type={showConfirmPassword ? "text" : "password"}
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className={`w-full bg-zinc-700 border ${
-                    errors.confirmPassword ? "border-red-500" : "border-zinc-600"
-                  } rounded-lg px-4 py-3 pl-10 pr-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
-                  placeholder="••••••••"
-                  autoComplete="new-password"
-                />
-                <button
-                  type="button"
-                  onClick={toggleConfirmPasswordVisibility}
-                  className="top-3.5 right-3 absolute focus:outline-none text-zinc-500 hover:text-zinc-400"
-                >
-                  {showConfirmPassword ? (
-                    <EyeSlashIcon className="w-5 h-5" />
-                  ) : (
-                    <EyeIcon className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  {errors.confirmPassword}
-                </p>
-              )}
-            </div>
-
-            {/* Referral Code Field */}
-            <div className="space-y-2">
-              <label
-                htmlFor="referralCode"
-                className="block text-zinc-300 text-sm font-medium"
-              >
-                โค้ดแนะนำ (ไม่บังคับ)
-              </label>
-              <div className="relative">
-                <AtSymbolIcon className="w-5 h-5 absolute left-3 top-3.5 text-zinc-500" />
-                <input
-                  type="text"
-                  id="referralCode"
-                  name="referralCode"
-                  value={formData.referralCode}
-                  onChange={handleInputChange}
-                  className={`w-full bg-zinc-700 border ${
-                    errors.referralCode ? "border-red-500" : "border-zinc-600"
-                  } rounded-lg px-4 py-3 pl-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
-                  placeholder="MT12345678"
-                />
-              </div>
-              {errors.referralCode && (
-                <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  {errors.referralCode}
-                </p>
-              )}
-              {formData.referralCode && (
-                <p className="text-green-400 text-sm">
-                  🎁 คุณจะได้รับสิทธิพิเศษเมื่อใช้โค้ดแนะนำ!
-                </p>
-              )}
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex justify-center items-center gap-3 bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 shadow-lg px-8 py-4 rounded-lg w-full font-bold text-white text-lg transition-all disabled:cursor-not-allowed"
+          {/* Username Field */}
+          <div>
+            <label
+              htmlFor="username"
+              className="block mb-2 font-medium text-zinc-300 text-sm"
             >
-              {isLoading ? (
-                <>
-                  <div className="border border-white border-t-transparent rounded-full w-6 h-6 animate-spin"></div>
-                  กำลังสมัครสมาชิก...
-                </>
-              ) : (
-                "สมัครสมาชิก"
-              )}
-            </button>
-          </form>
-
-          {/* Login Link */}
-          <div className="mt-4 text-center">
-            <p className="text-zinc-400 text-sm">
-              มีบัญชีอยู่แล้ว?{" "}
-              <Link
-                href="/login"
-                className="font-semibold text-red-500 hover:text-red-400 transition-colors"
-              >
-                เข้าสู่ระบบ
-              </Link>
-            </p>
+              Username
+            </label>
+            <div className="relative group">
+              <input
+                type="text"
+                id="username"
+                name="username"
+                value={formData.username}
+                onChange={handleInputChange}
+                className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
+                  errors.username
+                    ? "border-red-500/70 shadow-red-500/20"
+                    : "border-zinc-600/50 hover:border-zinc-500/70 group-hover:border-zinc-500/50"
+                } rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono text-sm`}
+                placeholder="john_doe123"
+                autoComplete="username"
+              />
+            </div>
+            {errors.username && (
+              <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                <ExclamationTriangleIcon className="w-4 h-4" />
+                {errors.username}
+              </p>
+            )}
           </div>
-        </div>
 
-        {/* Back to Home Link */}
-        <div className="text-center mt-4">
-          <Link
-            href="/"
-            className="text-zinc-500 hover:text-zinc-400 text-sm transition-colors"
-          >
-            ← กลับหน้าหลัก
-          </Link>
+          {/* Full Name Field */}
+          <div>
+            <label
+              htmlFor="fullName"
+              className="block mb-2 font-medium text-zinc-300 text-sm"
+            >
+              ชื่อ-นามสกุล
+            </label>
+            <div className="relative group">
+              <input
+                type="text"
+                id="fullName"
+                name="fullName"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
+                  errors.fullName
+                    ? "border-red-500/70 shadow-red-500/20"
+                    : "border-zinc-600/50 hover:border-zinc-500/70 group-hover:border-zinc-500/50"
+                } rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 text-sm`}
+                placeholder="สมชาย ใจดี"
+                autoComplete="name"
+              />
+            </div>
+            {errors.fullName && (
+              <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                <ExclamationTriangleIcon className="w-4 h-4" />
+                {errors.fullName}
+              </p>
+            )}
+          </div>
+
+          {/* Email Field */}
+          <div>
+            <label
+              htmlFor="email"
+              className="block mb-2 font-medium text-zinc-300 text-sm"
+            >
+              อีเมล
+            </label>
+            <div className="relative group">
+              <input
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
+                  errors.email
+                    ? "border-red-500/70 shadow-red-500/20"
+                    : "border-zinc-600/50 hover:border-zinc-500/70 group-hover:border-zinc-500/50"
+                } rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono text-sm`}
+                placeholder="your@email.com"
+                autoComplete="email"
+              />
+            </div>
+            {errors.email && (
+              <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                <ExclamationTriangleIcon className="w-4 h-4" />
+                {errors.email}
+              </p>
+            )}
+          </div>
+
+          {/* Phone Field */}
+          <div>
+            <label
+              htmlFor="phone"
+              className="block mb-2 font-medium text-zinc-300 text-sm"
+            >
+              เบอร์โทรศัพท์
+            </label>
+            <div className="relative group">
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
+                  errors.phone
+                    ? "border-red-500/70 shadow-red-500/20"
+                    : "border-zinc-600/50 hover:border-zinc-500/70 group-hover:border-zinc-500/50"
+                } rounded-xl px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono text-sm`}
+                placeholder="0812345678"
+                autoComplete="tel"
+              />
+            </div>
+            {errors.phone && (
+              <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                <ExclamationTriangleIcon className="w-4 h-4" />
+                {errors.phone}
+              </p>
+            )}
+          </div>
+
+          {/* Password Field */}
+          <div>
+            <label
+              htmlFor="password"
+              className="block mb-2 font-medium text-zinc-300 text-sm"
+            >
+              รหัสผ่าน
+            </label>
+            <div className="relative group">
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
+                  errors.password
+                    ? "border-red-500/70 shadow-red-500/20"
+                    : "border-zinc-600/50 hover:border-zinc-500/70 group-hover:border-zinc-500/50"
+                } rounded-lg px-4 py-3 pr-12 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono`}
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+              <Button
+                type="button"
+                onClick={togglePasswordVisibility}
+                variant="ghost"
+                size="icon"
+                className="absolute top-3 right-4 text-zinc-400 hover:text-zinc-300 p-1"
+              >
+                {showPassword ? (
+                  <EyeSlashIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </Button>
+            </div>
+            {formData.password && !errors.password && (
+              <p className={`mt-2 text-sm ${passwordStrength.color}`}>
+                ความแข็งแรง: {passwordStrength.level}
+              </p>
+            )}
+            {errors.password && (
+              <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                <ExclamationTriangleIcon className="w-4 h-4" />
+                {errors.password}
+              </p>
+            )}
+          </div>
+
+          {/* Confirm Password Field */}
+          <div>
+            <label
+              htmlFor="confirmPassword"
+              className="block mb-2 font-medium text-zinc-300 text-sm"
+            >
+              ยืนยันรหัสผ่าน
+            </label>
+            <div className="relative group">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
+                  errors.confirmPassword
+                    ? "border-red-500/70 shadow-red-500/20"
+                    : "border-zinc-600/50 hover:border-zinc-500/70 group-hover:border-zinc-500/50"
+                } rounded-lg px-4 py-3 pr-12 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono`}
+                placeholder="••••••••"
+                autoComplete="new-password"
+              />
+              <Button
+                type="button"
+                onClick={toggleConfirmPasswordVisibility}
+                variant="ghost"
+                size="icon"
+                className="absolute top-3 right-4 text-zinc-400 hover:text-zinc-300 p-1"
+              >
+                {showConfirmPassword ? (
+                  <EyeSlashIcon className="w-5 h-5" />
+                ) : (
+                  <EyeIcon className="w-5 h-5" />
+                )}
+              </Button>
+            </div>
+            {errors.confirmPassword && (
+              <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                <ExclamationTriangleIcon className="w-4 h-4" />
+                {errors.confirmPassword}
+              </p>
+            )}
+          </div>
+
+          {/* Referral Code Field */}
+          <div className="space-y-2">
+            <label
+              htmlFor="referralCode"
+              className="block text-zinc-300 text-sm font-medium"
+            >
+              โค้ดแนะนำ (ไม่บังคับ)
+            </label>
+            <div className="relative group">
+              <input
+                type="text"
+                id="referralCode"
+                name="referralCode"
+                value={formData.referralCode}
+                onChange={handleInputChange}
+                className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
+                  errors.referralCode
+                    ? "border-red-500/70 shadow-red-500/20"
+                    : "border-zinc-600/50 hover:border-zinc-500/70 group-hover:border-zinc-500/50"
+                } rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200`}
+                placeholder="MT12345678"
+              />
+            </div>
+            {errors.referralCode && (
+              <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+                <ExclamationTriangleIcon className="w-4 h-4" />
+                {errors.referralCode}
+              </p>
+            )}
+            {formData.referralCode && (
+              <p className="text-green-400 text-sm">
+                🎁 คุณจะได้รับสิทธิพิเศษเมื่อใช้โค้ดแนะนำ!
+              </p>
+            )}
+          </div>
+        </form>
+      </div>
+
+      <div className="pr-6 pt-4">
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          disabled={isLoading}
+          loading={isLoading}
+          loadingText="กำลังสมัครสมาชิก..."
+          fullWidth
+          size="lg"
+        >
+          สมัครสมาชิก
+        </Button>
+        {/* Login Link */}
+        <div className="mt-6 text-center">
+          <p className="text-zinc-400 text-sm">
+            มีบัญชีอยู่แล้ว?{" "}
+            <Link
+              href="/login"
+              className="font-semibold text-red-500 hover:text-red-400 transition-colors"
+            >
+              เข้าสู่ระบบ
+            </Link>
+          </p>
         </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { XMarkIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
+import { Button } from '@/components/shared';
 
 interface TermsModalProps {
   isOpen: boolean;
@@ -305,26 +306,22 @@ export default function TermsModal({ isOpen, onClose, onAccept, gymName }: Terms
         {/* Footer Actions */}
         <div className="bottom-0 sticky bg-zinc-950 px-6 py-5 border-zinc-700 border-t-2">
           <div className="flex sm:flex-row flex-col justify-end gap-3">
-            <button
+            <Button
               onClick={handleClose}
-              className="bg-zinc-700 hover:bg-zinc-600 px-6 py-3 border border-zinc-600 rounded-lg font-semibold text-zinc-300 transition-colors"
+              variant="secondary"
+              size="lg"
             >
               ยกเลิก
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={handleAccept}
               disabled={!acceptedTerms}
-              className={`px-8 py-3 rounded-lg font-bold text-white transition-all transform ${
-                acceptedTerms
-                  ? 'bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 hover:scale-105 shadow-lg shadow-red-600/30'
-                  : 'bg-zinc-600 cursor-not-allowed opacity-50'
-              }`}
+              variant="primary"
+              size="lg"
+              leftIcon={<CheckCircleIcon className="w-5 h-5" />}
             >
-              <div className="flex justify-center items-center gap-2">
-                <CheckCircleIcon className="w-5 h-5" />
-                <span>ยอมรับและส่งใบสมัคร</span>
-              </div>
-            </button>
+              ยอมรับและส่งใบสมัคร
+            </Button>
           </div>
 
           {marketingConsent && (

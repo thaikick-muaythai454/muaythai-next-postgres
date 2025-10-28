@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { PageHeader } from "@/components/shared";
 
 const termsData = [
   {

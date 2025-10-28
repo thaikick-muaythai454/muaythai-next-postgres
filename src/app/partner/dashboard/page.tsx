@@ -6,27 +6,7 @@ import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Button,
-  Chip,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  Input,
-  Textarea,
-  Modal,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  useDisclosure,
-} from '@heroui/react';
+import { Card, CardHeader, CardBody, Button, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from '@heroui/react';
 import {
   BuildingStorefrontIcon,
   ChartBarIcon,
@@ -49,9 +29,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Toaster, toast } from 'react-hot-toast';
 import type { Gym, GymPackage } from '@/types/database.types';
-import { CustomInput } from '@/components/shared/CustomInput';
-import { CustomTextarea } from '@/components/shared/CustomTextarea';
-import { CustomSelect } from '@/components/shared/CustomSelect';
+import { CustomInput, CustomTextarea, CustomSelect } from '@/components/shared';
 
 interface PackageFormData {
   package_type: 'one_time' | 'package' | '';

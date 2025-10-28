@@ -13,12 +13,7 @@ export async function GET(request: NextRequest) {
     // ตรวจสอบ authentication
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-    // Debug logging
-    console.log('[API] Authentication check:', {
-      hasUser: !!user,
-      userId: user?.id,
-      authError: authError?.message,
-    });
+    // Authentication check completed
 
     if (authError || !user) {
       console.error('[API] Authentication failed:', authError);
@@ -38,10 +33,7 @@ export async function GET(request: NextRequest) {
       .eq('user_id', user.id)
       .single();
 
-    console.log('[API] Role check:', {
-      role: roleData?.role,
-      roleError: roleError?.message,
-    });
+    // Role check completed
 
     if (roleError || roleData?.role !== 'admin') {
       console.error('[API] Authorization failed:', { 

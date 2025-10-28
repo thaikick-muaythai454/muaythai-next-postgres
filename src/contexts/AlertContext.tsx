@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useState, useContext, ReactNode } from "react";
-import {Alert} from "@heroui/alert";
+import {Alert} from "@heroui/react";
 
 type AlertStatus = "success" | "error" | "info" | "warning";
 type HeroUIAlertColor = "success" | "danger" | "primary" | "warning";

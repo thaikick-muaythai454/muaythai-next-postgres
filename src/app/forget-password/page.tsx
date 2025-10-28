@@ -4,11 +4,11 @@ import { useState, Suspense } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/database/supabase/client";
 import {
-  EnvelopeIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ArrowLeftIcon,
 } from "@heroicons/react/24/outline";
+import AuthLayout from "@/components/shared/layout/AuthLayout";
 
 interface ForgetPasswordFormData {
   email: string;
@@ -129,136 +129,124 @@ function ForgetPasswordPageContent() {
 
   if (isSuccess) {
     return (
-      <div className="min-h-[calc(100vh_-_132px)] flex items-center justify-center py-8">
-        <div className="w-full max-w-md">
-          <div className="bg-zinc-950 shadow-2xl p-6 rounded-2xl text-center">
-            <div className="flex justify-center mb-6">
-              <CheckCircleIcon className="w-20 h-20 text-green-500" />
-            </div>
-            <h1 className="mb-4 font-bold text-white text-2xl">
-              ส่งอีเมลสำเร็จ!
-            </h1>
-            <p className="mb-2 text-zinc-300 text-base">
-              เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยัง
-            </p>
-            <p className="mb-6 font-mono text-white text-sm">{formData.email}</p>
-            <div className="bg-blue-500/20 mb-6 p-4 border border-blue-500 rounded-lg">
-              <p className="text-blue-400 text-sm">
-                💡 กรุณาตรวจสอบอีเมลและคลิกลิงก์เพื่อรีเซ็ตรหัสผ่าน
-                <br />
-                (ตรวจสอบในโฟลเดอร์ Spam หากไม่พบ)
-              </p>
-            </div>
-            <Link
-              href="/login"
-              className="inline-block bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg font-semibold text-white transition-colors"
-            >
-              กลับไปยังหน้าเข้าสู่ระบบ
-            </Link>
+      <AuthLayout
+        title="ส่งอีเมลสำเร็จ!"
+        subtitle="เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณ"
+      >
+        <div className="text-center">
+          <div className="flex justify-center mb-6">
+            <CheckCircleIcon className="w-20 h-20 text-green-500" />
           </div>
+          <p className="mb-2 text-zinc-300 text-base">
+            เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยัง
+          </p>
+          <p className="mb-6 font-mono text-white text-sm">{formData.email}</p>
+          <div className="bg-blue-500/20 mb-6 p-4 border border-blue-500 rounded-lg">
+            <p className="text-blue-400 text-sm">
+              💡 กรุณาตรวจสอบอีเมลและคลิกลิงก์เพื่อรีเซ็ตรหัสผ่าน
+              <br />
+              (ตรวจสอบในโฟลเดอร์ Spam หากไม่พบ)
+            </p>
+          </div>
+          <Link
+            href="/login"
+            className="inline-block bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg font-semibold text-white transition-colors"
+          >
+            กลับไปยังหน้าเข้าสู่ระบบ
+          </Link>
         </div>
-      </div>
+      </AuthLayout>
     );
   }
 
   return (
-    <div className="min-h-[calc(100vh_-_132px)] flex items-center justify-center py-8">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <h1 className="mb-2 font-bold text-white text-3xl">
-            ลืมรหัสผ่าน
-          </h1>
-          <p className="text-zinc-400 text-base">
-            กรอกอีเมลของคุณเพื่อรับลิงก์รีเซ็ตรหัสผ่าน
-          </p>
-        </div>
-        <div className="bg-zinc-950 shadow-2xl p-6 rounded-2xl">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {errors.general && (
-              <div className="bg-red-500/20 p-4 border border-red-500 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <ExclamationTriangleIcon className="flex-shrink-0 w-6 h-6 text-red-400" />
-                  <p className="text-red-400 text-sm">{errors.general}</p>
-                </div>
-              </div>
-            )}
-
-            <div className="bg-zinc-700 p-4 border border-zinc-600 rounded-lg">
-              <p className="text-zinc-300 text-sm">
-                📧 กรอกอีเมลที่คุณใช้สมัครสมาชิก เราจะส่งลิงก์สำหรับรีเซ็ตรหัสผ่านไปให้
-              </p>
+      <AuthLayout
+        title="ลืมรหัสผ่าน"
+        subtitle="ไม่ต้องกังวล เราจะช่วยคุณรีเซ็ตรหัสผ่าน"
+      >
+      <form onSubmit={handleSubmit} className="space-y-6 pr-6">
+        {errors.general && (
+          <div className="bg-red-500/20 p-4 border border-red-500/70 shadow-red-500/20 rounded-lg">
+            <div className="flex items-center gap-3">
+              <ExclamationTriangleIcon className="flex-shrink-0 w-6 h-6 text-red-400" />
+              <p className="text-red-400 text-sm">{errors.general}</p>
             </div>
-
-            <div>
-              <label
-                htmlFor="email"
-                className="block mb-2 font-medium text-zinc-300 text-sm"
-              >
-                อีเมล
-              </label>
-              <div className="relative">
-                <EnvelopeIcon className="top-3.5 left-3 absolute w-5 h-5 text-zinc-500" />
-                <input
-                  type="email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={`w-full bg-zinc-700 border ${
-                    errors.email ? "border-red-500" : "border-zinc-600"
-                  } rounded-lg px-4 py-3 pl-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
-                  placeholder="your@email.com"
-                  autoComplete="email"
-                />
-              </div>
-              {errors.email && (
-                <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
-                  <ExclamationTriangleIcon className="w-4 h-4" />
-                  {errors.email}
-                </p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="flex justify-center items-center gap-3 bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 shadow-lg px-8 py-4 rounded-lg w-full font-bold text-white text-lg transition-all disabled:cursor-not-allowed"
-            >
-              {isLoading ? (
-                <>
-                  <div className="border border-white border-t-transparent rounded-full w-6 h-6 animate-spin"></div>
-                  กำลังส่งอีเมล...
-                </>
-              ) : (
-                "ส่งลิงก์รีเซ็ตรหัสผ่าน"
-              )}
-            </button>
-          </form>
-
-          <div className="mt-4 text-center">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 font-semibold text-red-500 hover:text-red-400 transition-colors"
-            >
-              <ArrowLeftIcon className="w-4 h-4" />
-              กลับไปยังหน้าเข้าสู่ระบบ
-            </Link>
           </div>
-        </div>
+        )}
 
-        <div className="text-center mt-4">
-          <p className="text-zinc-500 text-sm">
-            ยังไม่มีบัญชี?{" "}
-            <Link
-              href="/signup"
-              className="text-red-500 hover:text-red-400 transition-colors"
-            >
-              สมัครสมาชิก
-            </Link>
+        <div className="bg-zinc-700 p-4 border border-zinc-600/50 hover:border-zinc-500/70 rounded-lg">
+          <p className="text-zinc-300 text-sm">
+            📧 กรอกอีเมลที่คุณใช้สมัครสมาชิก เราจะส่งลิงก์สำหรับรีเซ็ตรหัสผ่านไปให้
           </p>
         </div>
+
+        <div>
+          <label
+            htmlFor="email"
+            className="block mb-2 font-medium text-zinc-300 text-sm"
+          >
+            อีเมล
+          </label>
+          <div className="relative">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+                  className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
+                    errors.email ? "border-red-500/70 shadow-red-500/20" : "border-zinc-600/50 hover:border-zinc-500/70"
+                  } rounded-xl px-4 py-3 text-white placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono text-sm`}
+              placeholder="your@email.com"
+              autoComplete="email"
+            />
+          </div>
+          {errors.email && (
+            <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
+              <ExclamationTriangleIcon className="w-4 h-4" />
+              {errors.email}
+            </p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="flex justify-center items-center gap-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 disabled:from-zinc-600 disabled:to-zinc-700 shadow-lg hover:shadow-xl hover:shadow-red-500/25 px-6 py-3 rounded-xl w-full font-bold text-white text-base transition-all duration-200 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+        >
+          {isLoading ? (
+            <>
+              <div className="border border-white border-t-transparent rounded-full w-6 h-6 animate-spin"></div>
+              กำลังส่งอีเมล...
+            </>
+          ) : (
+            "ส่งลิงก์รีเซ็ตรหัสผ่าน"
+          )}
+        </button>
+      </form>
+
+      <div className="mt-6 text-center">
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-2 font-semibold text-red-500 hover:text-red-400 transition-colors"
+        >
+          <ArrowLeftIcon className="w-4 h-4" />
+          กลับไปยังหน้าเข้าสู่ระบบ
+        </Link>
       </div>
-    </div>
+
+      <div className="text-center mt-4">
+        <p className="text-zinc-500 text-sm">
+          ยังไม่มีบัญชี?{" "}
+          <Link
+            href="/signup"
+            className="text-red-500 hover:text-red-400 transition-colors"
+          >
+            สมัครสมาชิก
+          </Link>
+        </p>
+      </div>
+    </AuthLayout>
   );
 }
 
@@ -268,7 +256,7 @@ export default function ForgetPasswordPage() {
       <div className="min-h-[calc(100vh_-_132px)] flex items-center justify-center py-8">
         <div className="w-full max-w-md">
           <div className="bg-zinc-950 shadow-2xl p-6 rounded-2xl text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500 mx-auto mb-4"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-500/70 shadow-red-500/20 mx-auto mb-4"></div>
             <p className="text-zinc-300">กำลังโหลด...</p>
           </div>
         </div>

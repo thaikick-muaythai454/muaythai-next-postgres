@@ -1,6 +1,6 @@
 import { ContactForm } from "@/components/features/contact";
 import { Award, ShieldCheck, Trophy } from "lucide-react";
-import { PageHeader } from "@/components/shared/PageHeader";
+import { PageHeader } from "@/components/shared";
 
 export default function AboutPage() {
   return (

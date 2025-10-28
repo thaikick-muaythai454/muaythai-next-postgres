@@ -8,7 +8,7 @@ interface LeaderboardWidgetProps {
   className?: string;
 }
 
-export function LeaderboardWidget({ leaderboard, className = '' }: LeaderboardWidgetProps) {
+export default function LeaderboardWidget({ leaderboard, className = '' }: LeaderboardWidgetProps) {
   const getRankIcon = (rank: number) => {
     switch (rank) {
       case 1: return '🥇';

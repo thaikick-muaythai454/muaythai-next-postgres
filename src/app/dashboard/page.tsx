@@ -4,20 +4,9 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
-import { GamificationWidget } from '@/components/features/gamification/GamificationWidget';
+import GamificationWidget from '@/components/features/gamification/GamificationWidget';
 import Link from 'next/link';
-import {
-  Card,
-  CardBody,
-  Button,
-  Chip,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-} from '@heroui/react';
+import { Card, CardBody, Button, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell } from '@heroui/react';
 import {
   HomeIcon,
   UserIcon,
