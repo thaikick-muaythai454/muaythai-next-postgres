@@ -10,7 +10,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { NextRequest } from 'next/server';
 
-async function checkPackageOwnership(supabase: any, packageId: string, userId: string) {
+async function checkPackageOwnership(supabase: Awaited<ReturnType<typeof createClient>>, packageId: string, userId: string) {
   // ดึงแพ็คเกจและตรวจสอบว่าเป็นของ user หรือไม่
   const { data: pkg, error } = await supabase
     .from('gym_packages')
@@ -143,7 +143,7 @@ export async function PATCH(
     }
 
     // สร้าง update object
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (name !== undefined) updateData.name = name.trim();
     if (name_english !== undefined) updateData.name_english = name_english?.trim() || null;

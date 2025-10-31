@@ -25,7 +25,7 @@ interface PaymentData {
 }
 
 export default function PaymentPage() {
-  const { user, loading } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'process' | 'history' | 'status'>('process');
   const [paymentData, setPaymentData] = useState<PaymentData | null>(null);
@@ -35,10 +35,10 @@ export default function PaymentPage() {
 
   // Redirect if not authenticated
   useEffect(() => {
-    if (!loading && !user) {
+    if (!user) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, router]);
 
   // Load payment data from URL params or session storage
   useEffect(() => {
@@ -99,7 +99,7 @@ export default function PaymentPage() {
     setError(error);
   };
 
-  if (loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
         <div className="text-white text-center">

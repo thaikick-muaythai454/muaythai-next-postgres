@@ -3,7 +3,7 @@
  * Consolidates payment data fetching logic
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 
 export interface PaymentRecord {
@@ -14,7 +14,7 @@ export interface PaymentRecord {
   created_at: string;
   updated_at: string;
   order_number?: string;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
 }
 
 export interface UsePaymentDataResult {
@@ -33,7 +33,7 @@ export const usePaymentData = (): UsePaymentDataResult => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchPayments = async () => {
+  const fetchPayments = useCallback(async () => {
     if (!user) {
       setPayments([]);
       setLoading(false);
@@ -64,7 +64,7 @@ export const usePaymentData = (): UsePaymentDataResult => {
 
   useEffect(() => {
     fetchPayments();
-  }, [user]);
+  }, [user, fetchPayments]);
 
   return {
     payments,

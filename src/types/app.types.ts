@@ -2,7 +2,7 @@ export interface Gym {
   id: string;
   slug: string;
   gym_name: string;
-  gym_name_english?: string;
+  gym_name_english?: string | null;
   address?: string;
   gym_details?: string;
   gym_type?: string;
@@ -15,6 +15,9 @@ export interface Gym {
   contact_name?: string;
   location?: string;
   map_url?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  google_place_id?: string | null;
   services?: string[];
   status?: string;
   created_at?: string;

@@ -11,16 +11,7 @@ import Link from "next/link";
 import { Button } from "@heroui/react";
 import { PageHeader } from "@/components/shared";
 import { GymCard } from "@/components/shared";
-
-interface Gym {
-  id: string;
-  slug: string;
-  gym_name: string;
-  gym_name_english: string | null;
-  address: string | null;
-  gym_details: string | null;
-  gym_type: string | null;
-}
+import type { Gym } from "@/types/app.types";
 
 export default function GymsPage() {
   const supabase = createClient();

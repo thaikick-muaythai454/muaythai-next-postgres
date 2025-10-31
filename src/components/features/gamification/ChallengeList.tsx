@@ -5,10 +5,7 @@ import { Challenge, ChallengeProgress } from '@/types/gamification.types';
 import { 
   GamificationCard, 
   GamificationEmptyState,
-  GamificationProgressBar,
-  useChallengeDisplay,
-  getChallengeTypeIcon,
-  getChallengeTypeColor
+  GamificationProgressBar
 } from './shared';
 
 interface ChallengeListProps {
@@ -65,7 +62,17 @@ export default function ChallengeList({ challenges, className = '' }: ChallengeL
       {challenges.map((challenge) => {
         const challengeData = isChallengeProgress(challenge) ? challenge.challenge : challenge;
         const progress = isChallengeProgress(challenge) ? challenge : null;
-        const challengeDisplay = useChallengeDisplay(challenge);
+        // Calculate display properties directly instead of using hook in callback
+        const typeIcon = challengeData.challenge_type === 'daily' ? '📅' : 
+                         challengeData.challenge_type === 'weekly' ? '📆' : 
+                         challengeData.challenge_type === 'monthly' ? '🗓️' : '🎯';
+        const typeColorClass = challengeData.challenge_type === 'daily' ? 'bg-blue-100 text-blue-800' : 
+                               challengeData.challenge_type === 'weekly' ? 'bg-purple-100 text-purple-800' : 
+                               challengeData.challenge_type === 'monthly' ? 'bg-green-100 text-green-800' : 
+                               'bg-orange-100 text-orange-800';
+        const isProgress = !!progress;
+        const progressPercentage = progress?.progress_percentage || 0;
+        const isCompleted = progress?.is_completed || false;
         
         return (
           <GamificationCard
@@ -75,14 +82,14 @@ export default function ChallengeList({ challenges, className = '' }: ChallengeL
             <div className="flex items-start justify-between mb-3">
               <div className="flex items-center space-x-3">
                 <div className="text-2xl">
-                  {challengeDisplay.typeIcon}
+                  {typeIcon}
                 </div>
                 <div>
                   <h3 className="font-semibold text-gray-900">
                     {challengeData.title}
                   </h3>
                   <div className="flex items-center space-x-2 mt-1">
-                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${challengeDisplay.typeColor}`}>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${typeColorClass}`}>
                       {challengeData.challenge_type}
                     </span>
                     <span className="text-sm text-gray-600">
@@ -108,15 +115,15 @@ export default function ChallengeList({ challenges, className = '' }: ChallengeL
             </p>
 
             {/* Progress Bar for joined challenges */}
-            {challengeDisplay.isProgress && (
+            {isProgress && (
               <div className="mb-3">
                 <GamificationProgressBar
-                  progress={challengeDisplay.progressPercentage}
+                  progress={progressPercentage}
                   label="ความคืบหน้า"
                   showPercentage={true}
                   variant="default"
                 />
-                {challengeDisplay.isCompleted && (
+                {isCompleted && (
                   <div className="mt-2 text-green-600 text-sm font-medium">
                     ✅ เสร็จสิ้นแล้ว!
                   </div>
@@ -127,14 +134,14 @@ export default function ChallengeList({ challenges, className = '' }: ChallengeL
             {/* Challenge Dates */}
             <div className="flex items-center justify-between text-sm text-gray-500">
               <div className="flex items-center space-x-4">
-                {challengeDisplay.formattedStartDate && (
+                {challengeData.start_date && (
                   <span>
-                    เริ่ม: {challengeDisplay.formattedStartDate}
+                    เริ่ม: {new Date(challengeData.start_date).toLocaleDateString('th-TH')}
                   </span>
                 )}
-                {challengeDisplay.formattedEndDate && (
+                {challengeData.end_date && (
                   <span>
-                    สิ้นสุด: {challengeDisplay.formattedEndDate}
+                    สิ้นสุด: {new Date(challengeData.end_date).toLocaleDateString('th-TH')}
                   </span>
                 )}
               </div>

@@ -163,7 +163,11 @@ export function useAdminSearch(delay: number = 300) {
   const [debouncedQuery, setDebouncedQuery] = useState('');
 
   const debouncedSetQuery = useMemo(
-    () => debounce((query: string) => setDebouncedQuery(query), delay),
+    () => debounce((query: unknown) => {
+      if (typeof query === 'string') {
+        setDebouncedQuery(query);
+      }
+    }, delay),
     [delay]
   );
 
@@ -217,15 +221,15 @@ export function useAdminModals() {
 /**
  * Hook for managing form state with validation
  */
-export function useAdminForm<T extends Record<string, any>>(
+export function useAdminForm<T extends Record<string, unknown>>(
   initialData: T,
-  validationRules?: Array<{ field: keyof T; validator: (value: any) => string | undefined }>
+  validationRules?: Array<{ field: keyof T; validator: (value: unknown) => string | undefined }>
 ) {
   const [formData, setFormData] = useState<T>(initialData);
   const [errors, setErrors] = useState<Partial<Record<keyof T, string>>>({});
   const [isDirty, setIsDirty] = useState(false);
 
-  const updateField = useCallback((field: keyof T, value: any) => {
+  const updateField = useCallback((field: keyof T, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     setIsDirty(true);
 

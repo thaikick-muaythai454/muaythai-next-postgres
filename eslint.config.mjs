@@ -18,6 +18,9 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Ignore analysis tools (development utilities)
+      "src/analysis/**",
+      "dist/**",
     ],
   },
 ];

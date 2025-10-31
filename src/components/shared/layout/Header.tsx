@@ -172,27 +172,31 @@ export default function Header() {
                 onMouseEnter={() => setUserMenuOpen(true)}
                 onMouseLeave={() => setUserMenuOpen(false)}
               >
-                <div className="flex items-center gap-2 hover:bg-white/5 px-3 border border-white/20 rounded h-10 transition-colors cursor-pointer">
-                  <UserCircleIcon className="w-5 h-5" />
-                  <span className="max-w-[100px] text-sm truncate">
+                <div className="flex items-center gap-2 hover:bg-white/10 px-3 border border-white/20 rounded-lg h-10 transition-all duration-200 cursor-pointer group">
+                  <UserCircleIcon className="w-5 h-5 group-hover:text-red-400 transition-colors" />
+                  <span className="max-w-[100px] text-sm truncate group-hover:text-white transition-colors">
                     {user.user_metadata?.full_name || user.email?.split("@")[0]}
                   </span>
-                  <ChevronDownIcon className="w-4 h-4" />
+                  <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
                 </div>
                 {isUserMenuOpen && (
-                  <div className="right-0 absolute bg-zinc-950 shadow-lg mt-2 border border-white/10 rounded-md w-56 z-50">
-                    <div className="py-1">
+                  <div 
+                    className="right-0 absolute bg-zinc-950/95 backdrop-blur-md shadow-2xl mt-2 border border-white/20 rounded-xl w-64 z-50 overflow-hidden"
+                    onMouseEnter={() => setUserMenuOpen(true)}
+                    onMouseLeave={() => setUserMenuOpen(false)}
+                  >
+                    <div className="py-2">
                       {/* User Info */}
-                      <div className="px-4 py-2 border-white/10 border-b">
-                        <p className="font-medium text-white/90 text-sm truncate">
+                      <div className="px-4 py-3 border-white/10 border-b bg-gradient-to-r from-zinc-800/30 to-zinc-700/30">
+                        <p className="font-semibold text-white text-sm truncate">
                           {user.user_metadata?.full_name || "ผู้ใช้งาน"}
                         </p>
-                        <p className="text-white/60 text-xs truncate">
+                        <p className="text-zinc-400 text-xs truncate mt-1">
                           {user.email}
                         </p>
                         {userRole && (
                           <div className="flex items-center gap-1 mt-2">
-                            <span className="inline-block bg-red-500/20 px-2 py-0.5 rounded text-red-400 text-xs">
+                            <span className="inline-block bg-gradient-to-r from-red-500/20 to-red-600/20 px-3 py-1 rounded-full text-red-400 text-xs font-medium border border-red-500/30">
                               {ROLE_NAMES[userRole]}
                             </span>
                           </div>
@@ -203,18 +207,18 @@ export default function Header() {
                       {userRole && (
                         <Link
                           href={getDashboardPath(userRole)}
-                          className="flex items-center gap-2 hover:bg-white/5 px-4 py-2 text-white/80 text-sm"
+                          className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-red-500/10 hover:to-red-600/10 px-4 py-3 text-zinc-300 hover:text-white text-sm transition-all duration-200"
                         >
                           {userRole === "admin" && (
-                            <ShieldCheckIcon className="w-4 h-4" />
+                            <ShieldCheckIcon className="w-5 h-5 group-hover:text-red-400 transition-colors" />
                           )}
                           {userRole === "partner" && (
-                            <BuildingStorefrontIcon className="w-4 h-4" />
+                            <BuildingStorefrontIcon className="w-5 h-5 group-hover:text-red-400 transition-colors" />
                           )}
                           {userRole === "authenticated" && (
-                            <HomeIcon className="w-4 h-4" />
+                            <HomeIcon className="w-5 h-5 group-hover:text-red-400 transition-colors" />
                           )}
-                          แดชบอร์ด
+                          <span className="font-medium">แดชบอร์ด</span>
                         </Link>
                       )}
 
@@ -222,20 +226,23 @@ export default function Header() {
                       {userRole === "authenticated" && !applicationStatus && (
                         <Link
                           href="/partner/apply"
-                          className="flex items-center gap-2 hover:bg-white/5 px-4 py-2 text-white/80 text-sm"
+                          className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-blue-600/10 px-4 py-3 text-zinc-300 hover:text-white text-sm transition-all duration-200"
                         >
-                          <BuildingStorefrontIcon className="w-4 h-4" />
-                          สมัคร Partner
+                          <BuildingStorefrontIcon className="w-5 h-5 group-hover:text-blue-400 transition-colors" />
+                          <span className="font-medium">สมัคร Partner</span>
                         </Link>
                       )}
 
                       {/* Show Application Status if pending */}
                       {userRole === "authenticated" &&
                         applicationStatus === "pending" && (
-                          <div className="px-4 py-2 border-white/10 border-t">
-                            <p className="text-yellow-400 text-xs">
-                              📋 รอการอนุมัติ Partner
-                            </p>
+                          <div className="px-4 py-3 border-white/10 border-t bg-gradient-to-r from-yellow-500/10 to-orange-500/10">
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
+                              <p className="text-yellow-400 text-xs font-medium">
+                                📋 รอการอนุมัติ Partner
+                              </p>
+                            </div>
                           </div>
                         )}
 
@@ -243,10 +250,12 @@ export default function Header() {
                       <button
                         onClick={handleLogout}
                         disabled={isLoggingOut}
-                        className="flex items-center gap-2 hover:bg-white/5 disabled:opacity-50 px-4 py-2 w-full text-white/80 text-sm text-left"
+                        className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-red-500/10 hover:to-red-600/10 disabled:opacity-50 px-4 py-3 w-full text-zinc-300 hover:text-white text-sm text-left transition-all duration-200"
                       >
-                        <ArrowRightOnRectangleIcon className="w-4 h-4" />
-                        {isLoggingOut ? "กำลังออกจากระบบ..." : "ออกจากระบบ"}
+                        <ArrowRightOnRectangleIcon className="w-5 h-5 group-hover:text-red-400 transition-colors" />
+                        <span className="font-medium">
+                          {isLoggingOut ? "กำลังออกจากระบบ..." : "ออกจากระบบ"}
+                        </span>
                       </button>
                     </div>
                   </div>

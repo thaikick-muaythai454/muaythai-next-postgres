@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useGamification } from '@/lib/hooks/useGamification';
@@ -46,22 +46,15 @@ export default function AffiliatePage() {
   const [referralHistory, setReferralHistory] = useState<ReferralHistory[]>([]);
   // const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      generateAffiliateCode();
-      loadAffiliateData();
-    }
-  }, [user]);
-
-  const generateAffiliateCode = () => {
+  const generateAffiliateCode = useCallback(() => {
     if (user) {
       const code = `MT${user.id.slice(-8).toUpperCase()}`;
       setAffiliateCode(code);
       setAffiliateLink(`${window.location.origin}/signup?ref=${code}`);
     }
-  };
+  }, [user]);
 
-  const loadAffiliateData = async () => {
+  const loadAffiliateData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -101,10 +94,15 @@ export default function AffiliatePage() {
       }
     } catch (error) {
       console.error('Error loading affiliate data:', error);
-    } finally {
-      setIsLoading(false);
     }
-  };
+  }, [user, supabase]);
+
+  useEffect(() => {
+    if (user) {
+      generateAffiliateCode();
+      loadAffiliateData();
+    }
+  }, [user, generateAffiliateCode, loadAffiliateData]);
 
   const copyToClipboard = async (text: string) => {
     try {

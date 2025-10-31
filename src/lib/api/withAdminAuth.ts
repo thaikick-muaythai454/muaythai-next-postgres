@@ -4,12 +4,12 @@ import { User } from '@supabase/supabase-js';
 
 type AuthenticatedApiHandler<T> = (
   request: NextRequest,
-  context: { params: T },
+  context: { params: Promise<T> },
   user: User
 ) => Promise<NextResponse> | NextResponse;
 
 export function withAdminAuth<T>(handler: AuthenticatedApiHandler<T>) {
-  return async (request: NextRequest, context: { params: T }) => {
+  return async (request: NextRequest, context: { params: Promise<T> }) => {
     try {
       const supabase = await createClient();
 

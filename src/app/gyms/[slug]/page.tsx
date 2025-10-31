@@ -16,6 +16,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { GymMap } from "@/components/shared/maps/GymMap";
 
 const Breadcrumb = memo(function Breadcrumb({ gymName }: { gymName: string }) {
   return (
@@ -328,6 +329,12 @@ export default function GymDetailPage({
             <GalleryPlaceholder />
             <AboutSection details={gym.gym_details} />
             <LocationSection location={gym.location} mapUrl={gym.map_url} />
+            <GymMap
+              latitude={gym.latitude ?? null}
+              longitude={gym.longitude ?? null}
+              mapUrl={gym.map_url ?? null}
+              gymName={gym.gym_name}
+            />
             <ServicesSection services={gym.services || []} />
           </div>
           <div className="lg:col-span-1">

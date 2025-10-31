@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/database/supabase/server';
+import { createClientForMiddleware } from '@/lib/database/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   const type = requestUrl.searchParams.get('type');
 
   if (code) {
-    const supabase = await createClient();
+    const { supabase } = createClientForMiddleware(request);
     
     try {
       // Exchange the code for a session

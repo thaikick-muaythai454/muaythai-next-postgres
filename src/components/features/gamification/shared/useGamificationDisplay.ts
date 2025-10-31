@@ -116,7 +116,7 @@ export function useLeaderboardEntryDisplay(entry: LeaderboardEntry, isCurrentUse
 }
 
 // Hook for points history display logic
-export function usePointsHistoryDisplay(activities: any[]) {
+export function usePointsHistoryDisplay(activities: Array<{ action_type: string; points: number; created_at: string; [key: string]: unknown }>) {
   return useMemo(() => 
     activities.map(activity => ({
       ...activity,
@@ -134,7 +134,20 @@ export function useGamificationWidgetDisplay(stats: GamificationStats | null) {
   return useMemo(() => {
     if (!stats) return null;
 
-    const levelDisplay = useLevelDisplay(stats);
+    // Calculate level display directly instead of using hook in useMemo
+    const progressPercentage = calculateLevelProgress(
+      stats.total_points,
+      stats.current_level,
+      stats.points_to_next_level
+    );
+    const levelDisplay = {
+      levelIcon: getLevelIcon(stats.current_level),
+      levelTitle: getLevelTitle(stats.current_level),
+      levelColor: getLevelColor(stats.current_level),
+      progressPercentage,
+      formattedPoints: formatPoints(stats.total_points),
+      pointsToNext: stats.points_to_next_level - stats.total_points
+    };
     
     return {
       ...levelDisplay,

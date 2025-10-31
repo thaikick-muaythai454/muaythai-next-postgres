@@ -203,7 +203,7 @@ export async function getGymById(id: string): Promise<Gym | null> {
  * Sanitize gym data
  */
 function sanitizeGymData(data: CreateGymInput | UpdateGymInput) {
-  const sanitized: Record<string, any> = {};
+  const sanitized: Record<string, unknown> = {};
   
   if ('gym_name' in data && data.gym_name !== undefined) {
     sanitized.gym_name = data.gym_name.trim();

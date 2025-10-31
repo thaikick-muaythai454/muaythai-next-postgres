@@ -26,7 +26,6 @@ playwright/.cache/
 /build
 
 # misc
-.DS_Store
 *.pem
 
 # debug
@@ -38,6 +37,13 @@ yarn-error.log*
 .env
 .env*.local
 .env.test
+.env.backup
+
+# sensitive data files
+**/production-users.json
+**/*-users.json
+**/secrets.json
+**/credentials.json
 
 # vercel
 .vercel
@@ -46,13 +52,45 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# build outputs
+/dist
+*.js.map
+
 # supabase
 .branches
 .temp
 supabase/.branches
 supabase/.temp
 
-docs
+# IDE & editor
 .kiro
 .claude
 .vscode
+.idea
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# logs
+*.log
+logs/
+
+# temporary files
+*.tmp
+*.temp
+*.backup
+.cache
+
+# temporary scripts
+cleanup-files.sh
+
+# analysis tools
+/src/analysis
+/tests/analysis
+
+# keep docs but ignore generated documentation
+# docs/ is commented out since it contains important documentation

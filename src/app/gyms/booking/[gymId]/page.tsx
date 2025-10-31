@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { PaymentWrapper } from '@/components/features/payments';
 import { createClient } from '@/lib/database/supabase/client';
@@ -80,7 +80,7 @@ export default function GymBookingPage() {
   const gymId = params.gymId as string;
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [gymData, setGymData] = useState<any>(null);
+  const [gymData, setGymData] = useState<{ id: string; gym_name: string; [key: string]: unknown } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -110,7 +110,7 @@ export default function GymBookingPage() {
   useEffect(() => {
     fetchGymData();
     loadUserProfile();
-  }, [gymId]);
+  }, [gymId, fetchGymData]);
 
   const loadUserProfile = async () => {
     try {
@@ -142,7 +142,7 @@ export default function GymBookingPage() {
     }
   };
 
-  const fetchGymData = async () => {
+  const fetchGymData = useCallback(async () => {
     try {
       const response = await fetch(`/api/gyms/${gymId}`);
       if (!response.ok) throw new Error('Failed to fetch gym data');
@@ -368,9 +368,9 @@ export default function GymBookingPage() {
           {gymData && (
             <div className="mb-6 pb-6 border-gray-200 border-b">
               <h1 className="font-bold text-gray-900 text-2xl">
-                {gymData.name}
+                {typeof gymData.gym_name === 'string' ? gymData.gym_name : 'Unknown Gym'}
               </h1>
-              <p className="text-gray-600">{gymData.location}</p>
+              <p className="text-gray-600">{typeof gymData.location === 'string' ? gymData.location : ''}</p>
             </div>
           )}
 
@@ -524,7 +524,7 @@ export default function GymBookingPage() {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">ค่ายมวย:</span>
-                  <span className="font-medium">{gymData?.name}</span>
+                  <span className="font-medium">{typeof gymData?.gym_name === 'string' ? gymData.gym_name : 'Unknown Gym'}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">วันที่เข้าพัก:</span>

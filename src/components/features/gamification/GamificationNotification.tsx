@@ -183,7 +183,7 @@ export default function GamificationNotification({ className = '' }: Gamificatio
 }
 
 // Helper function to trigger gamification events
-export function triggerGamificationEvent(type: string, data: any) {
+export function triggerGamificationEvent(type: string, data: Record<string, unknown>) {
   const event = new CustomEvent('gamification-event', {
     detail: { type, data }
   });

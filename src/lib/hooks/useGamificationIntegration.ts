@@ -22,7 +22,7 @@ export function useGamificationIntegration() {
   }, [user, updateStreak]);
 
   // Award points for profile completion
-  const handleProfileUpdate = async (profileData: any) => {
+  const handleProfileUpdate = async (profileData: Record<string, unknown>) => {
     if (!user) return;
 
     try {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardBody, CardHeader, Button, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Divider, Progress } from '@heroui/react';
@@ -57,17 +57,17 @@ export default function AffiliateDashboardPage() {
       generateAffiliateCode();
       loadAffiliateData();
     }
-  }, [user]);
+  }, [user, generateAffiliateCode, loadAffiliateData]);
 
-  const generateAffiliateCode = () => {
+  const generateAffiliateCode = useCallback(() => {
     if (user) {
       const code = `MT${user.id.slice(-8).toUpperCase()}`;
       setAffiliateCode(code);
       setAffiliateLink(`${window.location.origin}/signup?ref=${code}`);
     }
-  };
+  }, [user]);
 
-  const loadAffiliateData = async () => {
+  const loadAffiliateData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -125,7 +125,7 @@ export default function AffiliateDashboardPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, supabase]);
 
   const copyToClipboard = async (text: string) => {
     try {
