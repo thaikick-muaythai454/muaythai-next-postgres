@@ -44,7 +44,7 @@ export function validatePaymentData(data: CreatePaymentIntentInput): string[] {
   // Payment type validation
   if (!data.payment_type) {
     errors.push('Missing payment type');
-  } else if (!VALID_PAYMENT_TYPES.includes(data.payment_type as any)) {
+  } else if (!VALID_PAYMENT_TYPES.includes(data.payment_type as (typeof VALID_PAYMENT_TYPES)[number])) {
     errors.push('Invalid payment type');
   }
 

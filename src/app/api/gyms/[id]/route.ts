@@ -19,7 +19,7 @@ const getGymHandler = withAdminAuth<{ id: string }>(async (
   context
 ) => {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     const gym = await getGymById(id);
 
     if (!gym) {
@@ -59,7 +59,7 @@ const patchGymHandler = withAdminAuth<{ id: string }>(async (
   context
 ) => {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     const body = await request.json();
     const {
       gym_name,
@@ -138,7 +138,7 @@ const deleteGymHandler = withAdminAuth<{ id: string }>(async (
   context
 ) => {
   try {
-    const { id } = context.params;
+    const { id } = await context.params;
     await deleteGym(id);
 
     return NextResponse.json({

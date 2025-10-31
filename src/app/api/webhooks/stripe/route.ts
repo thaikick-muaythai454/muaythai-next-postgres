@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 }
 
 async function handlePaymentSuccess(
-  supabase: any,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   paymentIntent: Stripe.PaymentIntent
 ) {
   // Payment succeeded - process the payment
@@ -190,7 +190,7 @@ async function handlePaymentSuccess(
 }
 
 async function handlePaymentFailed(
-  supabase: any,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   paymentIntent: Stripe.PaymentIntent
 ) {
   console.log('Payment failed:', paymentIntent.id);
@@ -223,7 +223,7 @@ async function handlePaymentFailed(
 }
 
 async function handlePaymentCanceled(
-  supabase: any,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   paymentIntent: Stripe.PaymentIntent
 ) {
   console.log('Payment canceled:', paymentIntent.id);
@@ -255,7 +255,7 @@ async function handlePaymentCanceled(
   }
 }
 
-async function handleRefund(supabase: any, charge: Stripe.Charge) {
+async function handleRefund(supabase: Awaited<ReturnType<typeof createClient>>, charge: Stripe.Charge) {
   console.log('Charge refunded:', charge.id);
 
   if (!charge.payment_intent) return;

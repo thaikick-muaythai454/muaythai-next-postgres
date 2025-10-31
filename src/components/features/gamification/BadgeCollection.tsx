@@ -5,10 +5,7 @@ import { UserBadge, Badge } from '@/types/gamification.types';
 import { 
   GamificationCard, 
   GamificationLoadingState, 
-  GamificationEmptyState,
-  useBadgeDisplay,
-  getRarityColor,
-  getRarityIcon
+  GamificationEmptyState
 } from './shared';
 
 interface BadgeCollectionProps {
@@ -108,7 +105,13 @@ export default function BadgeCollection({ badges, showAll = true, className = ''
         {filteredBadges.map((badge) => {
           const isEarned = earnedBadgeIds.has(badge.id);
           const earnedAt = badges.find(b => b.badge_id === badge.id)?.earned_at;
-          const badgeDisplay = useBadgeDisplay(badge, isEarned, earnedAt);
+          // Calculate display properties directly instead of using hook in callback
+          const rarityColorClass = badge.rarity === 'common' ? 'bg-gray-100 text-gray-800' : 
+                                   badge.rarity === 'rare' ? 'bg-blue-100 text-blue-800' : 
+                                   badge.rarity === 'epic' ? 'bg-purple-100 text-purple-800' : 
+                                   'bg-yellow-100 text-yellow-800';
+          const rarityIcon = badge.rarity === 'common' ? '🥉' : badge.rarity === 'rare' ? '🥈' : badge.rarity === 'epic' ? '🥇' : '💎';
+          const formattedEarnedDate = earnedAt ? new Date(earnedAt).toLocaleDateString('th-TH') : null;
           
           return (
             <GamificationCard
@@ -135,8 +138,8 @@ export default function BadgeCollection({ badges, showAll = true, className = ''
                 </div>
                 
                 {/* Rarity Badge */}
-                <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${badgeDisplay.rarityColor}`}>
-                  {badgeDisplay.rarityIcon} {badge.rarity}
+                <div className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${rarityColorClass}`}>
+                  {rarityIcon} {badge.rarity}
                 </div>
               </div>
 
@@ -155,15 +158,15 @@ export default function BadgeCollection({ badges, showAll = true, className = ''
                 </div>
 
                 {/* Earned Status */}
-                {badgeDisplay.isEarned && badgeDisplay.formattedEarnedDate && (
+                {isEarned && formattedEarnedDate && (
                   <div className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                    ได้รับเมื่อ {badgeDisplay.formattedEarnedDate}
+                    ได้รับเมื่อ {formattedEarnedDate}
                   </div>
                 )}
               </div>
 
               {/* Earned Overlay */}
-              {badgeDisplay.isEarned && (
+              {isEarned && (
                 <div className="absolute top-2 right-2">
                   <div className="bg-green-500 text-white rounded-full p-1">
                     <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

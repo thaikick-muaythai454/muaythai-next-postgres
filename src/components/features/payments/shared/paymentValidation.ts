@@ -7,7 +7,7 @@ export interface PaymentFormData {
   phoneNumber: string;
   amount: number;
   paymentType: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface ValidationError {

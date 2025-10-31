@@ -100,7 +100,7 @@ export interface Booking {
 }
 
 // Response Types
-export interface ApiResponse<T> {
+export interface DatabaseApiResponse<T> {
   data: T | null;
   error: string | null;
 }

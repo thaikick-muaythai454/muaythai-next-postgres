@@ -53,18 +53,21 @@ export function validateField(
  * Validation rules for gym form
  */
 const GYM_VALIDATION_RULES: ValidationRule<GymFormData>[] = [
-  { field: 'gym_name', validator: (value) => validateField('gym_name', value) },
-  { field: 'gym_name_english', validator: (value) => validateField('gym_name_english', value) },
-  { field: 'contact_name', validator: (value) => validateField('contact_name', value) },
-  { field: 'phone', validator: (value) => validateField('phone', value) },
-  { field: 'email', validator: (value) => validateField('email', value) },
-  { field: 'website', validator: (value) => validateField('website', value) },
-  { field: 'location', validator: (value) => validateField('location', value) },
+  { field: 'gym_name', validator: (value) => validateField('gym_name', typeof value === 'string' ? value : '') },
+  { field: 'gym_name_english', validator: (value) => validateField('gym_name_english', typeof value === 'string' ? value : '') },
+  { field: 'contact_name', validator: (value) => validateField('contact_name', typeof value === 'string' ? value : '') },
+  { field: 'phone', validator: (value) => validateField('phone', typeof value === 'string' ? value : '') },
+  { field: 'email', validator: (value) => validateField('email', typeof value === 'string' ? value : '') },
+  { field: 'website', validator: (value) => validateField('website', typeof value === 'string' ? value : '') },
+  { field: 'location', validator: (value) => validateField('location', typeof value === 'string' ? value : '') },
 ];
 
 /**
  * Validate entire gym form
  */
 export function validateForm(data: GymFormData): Record<string, string> {
-  return validateFormGeneric(data, GYM_VALIDATION_RULES);
+  return validateFormGeneric(
+    data as unknown as Record<string, unknown>, 
+    GYM_VALIDATION_RULES as unknown as Array<{ field: string; validator: (value: unknown) => string | undefined }>
+  );
 }

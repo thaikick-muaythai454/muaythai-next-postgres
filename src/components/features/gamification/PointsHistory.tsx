@@ -4,7 +4,10 @@ import React from 'react';
 import { PointsHistory as PointsHistoryType } from '@/types/gamification.types';
 import { 
   GamificationEmptyState,
-  usePointsHistoryDisplay
+  getActionIcon,
+  getActionTitle,
+  getActionColor,
+  formatRelativeDate
 } from './shared';
 
 interface PointsHistoryProps {
@@ -13,7 +16,13 @@ interface PointsHistoryProps {
 }
 
 export default function PointsHistory({ activities, className = '' }: PointsHistoryProps) {
-  const displayActivities = usePointsHistoryDisplay(activities);
+  // Map PointsHistoryType to the format expected by usePointsHistoryDisplay
+  // const mappedActivities: Array<{ action_type: string; points: number; created_at: string; [key: string]: unknown }> = activities.map(a => ({
+  //   action_type: a.action_type,
+  //   points: a.points,
+  //   created_at: a.created_at
+  // }));
+  // const displayActivities = usePointsHistoryDisplay(mappedActivities);
 
   if (activities.length === 0) {
     return <GamificationEmptyState type="activities" className={className} />;
@@ -41,7 +50,7 @@ export default function PointsHistory({ activities, className = '' }: PointsHist
                 </div>
               )}
               <div className="text-xs text-gray-500">
-                {formatDate(activity.created_at)}
+                {formatRelativeDate(activity.created_at)}
               </div>
             </div>
           </div>

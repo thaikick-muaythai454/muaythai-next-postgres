@@ -27,7 +27,8 @@ export function useGymManagement() {
       }
     } catch (error) {
       console.error('Error loading gyms:', error);
-      showErrorToast('เกิดข้อผิดพลาดในการโหลดข้อมูลยิม');
+      // Error handling - could add toast notification here if needed
+      console.error('เกิดข้อผิดพลาดในการโหลดข้อมูลยิม');
     } finally {
       setIsLoading(false);
     }

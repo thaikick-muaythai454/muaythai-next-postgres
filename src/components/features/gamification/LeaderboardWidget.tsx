@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { LeaderboardData } from '@/types/gamification.types';
+import Image from 'next/image';
 
 interface LeaderboardWidgetProps {
   leaderboard: LeaderboardData;
@@ -77,7 +78,7 @@ export default function LeaderboardWidget({ leaderboard, className = '' }: Leade
           <div
             key={entry.id}
             className={`flex items-center justify-between p-3 rounded-lg ${
-              entry.user_id === leaderboard.user_rank ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
+              entry.rank === leaderboard.user_rank ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50'
             }`}
           >
             <div className="flex items-center space-x-3">
@@ -87,7 +88,9 @@ export default function LeaderboardWidget({ leaderboard, className = '' }: Leade
               
               <div className="flex items-center space-x-2">
                 {entry.user?.avatar_url ? (
-                  <img
+                  <Image
+                    width={32}
+                    height={32}
                     src={entry.user.avatar_url}
                     alt={entry.user.username}
                     className="w-8 h-8 rounded-full object-cover"

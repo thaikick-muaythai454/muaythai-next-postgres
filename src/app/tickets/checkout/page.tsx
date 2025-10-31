@@ -29,9 +29,9 @@ function TicketCheckoutContent() {
     }
 
     createPaymentIntent();
-  }, [eventId, amount]);
+  }, [eventId, amount, createPaymentIntent]);
 
-  const createPaymentIntent = async () => {
+  const createPaymentIntent = useCallback(async () => {
     try {
       const response = await fetch('/api/payments/create-payment-intent', {
         method: 'POST',
@@ -65,7 +65,7 @@ function TicketCheckoutContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId, amount, eventName, eventDate, ticketCount, ticketType]);
 
   const handlePaymentSuccess = (paymentIntentId: string) => {
     router.push(`/tickets/booking-success?orderId=${orderId}&orderNumber=${orderNumber}`);

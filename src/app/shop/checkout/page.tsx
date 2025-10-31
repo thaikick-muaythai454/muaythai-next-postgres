@@ -27,9 +27,9 @@ function CheckoutContent() {
     }
 
     createPaymentIntent();
-  }, [productId, amount]);
+  }, [productId, amount, createPaymentIntent]);
 
-  const createPaymentIntent = async () => {
+  const createPaymentIntent = useCallback(async () => {
     try {
       const response = await fetch('/api/payments/create-payment-intent', {
         method: 'POST',
@@ -61,7 +61,7 @@ function CheckoutContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId, amount, productName, quantity]);
 
   const handlePaymentSuccess = (paymentIntentId: string) => {
     router.push(`/shop/order-success?orderId=${orderId}&orderNumber=${orderNumber}`);

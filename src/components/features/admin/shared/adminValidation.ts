@@ -140,10 +140,10 @@ export function validateAddress(value: string): string | undefined {
  */
 export interface ValidationRule<T> {
   field: keyof T;
-  validator: (value: any) => string | undefined;
+  validator: (value: unknown) => string | undefined;
 }
 
-export function validateForm<T extends Record<string, any>>(
+export function validateForm<T extends Record<string, unknown>>(
   data: T,
   rules: ValidationRule<T>[]
 ): Record<keyof T, string> {
@@ -169,8 +169,8 @@ export function hasValidationErrors<T>(errors: Record<keyof T, string>): boolean
 /**
  * Clean form data by trimming strings and removing empty values
  */
-export function cleanFormData<T extends Record<string, any>>(data: T): T {
-  const cleaned = { ...data } as any;
+export function cleanFormData<T extends Record<string, unknown>>(data: T): T {
+  const cleaned = { ...data } as Record<string, unknown>;
 
   Object.keys(cleaned).forEach((key) => {
     const value = cleaned[key];
@@ -179,5 +179,5 @@ export function cleanFormData<T extends Record<string, any>>(data: T): T {
     }
   });
 
-  return cleaned;
+  return cleaned as T;
 }

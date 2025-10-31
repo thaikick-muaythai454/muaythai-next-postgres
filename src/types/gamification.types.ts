@@ -69,7 +69,7 @@ export interface Challenge {
   challenge_type: 'daily' | 'weekly' | 'monthly' | 'special';
   points_reward: number;
   badge_reward_id?: string;
-  requirements: Record<string, any>; // Flexible JSON structure
+  requirements: Record<string, unknown>; // Flexible JSON structure
   start_date?: string;
   end_date?: string;
   is_active: boolean;
@@ -83,7 +83,7 @@ export interface UserChallenge {
   id: string;
   user_id: string;
   challenge_id: string;
-  progress: Record<string, any>; // Flexible JSON structure
+  progress: Record<string, unknown>; // Flexible JSON structure
   is_completed: boolean;
   completed_at?: string;
   points_earned: number;
@@ -126,7 +126,7 @@ export interface GamificationRule {
   rule_name: string;
   action_type: string;
   points_awarded: number;
-  conditions?: Record<string, any>; // Flexible JSON structure
+  conditions?: Record<string, unknown>; // Flexible JSON structure
   is_active: boolean;
   created_at: string;
   updated_at: string;
@@ -195,7 +195,7 @@ export interface JoinChallengeRequest {
 
 export interface UpdateChallengeProgressRequest {
   user_challenge_id: string;
-  progress: Record<string, any>;
+  progress: Record<string, unknown>;
 }
 
 // ============================================

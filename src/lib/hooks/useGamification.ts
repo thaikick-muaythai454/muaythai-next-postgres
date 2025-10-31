@@ -97,7 +97,7 @@ export function useGamification(): UseGamificationReturn {
       }
 
       // Get top 3 leaderboards with data
-      const leaderboardPromises = result.data.slice(0, 3).map(async (lb: any) => {
+      const leaderboardPromises = result.data.slice(0, 3).map(async (lb: { id: string }) => {
         const lbResponse = await fetch(`/api/gamification/leaderboards?id=${lb.id}`);
         const lbResult = await lbResponse.json();
         return lbResult.data;
