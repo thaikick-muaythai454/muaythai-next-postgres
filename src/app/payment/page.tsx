@@ -102,7 +102,7 @@ export default function PaymentPage() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-zinc-900 flex items-center justify-center">
-        <div className="text-white text-center">
+        <div className="text-text-primary text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-500 mx-auto mb-4"></div>
           <p>กำลังโหลด...</p>
         </div>
@@ -119,7 +119,7 @@ export default function PaymentPage() {
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">ระบบชำระเงิน</h1>
+          <h1 className="text-3xl font-bold text-text-primary mb-2">ระบบชำระเงิน</h1>
           <p className="text-zinc-400">จัดการการชำระเงินของคุณได้ที่นี่</p>
         </div>
 
@@ -130,8 +130,8 @@ export default function PaymentPage() {
               onClick={() => setActiveTab('process')}
               className={`px-6 py-3 rounded-md font-medium transition-colors ${
                 activeTab === 'process'
-                  ? 'bg-red-600 text-white'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-brand-primary text-text-primary'
+                  : 'text-zinc-400 hover:text-text-primary'
               }`}
             >
               <CreditCardIcon className="w-5 h-5 inline mr-2" />
@@ -141,8 +141,8 @@ export default function PaymentPage() {
               onClick={() => setActiveTab('status')}
               className={`px-6 py-3 rounded-md font-medium transition-colors ${
                 activeTab === 'status'
-                  ? 'bg-red-600 text-white'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-brand-primary text-text-primary'
+                  : 'text-zinc-400 hover:text-text-primary'
               }`}
             >
               <ClockIcon className="w-5 h-5 inline mr-2" />
@@ -152,8 +152,8 @@ export default function PaymentPage() {
               onClick={() => setActiveTab('history')}
               className={`px-6 py-3 rounded-md font-medium transition-colors ${
                 activeTab === 'history'
-                  ? 'bg-red-600 text-white'
-                  : 'text-zinc-400 hover:text-white'
+                  ? 'bg-brand-primary text-text-primary'
+                  : 'text-zinc-400 hover:text-text-primary'
               }`}
             >
               <BanknotesIcon className="w-5 h-5 inline mr-2" />
@@ -169,13 +169,13 @@ export default function PaymentPage() {
               {!paymentData ? (
                 <div className="text-center py-12">
                   <ExclamationTriangleIcon className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">ไม่พบข้อมูลการชำระเงิน</h3>
+                  <h3 className="text-xl font-semibold text-text-primary mb-2">ไม่พบข้อมูลการชำระเงิน</h3>
                   <p className="text-zinc-400 mb-6">
                     กรุณาเริ่มต้นกระบวนการชำระเงินจากหน้าอื่น
                   </p>
                   <button
                     onClick={() => router.push('/')}
-                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+                    className="bg-brand-primary hover:bg-red-700 text-text-primary px-6 py-3 rounded-lg font-medium transition-colors"
                   >
                     กลับหน้าหลัก
                   </button>
@@ -184,11 +184,11 @@ export default function PaymentPage() {
                 <div>
                   {/* Payment Summary */}
                   <div className="bg-zinc-700 rounded-lg p-6 mb-6">
-                    <h3 className="text-lg font-semibold text-white mb-4">สรุปการชำระเงิน</h3>
+                    <h3 className="text-lg font-semibold text-text-primary mb-4">สรุปการชำระเงิน</h3>
                     <div className="space-y-2">
                       <div className="flex justify-between">
                         <span className="text-zinc-400">ประเภท:</span>
-                        <span className="text-white">
+                        <span className="text-text-primary">
                           {paymentData.paymentType === 'gym_booking' && 'จองค่ายมวย'}
                           {paymentData.paymentType === 'product' && 'ซื้อสินค้า'}
                           {paymentData.paymentType === 'ticket' && 'ซื้อตั๋ว'}
@@ -196,14 +196,14 @@ export default function PaymentPage() {
                       </div>
                       <div className="flex justify-between">
                         <span className="text-zinc-400">จำนวนเงิน:</span>
-                        <span className="text-white font-semibold">
+                        <span className="text-text-primary font-semibold">
                           ฿{paymentData.amount.toLocaleString()}
                         </span>
                       </div>
                       {paymentData.orderNumber && (
                         <div className="flex justify-between">
                           <span className="text-zinc-400">หมายเลขคำสั่งซื้อ:</span>
-                          <span className="text-white font-mono text-sm">
+                          <span className="text-text-primary font-mono text-sm">
                             {paymentData.orderNumber}
                           </span>
                         </div>
@@ -217,12 +217,12 @@ export default function PaymentPage() {
                       <button
                         onClick={createPaymentIntent}
                         disabled={isLoading}
-                        className="bg-red-600 hover:bg-red-700 disabled:bg-zinc-600 disabled:opacity-50 text-white px-8 py-4 rounded-lg font-semibold text-lg transition-colors disabled:cursor-not-allowed"
-                      >
+                        className="bg-brand-primary hover:bg-red-700 disabled:bg-zinc-600 disabled:opacity-50 text-text-primary px-8 py-4 rounded-lg font-semibold text-lg transition-colors disabled:cursor-not-allowed"
+                       aria-label="Button">
                         {isLoading ? 'กำลังสร้างการชำระเงิน...' : 'เริ่มต้นการชำระเงิน'}
                       </button>
                       {error && (
-                        <div className="mt-4 p-4 bg-red-600/10 border border-red-600/50 rounded-lg">
+                        <div className="mt-4 p-4 bg-brand-primary/10 border border-red-600/50 rounded-lg">
                           <p className="text-red-400">{error}</p>
                         </div>
                       )}

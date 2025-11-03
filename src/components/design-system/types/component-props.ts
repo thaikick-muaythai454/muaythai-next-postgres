@@ -158,12 +158,12 @@ export interface FormComponentProps extends InteractiveProps {
   /**
    * Change handler
    */
-  onChange?: (value: any, event?: React.ChangeEvent<HTMLElement>) => void;
+  onChange?: (value: unknown, event?: React.ChangeEvent<HTMLElement>) => void;
   
   /**
    * Validation handler
    */
-  onValidate?: (value: any) => string | undefined;
+  onValidate?: (value: unknown) => string | undefined;
   
   /**
    * Whether to show validation on blur
@@ -206,7 +206,7 @@ export interface LayoutComponentProps extends BaseComponentProps {
   /**
    * Component HTML tag to render
    */
-  as?: keyof JSX.IntrinsicElements | React.ComponentType<any>;
+  as?: keyof JSX.IntrinsicElements | React.ComponentType<Record<string, unknown>>;
   
   /**
    * Whether to render as a flex container
@@ -310,7 +310,7 @@ export interface FeedbackComponentProps extends BaseComponentProps {
  */
 export type PolymorphicComponentProps<
   T extends React.ElementType,
-  P = {}
+  P = Record<string, never>
 > = P & 
   Omit<React.ComponentPropsWithoutRef<T>, keyof P> & {
     as?: T;
@@ -323,7 +323,7 @@ export type PolymorphicComponentProps<
  */
 export type PolymorphicComponentPropsWithRef<
   T extends React.ElementType,
-  P = {}
+  P = Record<string, never>
 > = P & 
   Omit<React.ComponentPropsWithRef<T>, keyof P> & {
     as?: T;
@@ -344,7 +344,7 @@ export type PolymorphicRef<T extends React.ElementType> =
  */
 export type ForwardedRefComponent<
   T extends React.ElementType,
-  P = {}
+  P = Record<string, never>
 > = React.ForwardRefExoticComponent<
   PolymorphicComponentPropsWithRef<T, P>
 >;

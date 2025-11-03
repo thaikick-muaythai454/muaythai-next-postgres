@@ -305,7 +305,7 @@ export default function GymBookingPage() {
             <p className="mb-6 text-gray-600">{error}</p>
             <button
               onClick={() => router.back()}
-              className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg text-white transition-colors"
+              className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg text-text-primary transition-colors"
             >
               กลับไปหน้าก่อนหน้า
             </button>
@@ -327,9 +327,9 @@ export default function GymBookingPage() {
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold transition-colors ${
                       currentStep > step.id
-                        ? 'bg-green-500 text-white'
+                        ? 'bg-green-500 text-text-primary'
                         : currentStep === step.id
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-blue-600 text-text-primary'
                         : 'bg-gray-300 text-gray-600'
                     }`}
                   >
@@ -571,13 +571,13 @@ export default function GymBookingPage() {
                 onClick={handlePreviousStep}
                 disabled={currentStep === 1}
                 className="hover:bg-gray-50 disabled:opacity-50 px-6 py-2 border border-gray-300 rounded-lg text-gray-700 transition-colors disabled:cursor-not-allowed"
-              >
+               aria-label="Button">
                 ย้อนกลับ
               </button>
               <button
                 onClick={handleNextStep}
-                className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg text-white transition-colors"
-              >
+                className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg text-text-primary transition-colors"
+               aria-label="Button">
                 {currentStep === 3 ? 'ไปที่หน้าชำระเงิน' : 'ถัดไป'}
               </button>
             </div>

@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/database/supabase/client';
 import { UserRole, getUserRole, getDashboardPath, hasRole } from '@/lib/auth';
 import { User } from '@supabase/supabase-js';
+import { Loading } from '@/components/shared';
 
-interface RoleGuardProps {
+export interface RoleGuardProps {
   children: React.ReactNode;
   allowedRole: UserRole;
   redirectTo?: string;
@@ -28,7 +29,7 @@ interface RoleGuardProps {
  *   <AdminContent />
  * </RoleGuard>
  */
-export default function RoleGuard({ 
+export function RoleGuard({ 
   children, 
   allowedRole,
   redirectTo 
@@ -92,10 +93,11 @@ export default function RoleGuard({
   if (isLoading) {
     return (
       <div className="flex justify-center items-center bg-zinc-950 min-h-screen">
-        <div className="text-center">
-          <div className="inline-block mb-4 border-4 border-red-600 border-t-transparent rounded-full w-16 h-16 animate-spin"></div>
-          <p className="text-zinc-300 text-lg">กำลังตรวจสอบสิทธิ์...</p>
-        </div>
+        <Loading 
+          size="lg" 
+          text="กำลังตรวจสอบสิทธิ์..." 
+          centered 
+        />
       </div>
     );
   }
@@ -104,10 +106,11 @@ export default function RoleGuard({
   if (!isAuthorized || !user) {
     return (
       <div className="flex justify-center items-center bg-zinc-950 min-h-screen">
-        <div className="text-center">
-          <div className="inline-block mb-4 border-4 border-red-600 border-t-transparent rounded-full w-16 h-16 animate-spin"></div>
-          <p className="text-zinc-300 text-lg">กำลัง redirect...</p>
-        </div>
+        <Loading 
+          size="lg" 
+          text="กำลัง redirect..." 
+          centered 
+        />
       </div>
     );
   }

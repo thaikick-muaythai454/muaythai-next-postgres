@@ -27,7 +27,7 @@ export default function PaymentErrorDisplay({
     <div className={`rounded-lg border p-6 ${
       error.retryable
         ? 'bg-yellow-600/10 border-yellow-600/50'
-        : 'bg-red-600/10 border-red-600/50'
+        : 'bg-brand-primary/10 border-red-600/50'
     }`}>
       <div className="flex items-start gap-4">
         <div className="flex-shrink-0">
@@ -43,7 +43,7 @@ export default function PaymentErrorDisplay({
           }`}>
             {error.title}
           </h3>
-          <p className="mb-3 text-white text-sm">
+          <p className="mb-3 text-text-primary text-sm">
             {error.message}
           </p>
           {error.suggestion && (
@@ -57,8 +57,8 @@ export default function PaymentErrorDisplay({
             <button
               type="button"
               onClick={onRetry}
-              className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg font-semibold text-white text-sm transition-colors"
-            >
+              className="flex items-center gap-2 bg-yellow-600 hover:bg-yellow-700 px-4 py-2 rounded-lg font-semibold text-text-primary text-sm transition-colors"
+             aria-label="Button">
               <ArrowPathIcon className="w-4 h-4" />
               ลองใหม่อีกครั้ง
             </button>

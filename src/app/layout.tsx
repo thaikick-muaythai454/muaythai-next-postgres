@@ -3,7 +3,7 @@ import { Bai_Jamjuree } from "next/font/google";
 import "./globals.css";
 import { LayoutWrapper, ErrorBoundary } from "@/components/shared";
 import { Providers } from "./providers";
-import FixedBackground from "@/components/ui/FixedBackground";
+import { FixedBackground } from "@/components/shared/ui";
 import GamificationNotification from "@/components/features/gamification/GamificationNotification";
 
 const baiJamjuree = Bai_Jamjuree({

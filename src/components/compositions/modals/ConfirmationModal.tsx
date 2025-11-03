@@ -1,0 +1,95 @@
+'use client';
+
+import { memo, useMemo } from 'react';
+import { ExclamationTriangleIcon, CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { Button } from '@/components/design-system/primitives/Button';
+import { Modal } from './Modal';
+import { ConfirmationModalProps } from './types';
+
+const ConfirmationModalComponent = memo(function ConfirmationModal({
+  title,
+  message,
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  confirmVariant = 'primary',
+  onConfirm,
+  onCancel,
+  loading = false,
+  testId = 'confirmation-modal',
+  ...modalProps
+}: ConfirmationModalProps) {
+  const handleCancel = () => {
+    if (onCancel) {
+      onCancel();
+    } else {
+      modalProps.onClose();
+    }
+  };
+
+  const icon = useMemo(() => {
+    switch (confirmVariant) {
+      case 'danger':
+        return <ExclamationTriangleIcon className="w-12 h-12 text-red-500" />;
+      case 'warning':
+        return <ExclamationTriangleIcon className="w-12 h-12 text-yellow-500" />;
+      default:
+        return <InformationCircleIcon className="w-12 h-12 text-blue-500" />;
+    }
+  }, [confirmVariant]);
+
+  const headerColor = useMemo(() => {
+    switch (confirmVariant) {
+      case 'danger':
+        return 'from-red-900/20 to-red-800/20 border-red-600';
+      case 'warning':
+        return 'from-yellow-900/20 to-yellow-800/20 border-yellow-600';
+      default:
+        return 'from-blue-900/20 to-blue-800/20 border-blue-600';
+    }
+  }, [confirmVariant]);
+
+  return (
+    <Modal
+      {...modalProps}
+      title={title}
+      size="sm"
+      testId={testId}
+    >
+      <div className="p-6">
+        {/* Icon and Message */}
+        <div className="text-center mb-6">
+          <div className="flex justify-center mb-4">
+            {icon}
+          </div>
+          <p className="text-zinc-300 leading-relaxed">
+            {message}
+          </p>
+        </div>
+
+        {/* Actions */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:justify-end">
+          <Button
+            variant="secondary"
+            onClick={handleCancel}
+            disabled={loading}
+            className="sm:order-1"
+            data-testid={`${testId}-cancel`}
+          >
+            {cancelText}
+          </Button>
+          <Button
+            variant={confirmVariant}
+            onClick={onConfirm}
+            loading={loading}
+            className="sm:order-2"
+            data-testid={`${testId}-confirm`}
+          >
+            {confirmText}
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+});
+
+export { ConfirmationModalComponent as ConfirmationModal };

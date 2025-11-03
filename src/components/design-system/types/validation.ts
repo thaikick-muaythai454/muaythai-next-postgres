@@ -21,14 +21,14 @@ export interface ValidationResult {
  * 
  * Function that validates a specific aspect of props.
  */
-export type ValidationRule<T = any> = (value: T, propName: string, componentName: string) => string | null;
+export type ValidationRule<T = unknown> = (value: T, propName: string, componentName: string) => string | null;
 
 /**
  * Validation Schema Type
  * 
  * Schema defining validation rules for component props.
  */
-export type ValidationSchema<T = any> = {
+export type ValidationSchema<T = Record<string, unknown>> = {
   [K in keyof T]?: ValidationRule<T[K]>[];
 };
 
@@ -108,7 +108,7 @@ export const validateComponentProps = <T>(
   Object.entries(schema).forEach(([propName, rules]) => {
     if (!rules) return;
     
-    const propValue = (props as any)[propName];
+    const propValue = (props as Record<string, unknown>)[propName];
     
     rules.forEach((rule) => {
       const result = rule(propValue, propName, componentName);
@@ -184,7 +184,7 @@ export const oneOf = <T>(allowedValues: T[]): ValidationRule<T> => (
  * Validates that a prop is of the expected type.
  */
 export const ofType = (expectedType: string): ValidationRule => (
-  value: any,
+  value: unknown,
   propName: string,
   componentName: string
 ): string | null => {
@@ -226,7 +226,7 @@ export const arrayOf = <T>(itemValidator?: ValidationRule<T>): ValidationRule<T[
  * 
  * Validates that a prop is an object with the expected shape.
  */
-export const shape = <T extends Record<string, any>>(
+export const shape = <T extends Record<string, unknown>>(
   shapeSchema: ValidationSchema<T>
 ): ValidationRule<T> => (
   value: T,
@@ -323,7 +323,7 @@ export const custom = <T>(
  * Creates a warning for deprecated props.
  */
 export const deprecated = (message?: string): ValidationRule => (
-  value: any,
+  value: unknown,
   propName: string,
   componentName: string
 ): string | null => {
@@ -340,13 +340,13 @@ export const deprecated = (message?: string): ValidationRule => (
  * Validates a prop only when a condition is met.
  */
 export const when = <T>(
-  condition: (props: any) => boolean,
+  condition: (props: Record<string, unknown>) => boolean,
   rule: ValidationRule<T>
 ): ValidationRule<T> => (
   value: T,
   propName: string,
   componentName: string,
-  allProps?: any
+  allProps?: Record<string, unknown>
 ): string | null => {
   if (allProps && condition(allProps)) {
     return rule(value, propName, componentName);
