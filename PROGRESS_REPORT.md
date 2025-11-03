@@ -697,10 +697,10 @@
 - [ ] สร้าง Admin Alert Emails
 
 #### UI Components
-- [ ] สร้าง Favorite Button Component (ปุ่มหัวใจ)
-- [ ] สร้าง Notification Bell Component
-- [ ] สร้าง Notification List Component
-- [ ] แก้ไข Favorites Page ให้เชื่อมกับ API
+- [x] สร้าง Favorite Button Component (ปุ่มหัวใจ)
+- [x] สร้าง Notification Bell Component
+- [x] สร้าง Notification List Component
+- [x] แก้ไข Favorites Page ให้เชื่อมกับ API
 
 #### Payment Features
 - [ ] เพิ่ม Receipt Generation (PDF)
