@@ -5,6 +5,10 @@
   --foreground: #F5EDED;
   --primary: #D72323;
   --secondary: #3E3636;
+  
+  /* Brand colors */
+  --color-brand-primary: #D72323;
+  --color-brand-secondary: #B91C1C;
 }
 
 /* Corporate Identity Colors */
@@ -14,6 +18,7 @@
   --color-primary: #D72323;
   --color-secondary: #3E3636;
   --color-text-light: #F5EDED;
+  --color-brand-primary: #D72323;
 }
 
 /* .dark {
@@ -26,6 +31,7 @@
 
 body {
   font-family: var(--font-bai-jamjuree);
+  color: white;
 }
 
 .no-default-picker::-webkit-calendar-picker-indicator {
@@ -49,8 +55,7 @@ button:active {
 
 button:focus {
   outline: none;
-  ring: 2px;
-  ring-color: rgb(239 68 68 / 0.5);
+  box-shadow: 0 0 0 2px rgb(239 68 68 / 0.5);
 }
 
 /* Custom Scrollbar Styles */
@@ -136,6 +141,20 @@ button:focus {
 
 .animate-marquee {
   animation: marquee 20s linear infinite;
+}
+
+/* Asset Loader Fade Animation */
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.asset-loader-fade-out {
+  animation: fadeOut 0.8s ease-out forwards;
 }
 
 .container {
