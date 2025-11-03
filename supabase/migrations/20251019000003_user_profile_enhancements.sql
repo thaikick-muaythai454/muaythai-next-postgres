@@ -16,9 +16,18 @@
 
 -- Bio field already exists, no need to add
 -- But ensure it has proper constraint
-ALTER TABLE profiles 
-  ADD CONSTRAINT IF NOT EXISTS bio_length 
-  CHECK (bio IS NULL OR char_length(bio) <= 500);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint 
+    WHERE conname = 'bio_length' 
+    AND conrelid = 'profiles'::regclass
+  ) THEN
+    ALTER TABLE profiles 
+      ADD CONSTRAINT bio_length 
+      CHECK (bio IS NULL OR char_length(bio) <= 500);
+  END IF;
+END $$;
 
 -- ============================================
 -- 2. SOCIAL MEDIA LINKS TABLE

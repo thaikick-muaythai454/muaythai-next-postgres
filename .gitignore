@@ -41,6 +41,7 @@ yarn-error.log*
 .env.local.backup.*
 .env.backup.*
 *.env.backup.*
+**/.env.local.backup.*
 
 # sensitive data files
 **/production-users.json
@@ -49,6 +50,7 @@ yarn-error.log*
 **/credentials.json
 
 # temporary documentation with sensitive info (troubleshooting/debug files)
+*.md
 QUICK_FIX_LOGIN.md
 TROUBLESHOOTING_LOGIN.md
 MOCK_USERS.md
@@ -56,6 +58,13 @@ FIX_SUPABASE_LOCAL.md
 *_LOGIN.md
 *_FIX*.md
 *TROUBLESHOOT*.md
+PROGRESS_*.md
+# PROGRESS_REPORT.md
+# PROGRESS_SUMMARY.md
+DEPLOYMENT.md
+
+# keep essential documentation
+!README.md
 
 # debug files that may expose sensitive information
 **/debug.tsx

@@ -1,28 +1,3 @@
--- ============================================================================
--- SEED DATA FOR TESTING & PRE-APPROVED GYMS
--- ============================================================================
-
--- Test user accounts are created using scripts/create-test-users.sh.
--- All test users use password: "password123"
--- Run after migrations: ./scripts/create-test-users.sh
--- For more info: see scripts/create-test-users.sh (creates auth.users with proper password hash)
-
--- Summary of test users (created via script):
---   Admin:          admin@muaythai.com        / password123
---   Regular User:   user@muaythai.com         / password123
---   Partner 1:      partner1@muaythai.com     / password123  (สมชาย มวยไทย - เจ้าของ Tiger Muay Thai)
---   Partner 2:      partner2@muaythai.com     / password123
--- After creation:
---   (1) Set admin role in the database for admin@muaythai.com
---   (2) Create gym applications for partners
---   (3) Partner1 will own Tiger Muay Thai gym automatically
-
--- ============================================================================
--- PRE-APPROVED GYMS DATA (as shown on /gyms page)
--- These use a dummy user (system@muaythai.com) for user_id linkage
--- In production, link to real partner accounts
--- ============================================================================
-
 DO $$
 DECLARE
   v_dummy_user_id CONSTANT UUID := '00000000-0000-0000-0000-000000000001';
