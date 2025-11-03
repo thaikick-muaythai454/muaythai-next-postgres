@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { PaymentWrapper } from '@/components/features/payments';
 
@@ -18,16 +18,6 @@ function CheckoutContent() {
   const productName = searchParams.get('productName');
   const quantity = parseInt(searchParams.get('quantity') || '1');
   const amount = parseFloat(searchParams.get('amount') || '0');
-
-  useEffect(() => {
-    if (!productId || !amount) {
-      setError('ข้อมูลสินค้าไม่ครบถ้วน');
-      setLoading(false);
-      return;
-    }
-
-    createPaymentIntent();
-  }, [productId, amount, createPaymentIntent]);
 
   const createPaymentIntent = useCallback(async () => {
     try {
@@ -62,6 +52,16 @@ function CheckoutContent() {
       setLoading(false);
     }
   }, [productId, amount, productName, quantity]);
+
+  useEffect(() => {
+    if (!productId || !amount) {
+      setError('ข้อมูลสินค้าไม่ครบถ้วน');
+      setLoading(false);
+      return;
+    }
+
+    createPaymentIntent();
+  }, [productId, amount, createPaymentIntent]);
 
   const handlePaymentSuccess = (paymentIntentId: string) => {
     router.push(`/shop/order-success?orderId=${orderId}&orderNumber=${orderNumber}`);

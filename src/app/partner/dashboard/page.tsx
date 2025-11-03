@@ -596,21 +596,21 @@ function PartnerDashboardContent() {
                   name="gym_name"
                   label="ชื่อยิม"
                   value={editFormData.gym_name}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditFormData({ ...editFormData, gym_name: e.target.value })}
+                  onChange={(value) => setEditFormData({ ...editFormData, gym_name: String(value) })}
                 />
                 <CustomInput
                   id="contact_name"
                   name="contact_name"
                   label="ผู้ติดต่อ"
                   value={editFormData.contact_name}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditFormData({ ...editFormData, contact_name: e.target.value })}
+                  onChange={(value) => setEditFormData({ ...editFormData, contact_name: String(value) })}
                 />
                 <CustomInput
                   id="phone"
                   name="phone"
                   label="โทรศัพท์"
                   value={editFormData.phone}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                  onChange={(value) => setEditFormData({ ...editFormData, phone: String(value) })}
                 />
                 <CustomInput
                   id="email"
@@ -618,20 +618,22 @@ function PartnerDashboardContent() {
                   label="อีเมล"
                   type="email"
                   value={editFormData.email}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  onChange={(value) => setEditFormData({ ...editFormData, email: String(value) })}
                 />
                 <CustomTextarea
                   id="location"
+                  name="location"
                   label="ที่อยู่"
                   value={editFormData.location}
-                  onChange={(e) => setEditFormData({ ...editFormData, location: e.target.value })}
+                  onChange={(value) => setEditFormData({ ...editFormData, location: String(value) })}
                   className="md:col-span-2"
                 />
                 <CustomTextarea
                   id="gym_details"
+                  name="gym_details"
                   label="รายละเอียดยิม"
                   value={editFormData.gym_details || ''}
-                  onChange={(e) => setEditFormData({ ...editFormData, gym_details: e.target.value })}
+                  onChange={(value) => setEditFormData({ ...editFormData, gym_details: String(value) })}
                   className="md:col-span-2"
                 />
               </div>
@@ -1054,9 +1056,10 @@ function PartnerDashboardContent() {
               {/* Package Type */}
               <CustomSelect
                 id="package_type"
+                name="package_type"
                 label="ประเภทแพ็คเกจ"
                 value={formData.package_type}
-                onChange={(e) => setFormData(prev => ({ ...prev, package_type: e.target.value as 'one_time' | 'package', duration_months: null }))}
+                onChange={(value) => setFormData(prev => ({ ...prev, package_type: String(value) as 'one_time' | 'package', duration_months: null }))}
                 required
                 disabled={!!editingPackage}
               >
@@ -1069,9 +1072,10 @@ function PartnerDashboardContent() {
               {formData.package_type === 'package' && (
                 <CustomSelect
                   id="duration_months"
+                  name="duration_months"
                   label="ระยะเวลา"
                   value={formData.duration_months?.toString() || ''}
-                  onChange={(e) => setFormData(prev => ({ ...prev, duration_months: parseInt(e.target.value) }))}
+                  onChange={(value) => setFormData(prev => ({ ...prev, duration_months: parseInt(String(value)) }))}
                   required
                 >
                   <option value="" disabled>เลือกระยะเวลา</option>
@@ -1088,7 +1092,7 @@ function PartnerDashboardContent() {
                 label="ชื่อแพ็คเกจ (ภาษาไทย)"
                 placeholder="เช่น: ฝึกรายครั้ง, แพ็คเกจ 3 เดือน"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(value) => setFormData(prev => ({ ...prev, name: String(value) }))}
                 required
               />
 
@@ -1099,7 +1103,7 @@ function PartnerDashboardContent() {
                 label="ชื่อแพ็คเกจ (ภาษาอังกฤษ)"
                 placeholder="เช่น: Single Session, 3 Months Package"
                 value={formData.name_english}
-                onChange={(e) => setFormData(prev => ({ ...prev, name_english: e.target.value }))}
+                onChange={(value) => setFormData(prev => ({ ...prev, name_english: String(value) }))}
               />
 
               {/* Price */}
@@ -1110,17 +1114,18 @@ function PartnerDashboardContent() {
                 label="ราคา (บาท)"
                 placeholder="0"
                 value={formData.price}
-                onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                onChange={(value) => setFormData(prev => ({ ...prev, price: String(value) }))}
                 required
               />
 
               {/* Description */}
               <CustomTextarea
                 id="description"
+                name="description"
                 label="รายละเอียด"
                 placeholder="อธิบายรายละเอียดแพ็คเกจ..."
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(value) => setFormData(prev => ({ ...prev, description: String(value) }))}
                 rows={3}
               />
 
