@@ -107,3 +107,36 @@ export function createClientForMiddleware(request: NextRequest) {
   return { supabase, response: supabaseResponse };
 }
 
+/**
+ * Create a Supabase admin client with service role key
+ * This client has admin privileges and can bypass RLS policies
+ * 
+ * Environment variables required:
+ * - SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL: Your Supabase project URL
+ * - SUPABASE_SERVICE_ROLE_KEY: Your Supabase service role key (keep secret!)
+ * 
+ * @returns Supabase client instance with admin privileges
+ * @throws Error if environment variables are not set
+ */
+export function createAdminClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error('Missing Supabase admin credentials. Required: SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY');
+  }
+
+  const supabase = createServerClient(
+    supabaseUrl,
+    supabaseServiceKey,
+    {
+      cookies: {
+        getAll() { return []; },
+        setAll() {},
+      },
+    }
+  );
+
+  return supabase;
+}
+

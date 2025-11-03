@@ -78,6 +78,10 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [isVerifying, setIsVerifying] = useState(false);
+  const [rateLimitHit, setRateLimitHit] = useState(false);
 
   /**
    * Check if user is already authenticated
@@ -273,6 +277,31 @@ export default function SignupPage() {
           setErrors({
             general: "เกิดข้อผิดพลาดในการตั้งค่าระบบ กรุณาติดต่อผู้ดูแลระบบ (API key missing)",
           });
+        } else if (error.message.includes("rate limit") || error.message.includes("429") || error.message.includes("Too Many Requests") || error.message.includes("confirmation email")) {
+          // Rate limit or email sending error - use Resend fallback
+          console.log("⚠️ Email sending issue detected, using Resend fallback");
+          setRateLimitHit(true);
+          
+          // Send OTP via Resend
+          const resendResponse = await fetch("/api/auth/resend-verification", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              email: formData.email,
+              fullName: formData.fullName,
+            }),
+          });
+
+          if (resendResponse.ok) {
+            setShowOTPModal(true);
+          } else {
+            const resendData = await resendResponse.json();
+            setErrors({
+              general: resendData.error || "ไม่สามารถส่งอีเมลยืนยันได้ กรุณาลองใหม่อีกครั้ง",
+            });
+          }
         } else {
           // Log full error for debugging
           console.error("Signup error:", error);
@@ -372,6 +401,120 @@ export default function SignupPage() {
    */
   const toggleConfirmPasswordVisibility = () => {
     setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  /**
+   * Handle OTP verification
+   */
+  const handleVerifyOTP = async () => {
+    if (!otp || otp.length !== 6) {
+      setErrors({
+        general: "กรุณากรอกรหัส OTP 6 หลัก",
+      });
+      return;
+    }
+
+    setIsVerifying(true);
+    setErrors({});
+
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          otp,
+          username: formData.username,
+          fullName: formData.fullName,
+          phone: formData.phone,
+          password: formData.password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrors({
+          general: data.error || "รหัส OTP ไม่ถูกต้องหรือหมดอายุ",
+        });
+        setIsVerifying(false);
+        return;
+      }
+
+      // Process referral code if provided
+      if (formData.referralCode.trim()) {
+        try {
+          const referralResponse = await fetch("/api/affiliate/validate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ code: formData.referralCode }),
+          });
+
+          if (referralResponse.ok) {
+            await fetch("/api/affiliate", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                referredUserId: data.data.user.id,
+                referralCode: formData.referralCode,
+              }),
+            });
+          }
+        } catch {
+          // Error processing referral
+        }
+      }
+
+      // Redirect to dashboard
+      router.push("/dashboard");
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      setErrors({
+        general: "เกิดข้อผิดพลาดในการยืนยัน กรุณาลองใหม่อีกครั้ง",
+      });
+      setIsVerifying(false);
+    }
+  };
+
+  /**
+   * Resend OTP
+   */
+  const handleResendOTP = async () => {
+    setErrors({});
+    
+    try {
+      const response = await fetch("/api/auth/resend-verification", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          fullName: formData.fullName,
+        }),
+      });
+
+      if (response.ok) {
+        setErrors({
+          general: "ส่งรหัส OTP ใหม่ให้แล้ว กรุณาตรวจสอบอีเมล",
+        });
+      } else {
+        const data = await response.json();
+        setErrors({
+          general: data.error || "ไม่สามารถส่งอีเมลได้ กรุณาลองใหม่อีกครั้ง",
+        });
+      }
+    } catch {
+      setErrors({
+        general: "เกิดข้อผิดพลาดในการส่งอีเมล กรุณาลองใหม่อีกครั้ง",
+      });
+    }
   };
 
   /**
@@ -667,7 +810,7 @@ export default function SignupPage() {
           </div>
 
           {/* Submit Button */}
-          <div className="pr-6 pt-4">
+          <div className="pt-4">
             <Button
               type="submit"
               disabled={isLoading}
@@ -693,6 +836,101 @@ export default function SignupPage() {
           </div>
         </form>
       </div>
+
+      {/* OTP Verification Modal */}
+      {showOTPModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl max-w-md w-full p-8">
+            <div className="text-center mb-6">
+              <div className="mx-auto w-16 h-16 bg-red-600/20 rounded-full flex items-center justify-center mb-4">
+                <svg
+                  className="w-8 h-8 text-red-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                ยืนยันอีเมลของคุณ
+              </h2>
+              <p className="text-zinc-400 text-sm">
+                เราได้ส่งรหัส OTP ไปยัง <br />
+                <span className="font-semibold text-white">{formData.email}</span>
+              </p>
+            </div>
+
+            {/* Error Message */}
+            {errors.general && (
+              <div className="mb-4 bg-red-500/20 p-3 border border-red-500/70 rounded-lg">
+                <p className="text-red-400 text-sm text-center">{errors.general}</p>
+              </div>
+            )}
+
+            {/* OTP Input */}
+            <div className="mb-6">
+              <label className="block mb-2 font-medium text-zinc-300 text-sm">
+                รหัส OTP
+              </label>
+              <input
+                type="text"
+                maxLength={6}
+                value={otp}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
+                className="w-full bg-zinc-800/50 border border-zinc-600 rounded-lg px-4 py-3 text-center text-2xl font-mono tracking-widest focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70"
+                placeholder="000000"
+              />
+            </div>
+
+            {/* Buttons */}
+            <div className="space-y-3">
+              <Button
+                onClick={handleVerifyOTP}
+                disabled={otp.length !== 6 || isVerifying}
+                loading={isVerifying}
+                loadingText="กำลังยืนยัน..."
+                fullWidth
+                size="lg"
+              >
+                ยืนยัน
+              </Button>
+              <Button
+                onClick={handleResendOTP}
+                variant="ghost"
+                fullWidth
+                size="lg"
+              >
+                ส่งรหัสใหม่
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowOTPModal(false);
+                  setOtp("");
+                  setErrors({});
+                }}
+                variant="ghost"
+                fullWidth
+                size="lg"
+              >
+                ยกเลิก
+              </Button>
+            </div>
+
+            {/* Info */}
+            <div className="mt-6 text-center">
+              <p className="text-zinc-500 text-xs">
+                ⏰ รหัส OTP จะหมดอายุใน 10 นาที
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </AuthLayout>
   );
 }

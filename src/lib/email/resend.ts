@@ -209,6 +209,124 @@ export async function sendWelcomeEmail(to: string, name: string) {
 }
 
 /**
+ * Verification Email Data
+ */
+export interface VerificationEmailData {
+  to: string;
+  otp: string;
+  fullName?: string;
+}
+
+/**
+ * Send verification email with OTP
+ * Used as fallback when Supabase hits rate limits
+ */
+export async function sendVerificationEmail(data: VerificationEmailData) {
+  if (!resend || !resendApiKey) {
+    console.warn('⚠️ Resend API Key not configured. Email not sent.');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  try {
+    const { to, otp, fullName = 'คุณ' } = data;
+
+    const result = await resend.emails.send({
+      from: EMAIL_CONFIG.from,
+      to,
+      subject: 'ยืนยันการสมัครสมาชิก - MUAYTHAI Platform 🥊',
+      html: generateVerificationEmailHtml({ otp, fullName }),
+    });
+
+    return {
+      success: !result.error,
+      id: result.data?.id,
+      error: result.error,
+    };
+  } catch (error) {
+    console.error('❌ Error sending verification email:', error);
+    return { success: false, error: 'Failed to send email' };
+  }
+}
+
+/**
+ * Generate HTML for verification email
+ */
+function generateVerificationEmailHtml(data: { otp: string; fullName: string }): string {
+  const { otp, fullName } = data;
+
+  return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>ยืนยันการสมัครสมาชิก</title>
+      </head>
+      <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">🥊 MUAYTHAI Platform</h1>
+          <p style="color: rgba(255, 255, 255, 0.9); margin: 10px 0 0 0; font-size: 16px;">ยืนยันการสมัครสมาชิก</p>
+        </div>
+        
+        <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px;">
+          <h2 style="color: #dc2626; margin-top: 0; font-size: 24px;">สวัสดี ${fullName}! 🎉</h2>
+          
+          <div style="background: white; padding: 30px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc2626;">
+            <p style="margin: 0 0 20px 0; color: #1f2937; font-size: 16px; line-height: 1.8;">
+              ขอบคุณที่สมัครสมาชิกกับเรา! กรุณายืนยันการสมัครสมาชิกโดยใช้รหัส OTP ด้านล่าง:
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border: 2px dashed #dc2626; border-radius: 8px; padding: 20px; text-align: center; margin: 20px 0;">
+              <p style="margin: 0; color: #991b1b; font-weight: 600; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">
+                รหัสยืนยันของคุณ
+              </p>
+              <p style="margin: 0; color: #7f1d1d; font-size: 36px; font-weight: 700; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+                ${otp}
+              </p>
+            </div>
+            
+            <p style="margin: 20px 0 0 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
+              ⏰ รหัสนี้จะหมดอายุใน 10 นาที<br>
+              ⚠️ กรุณาอย่าบอกรหัสนี้ให้ผู้อื่น
+            </p>
+          </div>
+          
+          <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 20px 0;">
+            <p style="margin: 0; color: #92400e; font-size: 14px; line-height: 1.6;">
+              <strong>💡 คำแนะนำ:</strong> หากคุณไม่ได้ทำการสมัครสมาชิก กรุณาทิ้งอีเมลนี้ไว้หรือแจ้งทีมงาน
+            </p>
+          </div>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center;">
+            <p style="color: #6b7280; font-size: 12px; margin: 0;">
+              📅 วันที่ส่ง: ${new Date().toLocaleString('th-TH', { 
+                timeZone: 'Asia/Bangkok',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </p>
+          </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; padding: 20px;">
+          <p style="color: #6b7280; font-size: 12px; margin: 0 0 10px 0;">
+            ต้องการความช่วยเหลือ? ติดต่อเรา:
+          </p>
+          <p style="margin: 0;">
+            <a href="mailto:support@muaythai.com" style="color: #dc2626; text-decoration: none; font-size: 14px;">
+              support@muaythai.com
+            </a>
+          </p>
+        </div>
+      </body>
+    </html>
+  `;
+}
+
+/**
  * Check if email service is configured
  */
 export function isEmailServiceConfigured(): boolean {
