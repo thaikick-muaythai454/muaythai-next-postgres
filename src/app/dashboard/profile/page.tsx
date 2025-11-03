@@ -4,20 +4,29 @@ import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
-import { Card, CardBody, CardHeader, Button, Input, Avatar, Chip } from '@heroui/react';
+import { Card, CardBody, CardHeader, Button, Input, Chip } from '@heroui/react';
 import {
   UserIcon,
   CalendarIcon,
   HeartIcon,
   BanknotesIcon,
   PencilIcon,
-  ShieldCheckIcon,
-  CameraIcon,
   CheckCircleIcon,
   ClockIcon,
 } from '@heroicons/react/24/outline';
 import { User } from '@supabase/supabase-js';
 import { Toaster, toast } from 'react-hot-toast';
+import {
+  ProfilePictureUpload,
+  BioEditor,
+  SocialLinksEditor,
+  FitnessGoalsManager,
+  TrainingHistoryView,
+  AchievementsShowcase,
+  PrivacySettingsPanel,
+  NotificationPreferencesPanel,
+  AccountDeletionDialog,
+} from '@/components/features/profile';
 
 function ProfileContent() {
   const supabase = createClient();
@@ -25,6 +34,8 @@ function ProfileContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [formData, setFormData] = useState({
     displayName: '',
     phone: '',
@@ -40,7 +51,7 @@ function ProfileContent() {
         // Load user profile data from profiles table
         const { data: profile } = await supabase
           .from('profiles')
-          .select('full_name, phone')
+          .select('full_name, phone, avatar_url')
           .eq('user_id', user.id)
           .maybeSingle();
 
@@ -49,6 +60,8 @@ function ProfileContent() {
           phone: profile?.phone || user.user_metadata?.phone || '',
           address: user.user_metadata?.address || '',
         });
+        
+        setAvatarUrl(profile?.avatar_url || user.user_metadata?.avatar_url || null);
       }
 
       setIsLoading(false);
@@ -139,21 +152,13 @@ function ProfileContent() {
 
       <div className="gap-6 grid grid-cols-1 lg:grid-cols-3">
         {/* Profile Summary */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
           <Card className="bg-gradient-to-br from-zinc-800 to-zinc-950 backdrop-blur-sm border border-zinc-700">
             <CardBody className="items-center gap-4 py-8 text-center">
-              <div className="group relative">
-                <Avatar
-                  size="lg"
-                  src={user?.user_metadata?.avatar_url}
-                  classNames={{
-                    base: "bg-gradient-to-br from-blue-600 to-blue-700 w-32 h-32 ring-4 ring-zinc-700 ring-offset-2 ring-offset-zinc-900",
-                  }}
-                />
-                <button className="absolute inset-0 flex justify-center items-center bg-black/50 opacity-0 group-hover:opacity-100 backdrop-blur-sm rounded-full transition-opacity" aria-label="Button">
-                  <CameraIcon className="w-8 h-8 text-white" />
-                </button>
-              </div>
+              <ProfilePictureUpload
+                currentAvatarUrl={avatarUrl}
+                onUploadSuccess={(newUrl) => setAvatarUrl(newUrl || null)}
+              />
               
               <div>
                 <h3 className="mb-1 font-bold text-2xl">
@@ -194,6 +199,20 @@ function ProfileContent() {
                   </Chip>
                 </div>
               </div>
+            </CardBody>
+          </Card>
+
+          {/* Bio Section */}
+          <Card className="bg-zinc-950/50 backdrop-blur-sm border border-zinc-700">
+            <CardBody>
+              <BioEditor />
+            </CardBody>
+          </Card>
+
+          {/* Social Links */}
+          <Card className="bg-zinc-950/50 backdrop-blur-sm border border-zinc-700">
+            <CardBody>
+              <SocialLinksEditor />
             </CardBody>
           </Card>
         </div>
@@ -349,62 +368,39 @@ function ProfileContent() {
             </CardBody>
           </Card>
 
-          {/* Security Settings */}
+          {/* Fitness Goals */}
           <Card className="bg-zinc-950/50 backdrop-blur-sm border border-zinc-700">
-            <CardHeader className="flex items-center gap-3 border-zinc-700 border-b">
-              <div className="bg-blue-600/20 p-2 rounded-lg">
-                <ShieldCheckIcon className="w-5 h-5 text-blue-400" />
-              </div>
-              <div>
-                <h3 className="font-bold text-xl">ความปลอดภัย</h3>
-                <p className="text-zinc-400 text-sm">ตั้งค่าความปลอดภัยของบัญชี</p>
-              </div>
-            </CardHeader>
-            <CardBody className="gap-4">
-              <div className="flex sm:flex-row flex-col justify-between items-start sm:items-center gap-4 bg-zinc-950/50 hover:bg-zinc-950/70 p-4 rounded-lg transition-colors">
-                <div className="flex-1">
-                  <p className="mb-1 font-semibold text-white">รหัสผ่าน</p>
-                  <p className="text-zinc-400 text-sm">
-                    แก้ไขล่าสุด: {user?.updated_at ? new Date(user.updated_at).toLocaleDateString('th-TH') : '-'}
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  color="primary"
-                  variant="flat"
-                  className="min-w-[140px]"
-                >
-                  เปลี่ยนรหัสผ่าน
-                </Button>
-              </div>
-              <div className="flex sm:flex-row flex-col justify-between items-start sm:items-center gap-4 bg-zinc-950/50 hover:bg-zinc-950/70 p-4 rounded-lg transition-colors">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="font-semibold text-white">การยืนยันตัวตนแบบสองชั้น</p>
-                    <Chip size="sm" color="warning" variant="flat">เร็วๆ นี้</Chip>
-                  </div>
-                  <p className="text-zinc-400 text-sm">
-                    เพิ่มความปลอดภัยให้กับบัญชีของคุณ
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  variant="flat"
-                  isDisabled
-                  className="min-w-[140px]"
-                >
-                  เปิดใช้งาน
-                </Button>
-              </div>
+            <CardBody>
+              <FitnessGoalsManager />
             </CardBody>
           </Card>
+
+          {/* Training History */}
+          <Card className="bg-zinc-950/50 backdrop-blur-sm border border-zinc-700">
+            <CardBody>
+              <TrainingHistoryView />
+            </CardBody>
+          </Card>
+
+          {/* Achievements */}
+          <Card className="bg-zinc-950/50 backdrop-blur-sm border border-zinc-700">
+            <CardBody>
+              <AchievementsShowcase />
+            </CardBody>
+          </Card>
+
+          {/* Privacy Settings */}
+          <PrivacySettingsPanel />
+
+          {/* Notification Preferences */}
+          <NotificationPreferencesPanel />
 
           {/* Danger Zone */}
           <Card className="bg-gradient-to-br from-red-950/50 to-red-900/30 backdrop-blur-sm border border-red-800/50">
             <CardHeader className="border-red-800/50 border-b">
               <div className="flex items-center gap-3">
-                <div className="bg-brand-primary/20 p-2 rounded-lg">
-                  <ShieldCheckIcon className="w-5 h-5 text-red-400" />
+                <div className="bg-red-600/20 p-2 rounded-lg">
+                  <span className="text-red-400 text-xl">⚠️</span>
                 </div>
                 <div>
                   <h3 className="font-bold text-red-400 text-xl">โซนอันตราย</h3>
@@ -425,6 +421,7 @@ function ProfileContent() {
                   color="danger"
                   variant="solid"
                   className="min-w-[140px]"
+                  onPress={() => setShowDeleteDialog(true)}
                 >
                   ลบบัญชี
                 </Button>
@@ -433,6 +430,12 @@ function ProfileContent() {
           </Card>
         </div>
       </div>
+
+      {/* Account Deletion Dialog */}
+      <AccountDeletionDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+      />
     </DashboardLayout>
   );
 }
