@@ -258,16 +258,24 @@ export default function SignupPage() {
       });
 
       if (error) {
-        // Handle signup errors
-        if (error.message.includes("already registered")) {
+        // Handle specific error messages
+        if (error.message.includes("already registered") || error.message.includes("User already registered")) {
           setErrors({
             email: "อีเมลนี้ถูกใช้งานแล้ว",
           });
-        } else if (error.message.includes("Password should be")) {
+        } else if (error.message.includes("Password should be") || error.message.includes("password")) {
           setErrors({
             password: "รหัสผ่านไม่ตรงตามเงื่อนไข",
           });
+        } else if (error.message.includes("No API key found") || error.message.includes("apikey")) {
+          // API key configuration error
+          console.error("❌ Supabase API Key Error:", error);
+          setErrors({
+            general: "เกิดข้อผิดพลาดในการตั้งค่าระบบ กรุณาติดต่อผู้ดูแลระบบ (API key missing)",
+          });
         } else {
+          // Log full error for debugging
+          console.error("Signup error:", error);
           setErrors({
             general: `เกิดข้อผิดพลาด: ${error.message}`,
           });
@@ -555,7 +563,7 @@ export default function SignupPage() {
                 onClick={togglePasswordVisibility}
                 variant="ghost"
                 size="icon"
-                className="absolute top-1/2 -translate-y-1/2 right-4text-zinc-400 hover:text-zinc-300 p-1"
+                className="absolute top-1/2 -translate-y-1/2 right-4 text-zinc-400 hover:text-zinc-300 p-1"
               >
                 {showPassword ? (
                   <EyeSlashIcon className="w-5 h-5" />
@@ -605,7 +613,7 @@ export default function SignupPage() {
                 onClick={toggleConfirmPasswordVisibility}
                 variant="ghost"
                 size="icon"
-                className="absolute top-1/2 -translate-y-1/2 right-4text-zinc-400 hover:text-zinc-300 p-1"
+                className="absolute top-1/2 -translate-y-1/2 right-4 text-zinc-400 hover:text-zinc-300 p-1"
               >
                 {showConfirmPassword ? (
                   <EyeSlashIcon className="w-5 h-5" />
