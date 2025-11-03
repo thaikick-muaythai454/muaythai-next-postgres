@@ -5,6 +5,9 @@ export {
   isEmailServiceConfigured,
   getEmailServiceStatus,
   type ContactEmailData,
+  // Verification Emails (Resend)
+  sendVerificationEmail as sendVerificationEmailResend,
+  type VerificationEmailData,
   // Booking Emails
   sendBookingConfirmationEmail,
   sendBookingReminderEmail,
@@ -24,6 +27,13 @@ export {
   sendAdminAlertEmail,
   type AdminAlertData,
 } from './resend';
+
+// SMTP Email Service
+export {
+  sendVerificationEmail,
+  isSmtpConfigured,
+  getSmtpStatus,
+} from './smtp';
 
 // Email Templates (for reference/testing)
 export * from './templates';
