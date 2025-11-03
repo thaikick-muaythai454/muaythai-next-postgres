@@ -8,10 +8,11 @@ import { createClient } from '@/lib/database/supabase/server';
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
+    const { id } = await context.params;
     
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
@@ -33,7 +34,7 @@ export async function PUT(
     const { data, error } = await supabase
       .from('notifications')
       .update(updateData)
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .select()
       .single();
@@ -74,10 +75,11 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const supabase = await createClient();
+    const { id } = await context.params;
     
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
@@ -91,7 +93,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('notifications')
       .delete()
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id);
 
     if (error) {
