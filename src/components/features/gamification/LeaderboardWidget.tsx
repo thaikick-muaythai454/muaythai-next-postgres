@@ -131,7 +131,7 @@ export default function LeaderboardWidget({ leaderboard, className = '' }: Leade
       {/* Show More Button */}
       {leaderboard.entries.length > 10 && (
         <div className="mt-4 text-center">
-          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+          <button className="text-blue-600 hover:text-blue-700 text-sm font-medium" aria-label="Button">
             ดูทั้งหมด ({leaderboard.entries.length} คน)
           </button>
         </div>

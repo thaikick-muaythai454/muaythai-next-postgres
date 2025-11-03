@@ -154,7 +154,7 @@ export const getSemanticSpacing = (category: keyof SemanticSpacing, size?: strin
     return spacingCategory;
   }
   if (size && typeof spacingCategory === 'object' && size in spacingCategory) {
-    return (spacingCategory as any)[size];
+    return (spacingCategory as Record<string, string>)[size];
   }
   return spacing[4]; // fallback to medium spacing
 };

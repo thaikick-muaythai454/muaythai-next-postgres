@@ -62,10 +62,10 @@ export default function SidebarContent({
     <>
       <div className={`flex items-center p-6 border-white/5 border-b ${onClose ? 'justify-between' : 'justify-start'}`}>
         <Link href="/" className="flex items-center gap-2">
-          <div className="flex justify-center items-center bg-red-600 rounded w-10 h-10 font-bold text-white">
+          <div className="flex justify-center items-center bg-brand-primary rounded w-10 h-10 font-bold text-text-primary">
             MT
           </div>
-          <span className="font-semibold text-white text-lg">
+          <span className="font-semibold text-text-primary text-lg">
             MUAYTHAI
           </span>
         </Link>
@@ -75,7 +75,7 @@ export default function SidebarContent({
             variant="light"
             onPress={onClose}
           >
-            <XMarkIcon className="w-6 h-6 text-white" />
+            <XMarkIcon className="w-6 h-6 text-text-primary" />
           </Button>
         )}
       </div>
@@ -93,7 +93,7 @@ export default function SidebarContent({
             }}
           />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-white text-sm truncate">
+            <p className="font-semibold text-text-primary text-sm truncate">
               {displayName || userEmail?.split('@')[0] || 'ผู้ใช้'}
             </p>
             <p className="text-default-400 text-xs truncate">{userEmail}</p>
@@ -116,8 +116,8 @@ export default function SidebarContent({
               onClick={onLinkClick}
               className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
                 isActive
-                  ? 'bg-danger text-white font-semibold'
-                  : 'text-default-400 hover:bg-white/5 hover:text-white'
+                  ? 'bg-danger text-text-primary font-semibold'
+                  : 'text-default-400 hover:bg-white/5 hover:text-text-primary'
               }`}
             >
               <Icon className="w-5 h-5" />

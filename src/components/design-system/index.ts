@@ -5,16 +5,7 @@
  * Exports all design tokens, components, types, and utilities.
  */
 
-// Design Tokens
-export * from './tokens';
-
-// Theme Provider and Context
-export * from './ThemeProvider';
-
-// Types and Interfaces
-export * from './types';
-
-// Re-export key items for convenience
+// Design Tokens - Specific exports for better tree-shaking
 export { 
   tokens, 
   colors, 
@@ -28,6 +19,7 @@ export {
   animationVariables,
 } from './tokens';
 
+// Theme Provider and Context - Specific exports
 export {
   ThemeProvider,
   useTheme,
@@ -36,13 +28,7 @@ export {
   ThemeContext,
 } from './ThemeProvider';
 
-export type {
-  DesignTokens,
-  CSSVariables,
-  ThemeContextValue,
-  ThemeProviderProps,
-} from './tokens';
-
+// Types and Interfaces - Specific exports
 export type {
   BaseComponentProps,
   InteractiveProps,
@@ -55,12 +41,44 @@ export type {
   ResponsiveValue,
   ValidationResult,
   ValidationSchema,
+  DesignTokens,
+  CSSVariables,
+  ThemeContextValue,
+  ThemeProviderProps,
 } from './types';
 
 export {
   validateComponentProps,
   validators,
 } from './types';
+
+// Primitive Components - Specific exports
+export {
+  Button,
+  buttonVariants,
+  BaseInput,
+  Card,
+  CardHeader,
+  CardContent,
+  CardFooter,
+  Container,
+  Loading,
+} from './primitives';
+
+// Patterns and Compositions - Specific exports
+export {
+  createLazyComponent,
+  createPreloadableLazyComponent,
+  LazyCompositions,
+  PreloadableCompositions,
+  createMemoComponent,
+  performance,
+  migrationUtils,
+  createOptimizedExports,
+  bundleAnalysis,
+} from './utils';
+
+
 
 // Design System Version
 export const DESIGN_SYSTEM_VERSION = '1.0.0';

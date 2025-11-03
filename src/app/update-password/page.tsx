@@ -325,7 +325,7 @@ function UpdatePasswordForm() {
               onChange={handleInputChange}
               className={`w-full bg-zinc-700 border ${
                 errors.password ? "border-red-500" : "border-zinc-600/50 hover:border-zinc-500/70 group-hover:border-zinc-500/50"
-              } rounded-lg px-4 py-2.5 pr-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono text-sm`}
+              } rounded-lg px-4 py-2.5 pr-10 text-text-primary placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono text-sm`}
               placeholder="••••••••"
               autoComplete="new-password"
             />
@@ -373,7 +373,7 @@ function UpdatePasswordForm() {
               onChange={handleInputChange}
               className={`w-full bg-zinc-700 border ${
                 errors.confirmPassword ? "border-red-500" : "border-zinc-600/50 hover:border-zinc-500/70 group-hover:border-zinc-500/50"
-              } rounded-lg px-4 py-3 pr-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
+              } rounded-lg px-4 py-3 pr-10 text-text-primary placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
               placeholder="••••••••"
               autoComplete="new-password"
             />

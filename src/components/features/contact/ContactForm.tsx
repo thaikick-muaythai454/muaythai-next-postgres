@@ -6,10 +6,21 @@ import {
   CheckCircleIcon,
   ExclamationTriangleIcon 
 } from "@heroicons/react/24/outline";
-import { Button } from "@/components/shared";
+import { Button, BaseInput, ErrorDisplay } from "@/components/shared";
 
-export default function ContactForm() {
-  const [formData, setFormData] = useState({
+export interface ContactFormData {
+  name: string;
+  email: string;
+  message: string;
+}
+
+export interface ContactFormProps {
+  onSubmit?: (data: ContactFormData) => Promise<void>;
+  className?: string;
+}
+
+export function ContactForm({ onSubmit, className }: ContactFormProps = {}) {
+  const [formData, setFormData] = useState<ContactFormData>({
     name: "",
     email: "",
     message: "",
@@ -41,25 +52,40 @@ export default function ContactForm() {
     setSubmitStatus({ type: null, message: '' });
 
     try {
-      // Send to API
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Success
+      if (onSubmit) {
+        // Use custom submit handler
+        await onSubmit(formData);
         setSubmitStatus({
           type: 'success',
-          message: data.message || 'ส่งข้อความสำเร็จ! ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมง',
+          message: 'ส่งข้อความสำเร็จ! ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมง',
         });
-        
-        // Clear form
+      } else {
+        // Default API submission
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          setSubmitStatus({
+            type: 'success',
+            message: data.message || 'ส่งข้อความสำเร็จ! ทีมงานจะติดต่อกลับภายใน 24 ชั่วโมง',
+          });
+        } else {
+          setSubmitStatus({
+            type: 'error',
+            message: data.error || 'ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง',
+          });
+        }
+      }
+      
+      // Clear form on success
+      if (submitStatus.type !== 'error') {
         setFormData({
           name: "",
           email: "",
@@ -70,12 +96,6 @@ export default function ContactForm() {
         setTimeout(() => {
           setSubmitStatus({ type: null, message: '' });
         }, 5000);
-      } else {
-        // Error
-        setSubmitStatus({
-          type: 'error',
-          message: data.error || 'ไม่สามารถส่งข้อความได้ กรุณาลองใหม่อีกครั้ง',
-        });
       }
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -89,69 +109,47 @@ export default function ContactForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 mx-auto max-w-md">
+    <form onSubmit={handleSubmit} className={`space-y-4 mx-auto max-w-md ${className || ''}`}>
       {/* Status Message */}
       {submitStatus.type && (
-        <div
-          className={`flex items-center gap-3 p-4 rounded-lg ${
-            submitStatus.type === 'success'
-              ? 'bg-green-500/20 border border-green-500 text-green-400'
-              : 'bg-red-500/20 border border-red-500 text-red-400'
-          }`}
-        >
-          {submitStatus.type === 'success' ? (
-            <CheckCircleIcon className="flex-shrink-0 w-6 h-6" />
-          ) : (
-            <ExclamationTriangleIcon className="flex-shrink-0 w-6 h-6" />
-          )}
-          <p className="text-sm">{submitStatus.message}</p>
-        </div>
+        <ErrorDisplay
+          variant={submitStatus.type === 'success' ? 'card' : 'card'}
+          error={submitStatus.message}
+          className={submitStatus.type === 'success' 
+            ? 'bg-green-500/20 border-green-500 text-green-400' 
+            : undefined
+          }
+        />
       )}
 
-      <div>
-        <label
-          htmlFor="name"
-          className="block mb-2 font-medium text-zinc-300 text-sm"
-        >
-          ชื่อ (Name)
-        </label>
-        <input
-          type="text"
-          id="name"
-          name="name"
-          value={formData.name}
-          onChange={handleInputChange}
-          required
-          className="bg-zinc-700 px-3 py-2 border border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 w-full text-white"
-          placeholder="กรอกชื่อของคุณ"
-        />
-      </div>
+      <BaseInput
+        name="name"
+        label="ชื่อ (Name)"
+        type="text"
+        value={formData.name}
+        onChange={(value) => setFormData(prev => ({ ...prev, name: value }))}
+        required
+        placeholder="กรอกชื่อของคุณ"
+        disabled={isSubmitting}
+      />
 
-      <div>
-        <label
-          htmlFor="email"
-          className="block mb-2 font-medium text-zinc-300 text-sm"
-        >
-          อีเมล (Email)
-        </label>
-        <input
-          type="email"
-          id="email"
-          name="email"
-          value={formData.email}
-          onChange={handleInputChange}
-          required
-          className="bg-zinc-700 px-3 py-2 border border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 w-full text-white"
-          placeholder="your@email.com"
-        />
-      </div>
+      <BaseInput
+        name="email"
+        label="อีเมล (Email)"
+        type="email"
+        value={formData.email}
+        onChange={(value) => setFormData(prev => ({ ...prev, email: value }))}
+        required
+        placeholder="your@email.com"
+        disabled={isSubmitting}
+      />
 
       <div>
         <label
           htmlFor="message"
           className="block mb-2 font-medium text-zinc-300 text-sm"
         >
-          ข้อความ (Message)
+          ข้อความ (Message) <span className="text-red-500">*</span>
         </label>
         <textarea
           id="message"
@@ -160,7 +158,8 @@ export default function ContactForm() {
           onChange={handleInputChange}
           required
           rows={4}
-          className="bg-zinc-700 px-3 py-2 border border-zinc-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 w-full text-white resize-none"
+          disabled={isSubmitting}
+          className="bg-zinc-700 px-4 py-3 border border-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 w-full text-text-primary resize-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           placeholder="เขียนข้อความของคุณที่นี่..."
         />
       </div>

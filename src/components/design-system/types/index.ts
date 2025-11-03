@@ -77,23 +77,23 @@ export {
 } from './validation';
 
 // Utility types for common patterns
-export type WithChildren<T = {}> = T & {
+export type WithChildren<T = Record<string, never>> = T & {
   children?: React.ReactNode;
 };
 
-export type WithClassName<T = {}> = T & {
+export type WithClassName<T = Record<string, never>> = T & {
   className?: string;
 };
 
-export type WithTestId<T = {}> = T & {
+export type WithTestId<T = Record<string, never>> = T & {
   testId?: string;
 };
 
-export type WithLoading<T = {}> = T & {
+export type WithLoading<T = Record<string, never>> = T & {
   loading?: boolean;
 };
 
-export type WithDisabled<T = {}> = T & {
+export type WithDisabled<T = Record<string, never>> = T & {
   disabled?: boolean;
 };
 
@@ -111,7 +111,7 @@ export type WithColor<T extends string = ComponentColor> = {
 
 // Event handler types
 export type ClickHandler = (event: React.MouseEvent<HTMLElement>) => void;
-export type ChangeHandler<T = any> = (value: T, event?: React.ChangeEvent<HTMLElement>) => void;
+export type ChangeHandler<T = unknown> = (value: T, event?: React.ChangeEvent<HTMLElement>) => void;
 export type FocusHandler = (event: React.FocusEvent<HTMLElement>) => void;
 export type BlurHandler = (event: React.FocusEvent<HTMLElement>) => void;
 export type KeyboardHandler = (event: React.KeyboardEvent<HTMLElement>) => void;
@@ -131,11 +131,11 @@ export type ClassName = string | undefined;
 export type StyleProp = CSSProperties | undefined;
 
 // Component composition types
-export type ComponentFactory<P = {}> = (props: P) => React.ReactElement;
-export type ComponentRenderer<P = {}> = (props: P) => React.ReactNode;
+export type ComponentFactory<P = Record<string, never>> = (props: P) => React.ReactElement;
+export type ComponentRenderer<P = Record<string, never>> = (props: P) => React.ReactNode;
 
 // Forward ref component type helper
-export type ForwardRefComponent<T, P = {}> = React.ForwardRefExoticComponent<
+export type ForwardRefComponent<T, P = Record<string, never>> = React.ForwardRefExoticComponent<
   React.PropsWithoutRef<P> & React.RefAttributes<T>
 >;
 
@@ -148,11 +148,11 @@ export type ComponentPropsWithoutRef<T extends React.ElementType> =
   React.ComponentPropsWithoutRef<T>;
 
 // Element type constraint
-export type ElementType = keyof JSX.IntrinsicElements | React.ComponentType<any>;
+export type ElementType = keyof JSX.IntrinsicElements | React.ComponentType<Record<string, unknown>>;
 
 // Render prop types
-export type RenderProp<T = {}> = (props: T) => React.ReactNode;
-export type ChildrenRenderProp<T = {}> = {
+export type RenderProp<T = Record<string, never>> = (props: T) => React.ReactNode;
+export type ChildrenRenderProp<T = Record<string, never>> = {
   children: RenderProp<T>;
 };
 
@@ -160,12 +160,12 @@ export type ChildrenRenderProp<T = {}> = {
 export type ComponentDisplayName = string;
 
 // Component with display name
-export type ComponentWithDisplayName<T = React.ComponentType<any>> = T & {
+export type ComponentWithDisplayName<T = React.ComponentType<Record<string, unknown>>> = T & {
   displayName?: ComponentDisplayName;
 };
 
 // Default props type
-export type DefaultProps<T = {}> = Partial<T>;
+export type DefaultProps<T = Record<string, never>> = Partial<T>;
 
 // Component with default props
 export type ComponentWithDefaults<P, D extends Partial<P>> = React.ComponentType<P> & {
@@ -173,39 +173,39 @@ export type ComponentWithDefaults<P, D extends Partial<P>> = React.ComponentType
 };
 
 // Slot-based component types (for compound components)
-export type SlotProps<T = {}> = T & {
+export type SlotProps<T = Record<string, never>> = T & {
   slot?: string;
 };
 
-export type CompoundComponent<T = {}> = React.ComponentType<T> & {
-  [key: string]: React.ComponentType<any>;
+export type CompoundComponent<T = Record<string, never>> = React.ComponentType<T> & {
+  [key: string]: React.ComponentType<Record<string, unknown>>;
 };
 
 // Theme-aware component types
-export type ThemedComponent<T = {}> = T & {
+export type ThemedComponent<T = Record<string, never>> = T & {
   theme?: 'light' | 'dark' | 'auto';
 };
 
 // Responsive component types
-export type ResponsiveComponent<T = {}> = T & {
+export type ResponsiveComponent<T = Record<string, never>> = T & {
   responsive?: boolean;
 };
 
 // Animation-aware component types
-export type AnimatedComponent<T = {}> = T & {
+export type AnimatedComponent<T = Record<string, never>> = T & {
   animated?: boolean;
   animation?: AnimationVariant;
 };
 
 // Virtualized component types (for large lists)
-export type VirtualizedComponent<T = {}> = T & {
+export type VirtualizedComponent<T = Record<string, never>> = T & {
   virtualized?: boolean;
   itemHeight?: number;
   overscan?: number;
 };
 
 // Async component types
-export type AsyncComponent<T = {}> = T & {
+export type AsyncComponent<T = Record<string, never>> = T & {
   loading?: boolean;
   error?: Error | string;
   retry?: () => void;

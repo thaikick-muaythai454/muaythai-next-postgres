@@ -5,33 +5,36 @@
  * Includes durations, easing functions, and common animation patterns.
  */
 
-export const animations = {
-  // Animation durations
-  duration: {
-    instant: '0ms',
-    fast: '150ms',
-    normal: '200ms',
-    slow: '300ms',
-    slower: '500ms',
-    slowest: '1000ms',
-  },
+// Base animation values
+const duration = {
+  instant: '0ms',
+  fast: '150ms',
+  normal: '200ms',
+  slow: '300ms',
+  slower: '500ms',
+  slowest: '1000ms',
+};
+
+const easing = {
+  // Standard easing curves
+  linear: 'linear',
+  ease: 'ease',
+  easeIn: 'ease-in',
+  easeOut: 'ease-out',
+  easeInOut: 'ease-in-out',
   
-  // Easing functions
-  easing: {
-    // Standard easing curves
-    linear: 'linear',
-    ease: 'ease',
-    easeIn: 'ease-in',
-    easeOut: 'ease-out',
-    easeInOut: 'ease-in-out',
-    
-    // Custom cubic-bezier curves
-    default: 'cubic-bezier(0.16, 1, 0.3, 1)',        // Smooth default
-    bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)', // Bounce effect
-    sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',           // Sharp transition
-    smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',  // Smooth transition
-    spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)', // Spring effect
-  },
+  // Custom cubic-bezier curves
+  default: 'cubic-bezier(0.16, 1, 0.3, 1)',        // Smooth default
+  bounce: 'cubic-bezier(0.68, -0.55, 0.265, 1.55)', // Bounce effect
+  sharp: 'cubic-bezier(0.4, 0, 0.6, 1)',           // Sharp transition
+  smooth: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',  // Smooth transition
+  spring: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)', // Spring effect
+};
+
+export const animations = {
+  duration,
+  easing,
+
   
   // Common animation patterns
   patterns: {
@@ -143,18 +146,18 @@ export const animations = {
     // Button animations
     button: {
       hover: {
-        duration: animations.duration.fast,
-        easing: animations.easing.default,
+        duration: duration.fast,
+        easing: easing.default,
         transform: 'scale(1.02)',
       },
       active: {
-        duration: animations.duration.fast,
-        easing: animations.easing.default,
+        duration: duration.fast,
+        easing: easing.default,
         transform: 'scale(0.98)',
       },
       focus: {
-        duration: animations.duration.normal,
-        easing: animations.easing.default,
+        duration: duration.normal,
+        easing: easing.default,
       },
     },
     

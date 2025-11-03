@@ -1,22 +1,34 @@
-// Feature Components - Organized by Domain
+/**
+ * Feature Components
+ * 
+ * Domain-specific components organized by business functionality.
+ * Each feature domain contains components, hooks, types, and utilities
+ * specific to that business area.
+ * 
+ * Features maintain clear boundaries and use standardized shared components
+ * as building blocks for consistent UI patterns.
+ */
 
-// Authentication Features
+// === CORE FEATURES ===
+// Authentication and Authorization
 export * from './auth';
 
-// Admin Features
-export * from './admin';
-
-// Contact Features
+// Contact and Communication
 export * from './contact';
 
-// Homepage Features
-export * from './homepage';
+// === BUSINESS FEATURES ===
+// Admin Dashboard and Management
+export * from './admin';
 
-// Payment Features
+// Payment Processing and Transactions
 export * from './payments';
 
-// Gamification Features
+// Gamification System
 export * from './gamification';
 
-// Modal Features
+// === UI FEATURES ===
+// Homepage and Landing
+export * from './homepage';
+
+// Modal Dialogs and Overlays
 export * from './modals';

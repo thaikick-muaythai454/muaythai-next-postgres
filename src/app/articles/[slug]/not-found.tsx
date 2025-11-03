@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function ArticleNotFound() {
   return (
-    <div className="flex flex-col justify-center items-center bg-zinc-950 px-4 min-h-screen text-white">
+    <div className="flex flex-col justify-center items-center bg-zinc-950 px-4 min-h-screen text-text-primary">
       <h1 className="mb-4 font-bold text-red-600 text-6xl">404</h1>
       <h2 className="mb-2 font-semibold text-2xl">ไม่พบบทความที่คุณกำลังค้นหา</h2>
       <p className="mb-8 text-zinc-400 text-center">
@@ -10,7 +10,7 @@ export default function ArticleNotFound() {
       </p>
       <Link
         href="/articles"
-        className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg font-semibold transition-colors"
+        className="bg-brand-primary hover:bg-red-700 px-6 py-3 rounded-lg font-semibold transition-colors"
       >
         กลับไปหน้าบทความ
       </Link>

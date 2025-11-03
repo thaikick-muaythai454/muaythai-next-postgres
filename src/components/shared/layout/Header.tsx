@@ -114,7 +114,7 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex justify-center items-center gap-8">
             <Link href="/" className="flex items-center gap-2">
-              <span className="inline-flex justify-center items-center bg-red-600 rounded w-8 h-8 font-bold text-white">
+              <span className="inline-flex justify-center items-center bg-brand-primary rounded w-8 h-8 font-bold text-text-primary">
                 TM
               </span>
               <span className="font-semibold text-base sm:text-lg">
@@ -142,7 +142,7 @@ export default function Header() {
                             <Link
                               key={item.href}
                               href={item.href}
-                              className="block hover:bg-white/5 px-4 py-2 text-white/80 text-sm"
+                              className="block hover:bg-white/5 px-4 py-2 text-text-primary/80 text-sm"
                             >
                               {item.text}
                             </Link>
@@ -174,7 +174,7 @@ export default function Header() {
               >
                 <div className="flex items-center gap-2 hover:bg-white/10 px-3 border border-white/20 rounded-lg h-10 transition-all duration-200 cursor-pointer group">
                   <UserCircleIcon className="w-5 h-5 group-hover:text-red-400 transition-colors" />
-                  <span className="max-w-[100px] text-sm truncate group-hover:text-white transition-colors">
+                  <span className="max-w-[100px] text-sm truncate group-hover:text-text-primary transition-colors">
                     {user.user_metadata?.full_name || user.email?.split("@")[0]}
                   </span>
                   <ChevronDownIcon className={`w-4 h-4 transition-transform duration-200 ${isUserMenuOpen ? 'rotate-180' : ''}`} />
@@ -188,7 +188,7 @@ export default function Header() {
                     <div className="py-2">
                       {/* User Info */}
                       <div className="px-4 py-3 border-white/10 border-b bg-gradient-to-r from-zinc-800/30 to-zinc-700/30">
-                        <p className="font-semibold text-white text-sm truncate">
+                        <p className="font-semibold text-text-primary text-sm truncate">
                           {user.user_metadata?.full_name || "ผู้ใช้งาน"}
                         </p>
                         <p className="text-zinc-400 text-xs truncate mt-1">
@@ -207,7 +207,7 @@ export default function Header() {
                       {userRole && (
                         <Link
                           href={getDashboardPath(userRole)}
-                          className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-red-500/10 hover:to-red-600/10 px-4 py-3 text-zinc-300 hover:text-white text-sm transition-all duration-200"
+                          className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-red-500/10 hover:to-red-600/10 px-4 py-3 text-zinc-300 hover:text-text-primary text-sm transition-all duration-200"
                         >
                           {userRole === "admin" && (
                             <ShieldCheckIcon className="w-5 h-5 group-hover:text-red-400 transition-colors" />
@@ -226,7 +226,7 @@ export default function Header() {
                       {userRole === "authenticated" && !applicationStatus && (
                         <Link
                           href="/partner/apply"
-                          className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-blue-600/10 px-4 py-3 text-zinc-300 hover:text-white text-sm transition-all duration-200"
+                          className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-blue-600/10 px-4 py-3 text-zinc-300 hover:text-text-primary text-sm transition-all duration-200"
                         >
                           <BuildingStorefrontIcon className="w-5 h-5 group-hover:text-blue-400 transition-colors" />
                           <span className="font-medium">สมัคร Partner</span>
@@ -250,8 +250,8 @@ export default function Header() {
                       <button
                         onClick={handleLogout}
                         disabled={isLoggingOut}
-                        className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-red-500/10 hover:to-red-600/10 disabled:opacity-50 px-4 py-3 w-full text-zinc-300 hover:text-white text-sm text-left transition-all duration-200"
-                      >
+                        className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-red-500/10 hover:to-red-600/10 disabled:opacity-50 px-4 py-3 w-full text-zinc-300 hover:text-text-primary text-sm text-left transition-all duration-200"
+                       aria-label="Button">
                         <ArrowRightOnRectangleIcon className="w-5 h-5 group-hover:text-red-400 transition-colors" />
                         <span className="font-medium">
                           {isLoggingOut ? "กำลังออกจากระบบ..." : "ออกจากระบบ"}
@@ -264,7 +264,7 @@ export default function Header() {
             ) : (
               <Link
                 href="/login"
-                className="hidden md:inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 px-4 rounded h-10 font-medium text-white text-sm transition-colors"
+                className="hidden md:inline-flex items-center gap-2 bg-brand-primary hover:bg-red-700 px-4 rounded h-10 font-medium text-text-primary text-sm transition-colors"
               >
                 <UserCircleIcon className="w-5 h-5" />
                 เข้าสู่ระบบ
@@ -285,19 +285,19 @@ export default function Header() {
                   <div className="py-1">
                     <button
                       onClick={() => setCurrentLang("TH")}
-                      className="block hover:bg-white/5 px-4 py-2 w-full text-white/80 text-sm text-left"
+                      className="block hover:bg-white/5 px-4 py-2 w-full text-text-primary/80 text-sm text-left"
                     >
                       ไทย (TH)
                     </button>
                     <button
                       onClick={() => setCurrentLang("EN")}
-                      className="block hover:bg-white/5 px-4 py-2 w-full text-white/80 text-sm text-left"
+                      className="block hover:bg-white/5 px-4 py-2 w-full text-text-primary/80 text-sm text-left"
                     >
                       English (EN)
                     </button>
                     <button
                       onClick={() => setCurrentLang("JP")}
-                      className="block hover:bg-white/5 px-4 py-2 w-full text-white/80 text-sm text-left"
+                      className="block hover:bg-white/5 px-4 py-2 w-full text-text-primary/80 text-sm text-left"
                     >
                       日本語 (JP)
                     </button>
@@ -342,7 +342,7 @@ export default function Header() {
             {navLinks.map((link) =>
               link.dropdown ? (
                 <div key={link.text}>
-                  <p className="px-4 font-semibold text-white/60">
+                  <p className="px-4 font-semibold text-text-primary/60">
                     {link.text}
                   </p>
                   <div className="grid mt-1">
@@ -350,7 +350,7 @@ export default function Header() {
                       <Link
                         key={item.href}
                         href={item.href}
-                        className="hover:bg-white/5 px-4 py-2 rounded-md text-white/80"
+                        className="hover:bg-white/5 px-4 py-2 rounded-md text-text-primary/80"
                         onClick={() => setIsMobileMenuOpen(false)}
                       >
                         {item.text}
@@ -376,10 +376,10 @@ export default function Header() {
                 <div className="space-y-2">
                   {/* User Info */}
                   <div className="bg-zinc-950 px-4 py-3 rounded">
-                    <p className="font-medium text-white text-sm truncate">
+                    <p className="font-medium text-text-primary text-sm truncate">
                       {user.user_metadata?.full_name || "ผู้ใช้งาน"}
                     </p>
-                    <p className="text-white/60 text-xs truncate">
+                    <p className="text-text-primary/60 text-xs truncate">
                       {user.email}
                     </p>
                     {userRole && (
@@ -395,7 +395,7 @@ export default function Header() {
                   {userRole && (
                     <Link
                       href={getDashboardPath(userRole)}
-                      className="flex items-center gap-2 bg-zinc-950 hover:bg-zinc-700 px-4 py-2 rounded font-medium text-white text-sm transition-colors"
+                      className="flex items-center gap-2 bg-zinc-950 hover:bg-zinc-700 px-4 py-2 rounded font-medium text-text-primary text-sm transition-colors"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       {userRole === "admin" && (
@@ -415,7 +415,7 @@ export default function Header() {
                   {userRole === "authenticated" && !applicationStatus && (
                     <Link
                       href="/partner/apply"
-                      className="flex items-center gap-2 bg-zinc-950 hover:bg-zinc-700 px-4 py-2 rounded font-medium text-white text-sm transition-colors"
+                      className="flex items-center gap-2 bg-zinc-950 hover:bg-zinc-700 px-4 py-2 rounded font-medium text-text-primary text-sm transition-colors"
                       onClick={() => setIsMobileMenuOpen(false)}
                     >
                       <BuildingStorefrontIcon className="w-5 h-5" />
@@ -427,7 +427,7 @@ export default function Header() {
                   {userRole === "authenticated" &&
                     applicationStatus === "pending" && (
                       <div className="bg-yellow-500/20 px-4 py-3 border border-yellow-500/30 rounded">
-                        <p className="font-medium text-white text-sm">
+                        <p className="font-medium text-text-primary text-sm">
                           📋 รอการอนุมัติ Partner
                         </p>
                         <p className="mt-1 text-yellow-400 text-xs">
@@ -440,8 +440,8 @@ export default function Header() {
                   <button
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="flex justify-center items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 px-4 py-2 rounded w-full font-medium text-white text-sm transition-colors"
-                  >
+                    className="flex justify-center items-center gap-2 bg-brand-primary hover:bg-red-700 disabled:bg-red-400 px-4 py-2 rounded w-full font-medium text-text-primary text-sm transition-colors"
+                   aria-label="Button">
                     <ArrowRightOnRectangleIcon className="w-5 h-5" />
                     <span>
                       {isLoggingOut ? "กำลังออกจากระบบ..." : "ออกจากระบบ"}
@@ -451,7 +451,7 @@ export default function Header() {
               ) : (
                 <Link
                   href="/login"
-                  className="flex justify-center items-center gap-2 bg-zinc-950 hover:bg-zinc-700 px-4 py-2 rounded font-medium text-white text-sm transition-colors"
+                  className="flex justify-center items-center gap-2 bg-zinc-950 hover:bg-zinc-700 px-4 py-2 rounded font-medium text-text-primary text-sm transition-colors"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >
                   <UserCircleIcon className="w-5 h-5" />
@@ -461,25 +461,25 @@ export default function Header() {
             </div>
 
             <div className="pt-4 border-white/10 border-t">
-              <h3 className="px-4 font-semibold text-white/60 text-sm">
+              <h3 className="px-4 font-semibold text-text-primary/60 text-sm">
                 Language
               </h3>
               <div className="grid mt-2">
                 <a
                   href="#"
-                  className="hover:bg-white/5 px-4 py-2 rounded-md text-white/80"
+                  className="hover:bg-white/5 px-4 py-2 rounded-md text-text-primary/80"
                 >
                   ไทย (TH)
                 </a>
                 <a
                   href="#"
-                  className="hover:bg-white/5 px-4 py-2 rounded-md text-white/80"
+                  className="hover:bg-white/5 px-4 py-2 rounded-md text-text-primary/80"
                 >
                   English (EN)
                 </a>
                 <a
                   href="#"
-                  className="hover:bg-white/5 px-4 py-2 rounded-md text-white/80"
+                  className="hover:bg-white/5 px-4 py-2 rounded-md text-text-primary/80"
                 >
                   日本語 (JP)
                 </a>

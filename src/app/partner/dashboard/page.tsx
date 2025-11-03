@@ -395,7 +395,7 @@ function PartnerDashboardContent() {
         <Card className="bg-default-100/50 backdrop-blur-sm border-none">
           <CardBody className="py-16 text-center">
             <BuildingStorefrontIcon className="mx-auto mb-6 w-20 h-20 text-default-300" />
-            <h2 className="mb-4 font-bold text-white text-2xl">
+            <h2 className="mb-4 font-bold text-text-primary text-2xl">
               ยังไม่มีข้อมูลยิม
             </h2>
             <p className="mx-auto mb-8 max-w-md text-default-400 text-xl">
@@ -436,7 +436,7 @@ function PartnerDashboardContent() {
               <div className="flex justify-center mb-4">
                 <ClockIcon className="w-20 h-20 text-yellow-500 animate-pulse" />
               </div>
-              <h1 className="mb-2 font-bold text-white text-3xl">
+              <h1 className="mb-2 font-bold text-text-primary text-3xl">
                 รอการตรวจสอบ
               </h1>
               <p className="mt-2 text-zinc-300 text-lg">
@@ -446,29 +446,29 @@ function PartnerDashboardContent() {
 
             {/* Gym Information */}
             <div className="space-y-4 bg-zinc-950 p-6 rounded-lg">
-              <h2 className="mb-4 font-semibold text-white text-xl">ข้อมูลที่ส่งมา</h2>
+              <h2 className="mb-4 font-semibold text-text-primary text-xl">ข้อมูลที่ส่งมา</h2>
 
               <div className="gap-4 grid grid-cols-1 md:grid-cols-2">
                 <div>
                   <p className="text-zinc-400 text-sm">ชื่อยิม</p>
-                  <p className="font-medium text-white">{gym.gym_name}</p>
+                  <p className="font-medium text-text-primary">{gym.gym_name}</p>
                 </div>
                 <div>
                   <p className="text-zinc-400 text-sm">ผู้ติดต่อ</p>
-                  <p className="font-medium text-white">{gym.contact_name}</p>
+                  <p className="font-medium text-text-primary">{gym.contact_name}</p>
                 </div>
                 <div>
                   <p className="text-zinc-400 text-sm">เบอร์โทรศัพท์</p>
-                  <p className="font-mono font-medium text-white">{gym.phone}</p>
+                  <p className="font-mono font-medium text-text-primary">{gym.phone}</p>
                 </div>
                 <div>
                   <p className="text-zinc-400 text-sm">อีเมล</p>
-                  <p className="font-mono font-medium text-white">{gym.email}</p>
+                  <p className="font-mono font-medium text-text-primary">{gym.email}</p>
                 </div>
                 {gym.location && (
                   <div className="md:col-span-2">
                     <p className="text-zinc-400 text-sm">ที่อยู่</p>
-                    <p className="font-medium text-white">{gym.location}</p>
+                    <p className="font-medium text-text-primary">{gym.location}</p>
                   </div>
                 )}
               </div>
@@ -536,7 +536,7 @@ function PartnerDashboardContent() {
       <section className="mb-8">
         <div className="flex sm:flex-row flex-col justify-between items-start gap-4 mb-6">
           <div>
-            <h2 className="mb-2 font-bold text-white text-2xl">สถานะยิม</h2>
+            <h2 className="mb-2 font-bold text-text-primary text-2xl">สถานะยิม</h2>
             {getStatusChip(gym.status)}
           </div>
           <div className="flex gap-3">
@@ -556,7 +556,7 @@ function PartnerDashboardContent() {
       <section className="mb-8">
         <Card className="bg-default-100/50 backdrop-blur-sm border-none">
           <CardHeader className="flex justify-between items-center">
-            <h3 className="font-bold text-white text-xl">ข้อมูลยิม</h3>
+            <h3 className="font-bold text-text-primary text-xl">ข้อมูลยิม</h3>
             {!isEditing ? (
               <Button
                 size="sm"
@@ -593,28 +593,32 @@ function PartnerDashboardContent() {
               <div className="gap-4 grid grid-cols-1 md:grid-cols-2">
                 <CustomInput
                   id="gym_name"
+                  name="gym_name"
                   label="ชื่อยิม"
                   value={editFormData.gym_name}
-                  onChange={(e) => setEditFormData({ ...editFormData, gym_name: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditFormData({ ...editFormData, gym_name: e.target.value })}
                 />
                 <CustomInput
                   id="contact_name"
+                  name="contact_name"
                   label="ผู้ติดต่อ"
                   value={editFormData.contact_name}
-                  onChange={(e) => setEditFormData({ ...editFormData, contact_name: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditFormData({ ...editFormData, contact_name: e.target.value })}
                 />
                 <CustomInput
                   id="phone"
+                  name="phone"
                   label="โทรศัพท์"
                   value={editFormData.phone}
-                  onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditFormData({ ...editFormData, phone: e.target.value })}
                 />
                 <CustomInput
                   id="email"
+                  name="email"
                   label="อีเมล"
                   type="email"
                   value={editFormData.email}
-                  onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditFormData({ ...editFormData, email: e.target.value })}
                 />
                 <CustomTextarea
                   id="location"
@@ -636,31 +640,31 @@ function PartnerDashboardContent() {
                 <div className="gap-8 grid grid-cols-1 lg:grid-cols-2">
                   <div className="space-y-3">
                     <div>
-                      <h4 className="mb-1 font-semibold text-white text-sm">ชื่อยิม</h4>
+                      <h4 className="mb-1 font-semibold text-text-primary text-sm">ชื่อยิม</h4>
                       <p className="text-default-400">{gym.gym_name}</p>
                     </div>
                     <div>
-                      <h4 className="mb-1 font-semibold text-white text-sm">ผู้ติดต่อ</h4>
+                      <h4 className="mb-1 font-semibold text-text-primary text-sm">ผู้ติดต่อ</h4>
                       <p className="text-default-400">{gym.contact_name}</p>
                     </div>
                     <div>
-                      <h4 className="mb-1 font-semibold text-white text-sm">โทรศัพท์</h4>
+                      <h4 className="mb-1 font-semibold text-text-primary text-sm">โทรศัพท์</h4>
                       <p className="font-mono text-default-400">{gym.phone}</p>
                     </div>
                     <div>
-                      <h4 className="mb-1 font-semibold text-white text-sm">อีเมล</h4>
+                      <h4 className="mb-1 font-semibold text-text-primary text-sm">อีเมล</h4>
                       <p className="font-mono text-default-400">{gym.email}</p>
                     </div>
                   </div>
 
                   <div className="space-y-3">
                     <div>
-                      <h4 className="mb-1 font-semibold text-white text-sm">ที่อยู่</h4>
+                      <h4 className="mb-1 font-semibold text-text-primary text-sm">ที่อยู่</h4>
                       <p className="text-default-400">{gym.location}</p>
                     </div>
                     {gym.services && gym.services.length > 0 && (
                       <div>
-                        <h4 className="mb-2 font-semibold text-white text-sm">บริการ</h4>
+                        <h4 className="mb-2 font-semibold text-text-primary text-sm">บริการ</h4>
                         <div className="flex flex-wrap gap-2">
                           {gym.services.map((service, idx) => (
                             <Chip
@@ -680,7 +684,7 @@ function PartnerDashboardContent() {
 
                 {gym.images && gym.images.length > 0 && (
                   <div className="mt-6">
-                    <h4 className="mb-4 font-semibold text-white">รูปภาพ</h4>
+                    <h4 className="mb-4 font-semibold text-text-primary">รูปภาพ</h4>
                     <div className="gap-4 grid grid-cols-2 md:grid-cols-4">
                       {gym.images.map((image, idx) => (
                         <div key={idx} className="relative rounded-lg w-full h-32 overflow-hidden">
@@ -705,7 +709,7 @@ function PartnerDashboardContent() {
       <section className="mb-8">
         <div className="flex sm:flex-row flex-col justify-between items-start sm:items-center gap-4 mb-6">
           <div>
-            <h2 className="font-bold text-white text-2xl">จัดการแพ็คเกจและราคา</h2>
+            <h2 className="font-bold text-text-primary text-2xl">จัดการแพ็คเกจและราคา</h2>
             <p className="text-zinc-400 text-sm">ตั้งค่าแพ็คเกจสำหรับลูกค้าจอง</p>
           </div>
           <Button
@@ -726,7 +730,7 @@ function PartnerDashboardContent() {
                 <Card key={pkg.id} className="bg-zinc-950/50 border border-zinc-700">
                   <CardHeader className="flex justify-between items-start">
                     <div className="flex-1">
-                      <h4 className="font-bold text-white">{pkg.name}</h4>
+                      <h4 className="font-bold text-text-primary">{pkg.name}</h4>
                       {pkg.name_english && (
                         <p className="text-zinc-400 text-sm">{pkg.name_english}</p>
                       )}
@@ -806,10 +810,10 @@ function PartnerDashboardContent() {
                 <Card key={pkg.id} className="bg-gradient-to-br from-zinc-800 to-zinc-950 border border-zinc-700">
                   <CardHeader className="flex justify-between items-start">
                     <div className="flex-1">
-                      <div className="inline-flex justify-center items-center bg-purple-600 mb-2 px-3 py-1 rounded-full font-semibold text-white text-xs">
+                      <div className="inline-flex justify-center items-center bg-purple-600 mb-2 px-3 py-1 rounded-full font-semibold text-text-primary text-xs">
                         {pkg.duration_months} เดือน
                       </div>
-                      <h4 className="font-bold text-white">{pkg.name}</h4>
+                      <h4 className="font-bold text-text-primary">{pkg.name}</h4>
                       {pkg.name_english && (
                         <p className="text-zinc-400 text-xs">{pkg.name_english}</p>
                       )}
@@ -887,7 +891,7 @@ function PartnerDashboardContent() {
           <Card className="bg-zinc-950/50 border border-zinc-700">
             <CardBody className="py-12 text-center">
               <SparklesIcon className="mx-auto mb-4 w-12 h-12 text-zinc-600" />
-              <h3 className="mb-2 font-bold text-white text-lg">ยังไม่มีแพ็คเกจ</h3>
+              <h3 className="mb-2 font-bold text-text-primary text-lg">ยังไม่มีแพ็คเกจ</h3>
               <p className="mb-4 text-zinc-400 text-sm">
                 สร้างแพ็คเกจแรกของคุณเพื่อให้ลูกค้าสามารถจองได้
               </p>
@@ -906,7 +910,7 @@ function PartnerDashboardContent() {
       {/* Recent Bookings */}
       <section className="mb-8">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="font-bold text-white text-2xl">การจองล่าสุด</h2>
+          <h2 className="font-bold text-text-primary text-2xl">การจองล่าสุด</h2>
           <Button
             as={Link}
             href="/partner/dashboard/bookings"
@@ -937,7 +941,7 @@ function PartnerDashboardContent() {
               <TableBody>
                 {mockBookings.map((booking) => (
                   <TableRow key={booking.id}>
-                    <TableCell className="text-white">{booking.customer}</TableCell>
+                    <TableCell className="text-text-primary">{booking.customer}</TableCell>
                     <TableCell className="text-default-400">{booking.service}</TableCell>
                     <TableCell className="text-default-400">{new Date(booking.date).toLocaleDateString('th-TH')}</TableCell>
                     <TableCell className="text-default-400">{booking.time}</TableCell>
@@ -950,7 +954,7 @@ function PartnerDashboardContent() {
                         {booking.status === 'confirmed' ? 'ยืนยันแล้ว' : 'รอยืนยัน'}
                       </Chip>
                     </TableCell>
-                    <TableCell className="font-mono text-white">{booking.amount}</TableCell>
+                    <TableCell className="font-mono text-text-primary">{booking.amount}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -962,7 +966,7 @@ function PartnerDashboardContent() {
       {/* Recent Transactions */}
       <section>
         <div className="flex justify-between items-center mb-6">
-          <h2 className="font-bold text-white text-2xl">ธุรกรรมล่าสุด</h2>
+          <h2 className="font-bold text-text-primary text-2xl">ธุรกรรมล่าสุด</h2>
           <Button
             as={Link}
             href="/partner/dashboard/transactions"
@@ -993,7 +997,7 @@ function PartnerDashboardContent() {
               <TableBody>
                 {mockTransactions.map((txn) => (
                   <TableRow key={txn.id}>
-                    <TableCell className="font-mono text-white">{txn.id}</TableCell>
+                    <TableCell className="font-mono text-text-primary">{txn.id}</TableCell>
                     <TableCell className="text-default-400">{new Date(txn.date).toLocaleDateString('th-TH')}</TableCell>
                     <TableCell>
                       <Chip
@@ -1042,7 +1046,7 @@ function PartnerDashboardContent() {
         }}
       >
         <ModalContent className="bg-zinc-950 border border-zinc-700">
-          <ModalHeader className="text-white">
+          <ModalHeader className="text-text-primary">
             {editingPackage ? 'แก้ไขแพ็คเกจ' : 'สร้างแพ็คเกจใหม่'}
           </ModalHeader>
           <ModalBody>
@@ -1080,6 +1084,7 @@ function PartnerDashboardContent() {
               {/* Name */}
               <CustomInput
                 id="name"
+                name="name"
                 label="ชื่อแพ็คเกจ (ภาษาไทย)"
                 placeholder="เช่น: ฝึกรายครั้ง, แพ็คเกจ 3 เดือน"
                 value={formData.name}
@@ -1090,6 +1095,7 @@ function PartnerDashboardContent() {
               {/* Name English */}
               <CustomInput
                 id="name_english"
+                name="name_english"
                 label="ชื่อแพ็คเกจ (ภาษาอังกฤษ)"
                 placeholder="เช่น: Single Session, 3 Months Package"
                 value={formData.name_english}
@@ -1099,6 +1105,7 @@ function PartnerDashboardContent() {
               {/* Price */}
               <CustomInput
                 id="price"
+                name="price"
                 type="number"
                 label="ราคา (บาท)"
                 placeholder="0"
@@ -1142,7 +1149,7 @@ function PartnerDashboardContent() {
                   <div className="space-y-2">
                     {formData.features.map((feature, idx) => (
                       <div key={idx} className="flex justify-between items-center bg-zinc-700/50 px-3 py-2 rounded">
-                        <span className="text-white text-sm">{feature}</span>
+                        <span className="text-text-primary text-sm">{feature}</span>
                         <Button
                           size="sm"
                           color="danger"
