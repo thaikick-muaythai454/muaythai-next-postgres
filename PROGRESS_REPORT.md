@@ -115,9 +115,11 @@ Partner สามารถสร้างและจัดการ promotions 
 - ✅ หน้า Dashboard, ตารางฐานข้อมูล, API ครบ, Favorite Button Component
 - ✅ รองรับ Product และ Event แล้ว
 
-### 3. ระบบค้นหา/กรองขั้นสูง (Advanced Search & Filtering) (80%)
+### 3. ระบบค้นหา/กรองขั้นสูง (Advanced Search & Filtering) (100%)
 - ✅ Full-text search, Autocomplete, Search History, Advanced filters, Sorting
-- ❌ ยังขาด: Analytics สำหรับคำค้นหายอดนิยม (Low Priority)
+- ✅ Analytics สำหรับคำค้นหายอดนิยม (Popular Search Terms Analytics)
+- ✅ Admin API สำหรับวิเคราะห์คำค้นหา (`/api/admin/analytics/search`)
+- ✅ Migration สำหรับ Admin RLS Policy ใน search_history table
 
 ### 4. Frontend Integration (100%)
 - ✅ Events Frontend เชื่อมต่อ API แล้ว
@@ -128,11 +130,11 @@ Partner สามารถสร้างและจัดการ promotions 
 ## 📈 ข้อมูล และสถิติ
 
 ### API Endpoints
-- ✅ **120 endpoints** (104%)
+- ✅ **121 endpoints** (105%)
   - Authentication (6), Users (18), Gyms (7), Bookings (4), Payments (4)
   - Gamification (10), Notifications (5), Favorites (3), Affiliate (4)
   - Partner Packages (5), Partner Applications (3)
-  - Admin: Reports Export (1), Analytics (1), Promotions (4), Audit Logs (1)
+  - Admin: Reports Export (1), Analytics (2: General, Search), Promotions (4), Audit Logs (1)
   - Partner: Analytics (1), Payouts (3)
   - Articles (6), Products (6), Events (6), Tickets (4)
   - Products Variants (4), Products Images (3)
@@ -169,13 +171,13 @@ Partner สามารถสร้างและจัดการ promotions 
 | หมวดหมู่ | สถานะ | หมายเหตุ |
 |---------|-------|----------|
 | **Database Tables** | 100% | ตารางครบถ้วนแล้ว (49 ตาราง) |
-| **API Endpoints** | 104% | มี 120 endpoints (Critical features ครบ) |
+| **API Endpoints** | 105% | มี 121 endpoints (Critical features ครบ) |
 | **Payment Features** | 100% | Receipt/Invoice generation, Retry Payment, Save Cards, Dispute Management เสร็จแล้ว ✅ |
 | **Notification System** | 100% | API/ตาราง/UI Components ครบ - การส่งอัตโนมัติครบถ้วน รวม Newsletter & Promotional emails |
 | **Review System** | 100% | ใช้ Google Maps Reviews |
 | **User Profile** | 100% | เสร็จสมบูรณ์ รวมถึง Connected Accounts (Google OAuth) |
 | **Favorites System** | 100% | API/ตาราง/UI Components ครบ - รองรับ Product/Event แล้ว ✅ |
-| **Search & Filter** | 80% | Full-text search, Autocomplete, Search History, Advanced filters, Sorting - ขาด Analytics |
+| **Search & Filter** | 100% | Full-text search, Autocomplete, Search History, Advanced filters, Sorting, Search Analytics ✅ |
 | **Shop System** | 100% | API ครบ - Frontend เชื่อมต่อกับ Products API แล้ว - Shipping System เสร็จแล้ว - Admin UI ครบแล้ว ✅ |
 | **Event System** | 95% | API ครบ - เชื่อมต่อ Frontend แล้ว - Admin UI เสร็จแล้ว - QR Code/Check-in เสร็จแล้ว - Event Categories เสร็จแล้ว |
 | **Scheduled Reports** | 100% | Custom Reports + Scheduled Reports + Cron Job + Admin UI (11 endpoints) ✅ |
@@ -291,7 +293,7 @@ Partner สามารถสร้างและจัดการ promotions 
 - ❌ Error Tracking Dashboard
 
 ### Content Management
-- ✅ Articles CMS (ระบบพร้อมใช้งาน 100% - Mock Data migrate เรียบร้อยแล้ว)
+- ✅ Articles CMS
 - ❌ Blog System
 - ❌ Page Editor (สำหรับหน้า Static)
 - ❌ Media Library
@@ -329,7 +331,7 @@ Partner สามารถสร้างและจัดการ promotions 
 - ✅ สร้างตารางหลัก (เสร็จแล้ว - 49 ตาราง)
 - ✅ ย้ายข้อมูล static มาเก็บในฐานข้อมูล (Products และ Events เสร็จแล้ว - เหลือ Articles)
 - ✅ เพิ่ม Security (เสร็จแล้ว)
-- ✅ พัฒนา API endpoints ที่จำเป็น (เสร็จแล้ว - 120 endpoints)
+- ✅ พัฒนา API endpoints ที่จำเป็น (เสร็จแล้ว - 121 endpoints)
 - ✅ สร้าง Email templates ครบ (เสร็จแล้ว)
 - ✅ Scheduled Reports System (เสร็จแล้ว)
 - ✅ QR Code & Check-in System (เสร็จแล้ว)
@@ -394,6 +396,7 @@ Partner สามารถสร้างและจัดการ promotions 
 - ✅ Partner Promotions API - Partner สามารถสร้าง promotion สำหรับการจองค่ายมวยได้
 - ✅ **Migration Optimization Script**: สร้างสคริปต์ optimize-migrations.js เพื่อลดขนาดไฟล์ migrations (ลดได้ 15.8 KB / 6.8%)
 - ✅ **Code Cleanup**: ลบไฟล์ scripts/node/migrate-articles-to-db.js และ production-user-creation.js (ลดขนาดได้ 32 KB)
+- ✅ **Search Analytics**: เพิ่ม API สำหรับวิเคราะห์คำค้นหายอดนิยม (`/api/admin/analytics/search`) - Migration สำหรับ Admin RLS Policy เสร็จแล้ว
 
 ---
 
@@ -416,7 +419,7 @@ Partner สามารถสร้างและจัดการ promotions 
    - QR Code & Check-in System
 
 4. **ระบบเสริม** (95-100%)
-   - Search & Filtering (80%)
+   - Search & Filtering (100%)
    - Favorites System (100%)
    - Affiliate System (60%)
 
@@ -429,7 +432,7 @@ Partner สามารถสร้างและจัดการ promotions 
 
 ### 📈 สถิติสำคัญ
 
-- **API Endpoints**: 120 endpoints (104%)
+- **API Endpoints**: 121 endpoints (105%)
 - **Database Tables**: 49 tables (100%)
 - **Pages/Routes**: 121 pages
 - **Components**: 100+ components

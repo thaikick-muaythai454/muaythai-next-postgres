@@ -8,6 +8,7 @@
  */
 
 import { addEmailToQueue, type EmailType, type EmailPriority } from './queue';
+import { triggerEmailProcessing, shouldProcessImmediately } from './processor';
 import { 
   generateBookingConfirmationHtml,
   generateBookingReminderHtml,
@@ -130,7 +131,7 @@ export class EmailService {
       fullName: data.fullName || 'คุณ',
     });
 
-    return addEmailToQueue({
+    const result = await addEmailToQueue({
       to: data.to,
       subject: 'ยืนยันการสมัครสมาชิก - MUAYTHAI Platform 🥊',
       htmlContent,
@@ -143,6 +144,13 @@ export class EmailService {
         fullName: data.fullName,
       },
     });
+
+    // Trigger processing if high priority or immediate
+    if (result.success && shouldProcessImmediately(options?.priority || 'high')) {
+      triggerEmailProcessing(true);
+    }
+
+    return result;
   }
 
   /**
@@ -166,7 +174,7 @@ export class EmailService {
       bookingUrl: data.bookingUrl,
     });
 
-    return addEmailToQueue({
+    const result = await addEmailToQueue({
       to: data.to,
       subject: `ยืนยันการจอง - ${data.gymName} 🥊`,
       htmlContent,
@@ -183,6 +191,13 @@ export class EmailService {
       relatedResourceType: 'booking',
       relatedResourceId: data.bookingId,
     });
+
+    // Trigger processing if high priority or immediate
+    if (result.success && shouldProcessImmediately(options?.priority || 'normal')) {
+      triggerEmailProcessing(true);
+    }
+
+    return result;
   }
 
   /**
@@ -204,7 +219,7 @@ export class EmailService {
       bookingUrl: data.bookingUrl,
     });
 
-    return addEmailToQueue({
+    const result = await addEmailToQueue({
       to: data.to,
       subject: `แจ้งเตือนการจอง - ${data.gymName} ในอีก 1 วัน 🥊`,
       htmlContent,
@@ -221,6 +236,13 @@ export class EmailService {
       relatedResourceType: 'booking',
       relatedResourceId: data.bookingId,
     });
+
+    // Trigger processing if high priority or immediate
+    if (result.success && shouldProcessImmediately(options?.priority || 'high')) {
+      triggerEmailProcessing(true);
+    }
+
+    return result;
   }
 
   /**
@@ -240,7 +262,7 @@ export class EmailService {
       receiptUrl: data.receiptUrl,
     });
 
-    return addEmailToQueue({
+    const result = await addEmailToQueue({
       to: data.to,
       subject: `ใบเสร็จการชำระเงิน - ${data.receiptNumber} 💰`,
       htmlContent,
@@ -257,6 +279,13 @@ export class EmailService {
       relatedResourceType: 'payment',
       relatedResourceId: data.paymentId,
     });
+
+    // Trigger processing if high priority or immediate
+    if (result.success && shouldProcessImmediately(options?.priority || 'normal')) {
+      triggerEmailProcessing(true);
+    }
+
+    return result;
   }
 
   /**
@@ -275,7 +304,7 @@ export class EmailService {
       retryUrl: data.retryUrl,
     });
 
-    return addEmailToQueue({
+    const result = await addEmailToQueue({
       to: data.to,
       subject: `การชำระเงินล้มเหลว - ${data.transactionId || 'Transaction'} ⚠️`,
       htmlContent,
@@ -292,6 +321,13 @@ export class EmailService {
       relatedResourceType: 'payment',
       relatedResourceId: data.paymentId,
     });
+
+    // Trigger processing if high priority or immediate
+    if (result.success && shouldProcessImmediately(options?.priority || 'high')) {
+      triggerEmailProcessing(true);
+    }
+
+    return result;
   }
 
   /**
@@ -308,7 +344,7 @@ export class EmailService {
       dashboardUrl: data.applicationId ? `/partner/dashboard` : undefined,
     });
 
-    return addEmailToQueue({
+    const result = await addEmailToQueue({
       to: data.to,
       subject: `ยินดีต้อนรับเข้าสู่ระบบพาร์ทเนอร์ - ${data.gymName} 🎉`,
       htmlContent,
@@ -324,6 +360,13 @@ export class EmailService {
       relatedResourceType: 'partner_application',
       relatedResourceId: data.applicationId,
     });
+
+    // Trigger processing if high priority or immediate
+    if (result.success && shouldProcessImmediately(options?.priority || 'normal')) {
+      triggerEmailProcessing(true);
+    }
+
+    return result;
   }
 
   /**
@@ -340,7 +383,7 @@ export class EmailService {
       reapplyUrl: data.applicationId ? '/partner/apply' : undefined,
     });
 
-    return addEmailToQueue({
+    const result = await addEmailToQueue({
       to: data.to,
       subject: `ผลการสมัครพาร์ทเนอร์ - ${data.gymName}`,
       htmlContent,
@@ -357,6 +400,13 @@ export class EmailService {
       relatedResourceType: 'partner_application',
       relatedResourceId: data.applicationId,
     });
+
+    // Trigger processing if high priority or immediate
+    if (result.success && shouldProcessImmediately(options?.priority || 'normal')) {
+      triggerEmailProcessing(true);
+    }
+
+    return result;
   }
 
   /**
@@ -373,7 +423,7 @@ export class EmailService {
       priority: data.severity === 'error' ? 'critical' : data.severity === 'warning' ? 'high' : 'medium',
     });
 
-    return addEmailToQueue({
+    const result = await addEmailToQueue({
       to: data.to || process.env.CONTACT_EMAIL_TO || 'admin@yourdomain.com',
       subject: data.subject,
       htmlContent,
@@ -386,6 +436,14 @@ export class EmailService {
         severity: data.severity,
       },
     });
+
+    // Trigger processing if high priority or immediate
+    const priority = options?.priority || (data.severity === 'error' ? 'urgent' : 'normal');
+    if (result.success && shouldProcessImmediately(priority)) {
+      triggerEmailProcessing(true);
+    }
+
+    return result;
   }
 
   /**
@@ -406,7 +464,7 @@ export class EmailService {
       </div>
     `;
 
-    return addEmailToQueue({
+    const result = await addEmailToQueue({
       to: process.env.CONTACT_EMAIL_TO || 'admin@yourdomain.com',
       subject: `ข้อความจากแบบฟอร์มติดต่อ - ${data.name}`,
       htmlContent,
@@ -420,6 +478,13 @@ export class EmailService {
         contactEmail: data.email,
       },
     });
+
+    // Trigger processing if high priority or immediate
+    if (result.success && shouldProcessImmediately(options?.priority || 'normal')) {
+      triggerEmailProcessing(true);
+    }
+
+    return result;
   }
 
   /**
@@ -433,7 +498,7 @@ export class EmailService {
       fullName: data.name || 'คุณ',
     });
 
-    return addEmailToQueue({
+    const result = await addEmailToQueue({
       to: data.to,
       subject: 'ยินดีต้อนรับสู่ MUAYTHAI Platform 🥊',
       htmlContent,
@@ -447,6 +512,13 @@ export class EmailService {
         name: data.name,
       },
     });
+
+    // Trigger processing if high priority or immediate
+    if (result.success && shouldProcessImmediately(options?.priority || 'normal')) {
+      triggerEmailProcessing(true);
+    }
+
+    return result;
   }
 }
 
