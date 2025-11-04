@@ -735,20 +735,20 @@
 - [x] POST `/api/admin/reports/export` - Export รายงาน (PDF/CSV) ✅
 
 #### API Endpoints - Admin Promotions
-- [ ] GET `/api/admin/promotions` - ดูโปรโมชั่น
-- [ ] POST `/api/admin/promotions` - สร้างโปรโมชั่น
-- [ ] PUT `/api/admin/promotions/[id]` - แก้ไขโปรโมชั่น
-- [ ] DELETE `/api/admin/promotions/[id]` - ลบโปรโมชั่น
+- [x] GET `/api/admin/promotions` - ดูโปรโมชั่น ✅
+- [x] POST `/api/admin/promotions` - สร้างโปรโมชั่น ✅
+- [x] PUT `/api/admin/promotions/[id]` - แก้ไขโปรโมชั่น ✅
+- [x] DELETE `/api/admin/promotions/[id]` - ลบโปรโมชั่น ✅
 
 #### API Endpoints - Partner Analytics
-- [ ] GET `/api/partner/analytics` - ข้อมูล analytics จริง - **Critical: ต้องสร้างเพื่อแก้ Partner Analytics Page**
-  - [ ] Query จำนวนลูกค้าทั้งหมด
-  - [ ] Query จำนวนการจองเดือนนี้
-  - [ ] Query คะแนนเฉลี่ย
-  - [ ] Query อันดับในพื้นที่
-  - [ ] Query รายได้เดือนนี้
-  - [ ] Query กราฟรายได้ (รายเดือน/รายสัปดาห์)
-  - [ ] Query บริการยอดนิยม
+- [x] GET `/api/partner/analytics` - ข้อมูล analytics จริง - **Critical: ต้องสร้างเพื่อแก้ Partner Analytics Page** ✅
+  - [x] Query จำนวนลูกค้าทั้งหมด ✅
+  - [x] Query จำนวนการจองเดือนนี้ ✅
+  - [x] Query คะแนนเฉลี่ย ✅
+  - [x] Query อันดับในพื้นที่ ✅
+  - [x] Query รายได้เดือนนี้ ✅
+  - [x] Query กราฟรายได้ (รายเดือน/รายสัปดาห์) ✅
+  - [x] Query บริการยอดนิยม ✅
 
 #### API Endpoints - Partner Payouts
 - [ ] GET `/api/partner/payouts` - ดู payouts
