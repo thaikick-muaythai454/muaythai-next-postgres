@@ -734,7 +734,14 @@
   - [x] อัปเดต API route `/api/users/profile/bio` ให้ sanitize HTML ก่อนบันทึก
   - [x] อัปเดต components ที่แสดง gym_details (AboutSection, GymCard)
   - [x] Export sanitization utilities ใน `src/lib/utils/index.ts`
-- [ ] เพิ่ม Input Validation ทุกฟอร์ม
+- [x] เพิ่ม Input Validation ทุกฟอร์ม ✅
+  - [x] สร้าง comprehensive validation utility (`src/lib/utils/validation.ts`)
+  - [x] สร้าง validation functions สำหรับ: email, phone, name, username, password, message, subject, address, URL, price, date, package type, duration months
+  - [x] อัปเดต Contact Page (`src/app/contact/page.tsx`) ให้มี client-side validation พร้อมแสดง error messages
+  - [x] อัปเดต Booking Page (`src/app/gyms/[slug]/booking/page.tsx`) ให้ใช้ validation utility
+  - [x] อัปเดต Partner Dashboard Package Form (`src/app/partner/dashboard/page.tsx`) ให้ใช้ validation utility
+  - [x] Validation มี error messages เป็นภาษาไทยที่ชัดเจน
+  - [x] Validation แสดง error messages ใต้ input fields พร้อม aria attributes สำหรับ accessibility
 - [x] เพิ่ม File Upload Validation - **Critical: ป้องกัน virus/malware** ✅
   - [x] สร้าง comprehensive file validation utility (`src/lib/utils/file-validation.ts`)
   - [x] MIME type validation
