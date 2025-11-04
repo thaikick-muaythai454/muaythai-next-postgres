@@ -17,7 +17,7 @@
 10. ✅ **Build System** - Production build ผ่านเรียบร้อย, VS Code settings
 11. ✅ **Notification System** - In-app Notifications API + Database ✅
 12. ✅ **Favorites System** - API + Database (ครบถ้วน) ✅
-13. ✅ **Database Tables** - ตารางครบ 42 ตารางแล้ว (100%) ✅
+13. ✅ **Database Tables** - ตารางครบ 44 ตารางแล้ว (100%) ✅
 14. ✅ **Events API** - API ครบ 6 endpoints ✅
 15. ✅ **Shop/Products API** - API ครบ 6 endpoints ✅
 16. ✅ **Search System** - Advanced Search + Suggestions API ✅
@@ -35,6 +35,9 @@
 28. ✅ **Orders Management** - API สำหรับจัดการ Orders และ Tracking ✅
 29. ✅ **Product Variants API** - CRUD Variants (4 endpoints) ✅
 30. ✅ **Product Images API** - อัปโหลด/จัดการ Images (3 endpoints) ✅
+31. ✅ **QR Code System** - ระบบ QR Code สำหรับตั๋วอีเวนต์ ✅
+32. ✅ **Check-in System** - ระบบเช็คอินตั๋วสำหรับ Admin ✅
+33. ✅ **Event Categories API** - CRUD Event Categories (3 endpoints) ✅
 
 **หมายเหตุ**: การยกเลิกการจองและการคืนเงินจะต้องติดต่อโดยตรง ไม่มีระบบอัตโนมัติ
 

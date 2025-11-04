@@ -286,6 +286,8 @@
 - ✅ `/api/products/[id]/images` - Product Images ✅ (GET, POST, DELETE/[imageId])
 - ✅ `/api/events` - อีเวนต์ ✅ (GET, POST, PUT/[id], DELETE/[id], POST/[id]/book)
 - ✅ `/api/tickets` - จองตั๋วอีเวนต์ ✅ (GET, POST, PUT/[id], DELETE/[id], POST/[id]/check-in)
+- ✅ `/api/event-categories` - จัดการหมวดหมู่อีเวนต์ ✅ (GET, POST)
+- ✅ `/api/event-categories/[id]` - จัดการหมวดหมู่อีเวนต์ ✅ (GET, PUT, DELETE)
 - ✅ `/api/analytics` - เก็บข้อมูลการใช้งาน ✅ (GET, POST)
 - ✅ `/api/search` - ค้นหาขั้นสูง ✅ (GET) - Full-text search, filters, sorting
 - ✅ `/api/search/suggestions` - Search suggestions ✅ (GET)
@@ -303,7 +305,7 @@
 - ✅ `/api/shipping/methods` - Shipping Methods ✅ (GET, POST)
 - ✅ `/api/shipping/methods/[id]` - Shipping Method Details ✅ (GET, PUT, DELETE)
 
-**สรุป**: API ครบ 14/14 endpoints แล้ว! ✅ (Admin Promotions, Partner Payouts, Partner Messages, และ Audit Logs เสร็จแล้ว)
+**สรุป**: API ครบแล้ว! ✅ (Admin Promotions, Partner Payouts, Partner Messages, Audit Logs, Event Categories, และ Ticket Check-in เสร็จแล้ว)
 
 ---
 
@@ -414,9 +416,9 @@
 - ✅ **ระบบจัดการจำนวนตั๋ว (จำกัดที่นั่ง)**
 
 ### ยังขาด:
-- ⚠️ QR Code สำหรับเข้างาน - มี check-in API แล้ว แต่ยังไม่มี UI
-- ⚠️ ระบบ Check-in - มี API แล้ว แต่ยังไม่มี UI
-- ⚠️ หมวดหมู่อีเวนต์ - มีตารางแล้ว แต่ยังไม่มี API/UI
+- ✅ QR Code สำหรับเข้างาน ✅ - สร้างระบบ QR Code เสร็จแล้ว (`/lib/utils/qrcode.ts`, `QRCodeDisplay` component)
+- ✅ UI สำหรับระบบ Check-in ✅ - สร้างหน้า `/admin/dashboard/events/check-in` พร้อม TicketCheckIn และ CheckInScanner components
+- ✅ หมวดหมู่อีเวนต์ ✅ - สร้าง API และ UI เสร็จแล้ว (`/api/event-categories`, `/admin/dashboard/events/categories`)
 
 ---
 
@@ -985,11 +987,11 @@
 #### Email Notification System (⚠️ ต้องพัฒนา)
 - [x] เพิ่ม Email Templates ครบทุกประเภท ✅
 - [x] เชื่อมต่อ Email Templates กับระบบจริง (ส่งอีเมลอัตโนมัติ) ✅ (ทำแล้วบางส่วน: booking confirmation, payment receipt, payment failed)
-- [ ] **สร้าง Booking Reminder Email Scheduler** - **Critical: มี template แล้วแต่ยังไม่มีการส่งอัตโนมัติ**
-  - [ ] สร้าง API endpoint `/api/cron/send-booking-reminders` (Vercel Cron หรือ Supabase Edge Function)
-  - [ ] Query bookings ที่จะเริ่มในอีก 1 วัน (WHERE start_date = CURRENT_DATE + INTERVAL '1 day')
-  - [ ] ส่ง reminder email และ notification สำหรับแต่ละ booking
-  - [ ] ตั้งค่า Vercel Cron Job (หรือใช้ Supabase Edge Functions + pg_cron)
+- [x] **สร้าง Booking Reminder Email Scheduler** - **Critical: มี template แล้วแต่ยังไม่มีการส่งอัตโนมัติ** ✅
+  - [x] สร้าง API endpoint `/api/cron/send-booking-reminders` (Vercel Cron หรือ Supabase Edge Function) ✅
+  - [x] Query bookings ที่จะเริ่มในอีก 1 วัน (WHERE start_date = CURRENT_DATE + INTERVAL '1 day') ✅
+  - [x] ส่ง reminder email และ notification สำหรับแต่ละ booking ✅
+  - [x] ตั้งค่า Vercel Cron Job (หรือใช้ Supabase Edge Functions + pg_cron) ✅ (vercel.json configured: runs daily at 9 AM)
 - [ ] ตั้งค่า Email Queue System (Bull/Bee-Queue) - สำหรับจัดการ email queue
 - [ ] สร้าง Email Service Layer - สำหรับจัดการการส่ง email แบบ centralized
 - [ ] สร้าง Email Preferences ให้ User (มีตารางแล้ว แต่ยังไม่ได้เชื่อมต่อกับ email sending logic)
