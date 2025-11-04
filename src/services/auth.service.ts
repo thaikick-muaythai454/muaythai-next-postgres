@@ -108,6 +108,8 @@ export async function signInWithGoogle() {
 
 /**
  * เชื่อมต่อบัญชี Google (สำหรับผู้ใช้ที่ล็อกอินอยู่แล้ว)
+ * Uses Supabase Auth manual identity linking (beta)
+ * Requires GOTRUE_SECURITY_MANUAL_LINKING_ENABLED: true in Supabase config
  */
 export async function linkGoogleAccount() {
   const supabase = createClient();
@@ -127,66 +129,72 @@ export async function linkGoogleAccount() {
 }
 
 /**
- * ยกเลิกการเชื่อมต่อบัญชี Google
- * Note: Uses API route since unlinkIdentity requires admin privileges
+ * ยกเลิกการเชื่อมต่อบัญชี OAuth
+ * Uses Supabase Auth unlinkIdentity() - requires user to have at least 2 linked identities
+ * @param provider - OAuth provider to unlink (e.g., 'google', 'facebook', 'apple')
  */
 export async function unlinkGoogleAccount(provider: string = 'google') {
-  try {
-    const response = await fetch(`/api/users/connected-accounts?provider=${provider}`, {
-      method: 'DELETE',
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || 'ไม่สามารถยกเลิกการเชื่อมต่อได้');
-    }
-
-    return data;
-  } catch (error: any) {
-    throw new Error(error.message || 'เกิดข้อผิดพลาดในการยกเลิกการเชื่อมต่อ');
+  const supabase = createClient();
+  
+  // First, get all user identities
+  const { data: identitiesData, error: identitiesError } = await supabase.auth.getUserIdentities();
+  
+  if (identitiesError) {
+    throw new Error(identitiesError.message || 'ไม่สามารถดึงข้อมูลบัญชีที่เชื่อมต่อได้');
   }
+
+  if (!identitiesData || !identitiesData.identities) {
+    throw new Error('ไม่พบบัญชีที่เชื่อมต่อ');
+  }
+
+  // Check if user has at least 2 identities (required for unlinking)
+  if (identitiesData.identities.length < 2) {
+    throw new Error('ไม่สามารถยกเลิกการเชื่อมต่อได้ เนื่องจากนี่เป็นบัญชีเดียวที่เหลืออยู่ กรุณาเพิ่มวิธีเข้าสู่ระบบอื่นก่อน');
+  }
+
+  // Find the identity to unlink
+  const identityToUnlink = identitiesData.identities.find(
+    (identity) => identity.provider === provider
+  );
+
+  if (!identityToUnlink) {
+    throw new Error(`ไม่พบบัญชี ${provider} ที่เชื่อมต่อ`);
+  }
+
+  // Unlink the identity
+  const { data, error } = await supabase.auth.unlinkIdentity(identityToUnlink);
+
+  if (error) {
+    throw new Error(error.message || 'ไม่สามารถยกเลิกการเชื่อมต่อได้');
+  }
+
+  return data;
 }
 
 /**
  * ดึงข้อมูลบัญชีที่เชื่อมต่อทั้งหมด
- * Note: Supabase Auth stores identities internally. This function checks the user's
- * app_metadata.providers array and creates identity objects based on that.
+ * Uses Supabase Auth getUserIdentities() to get all linked identities
+ * Returns only OAuth providers (excludes email and phone)
  */
 export async function getConnectedAccounts() {
   const supabase = createClient();
   
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  // Get all user identities using the proper Supabase Auth API
+  const { data: identitiesData, error: identitiesError } = await supabase.auth.getUserIdentities();
   
-  if (userError || !user) {
-    throw new Error(userError?.message || 'ไม่พบข้อมูลผู้ใช้');
+  if (identitiesError) {
+    throw new Error(identitiesError.message || 'ไม่สามารถดึงข้อมูลบัญชีที่เชื่อมต่อได้');
   }
 
-  // Get providers from app_metadata
-  // Supabase stores connected providers in user.app_metadata.providers array
-  const providers = (user.app_metadata?.providers || []) as string[];
-  
-  // Also check if user was created via OAuth by looking at identities
-  // We'll create identity-like objects for display
-  const identities: any[] = [];
-  
-  // Check each provider
-  providers.forEach((provider) => {
-    // Skip email and phone as they're not OAuth providers
-    if (provider !== 'email' && provider !== 'phone') {
-      identities.push({
-        id: `${provider}_${user.id}`, // Create a unique ID
-        provider: provider,
-        identity_data: {
-          email: user.email,
-          name: user.user_metadata?.full_name || user.user_metadata?.display_name || user.email?.split('@')[0],
-          avatar_url: user.user_metadata?.avatar_url,
-        },
-        created_at: user.created_at,
-      });
-    }
-  });
+  if (!identitiesData || !identitiesData.identities) {
+    return [];
+  }
 
-  return identities;
+  // Filter to only OAuth providers (exclude email and phone)
+  const oauthIdentities = identitiesData.identities.filter(
+    (identity) => identity.provider !== 'email' && identity.provider !== 'phone'
+  );
+
+  return oauthIdentities;
 }
 

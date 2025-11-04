@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/database/supabase/server';
+import { createClient, createAdminClient } from '@/lib/database/supabase/server';
 import { validateFile, sanitizeFilename } from '@/lib/utils/file-validation';
 
 /**
@@ -73,8 +73,66 @@ export async function POST(request: NextRequest) {
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Upload to Supabase Storage
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    // Use admin client for storage operations to bypass origin checks
+    // This is safe because we've already verified the user is authenticated
+    // Admin client uses service role key which bypasses CORS/origin restrictions
+    let adminClient;
+    try {
+      adminClient = createAdminClient();
+    } catch (adminError) {
+      // If admin client is not available, try using regular client with proper headers
+      console.warn('Admin client not available, attempting direct upload:', adminError);
+      
+      // Try direct upload with user's authenticated session
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, buffer, {
+          contentType: file.type,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: uploadError.message || 'Failed to upload file. Please ensure SUPABASE_SERVICE_ROLE_KEY is set in production.',
+            details: uploadError
+          },
+          { status: 500 }
+        );
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+
+      // Continue with profile update
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: publicUrl })
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        console.error('Update error:', updateError);
+        return NextResponse.json(
+          { success: false, error: 'Failed to update profile' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          avatar_url: publicUrl,
+          message: 'Profile picture uploaded successfully'
+        }
+      });
+    }
+
+    // Upload to Supabase Storage using admin client (bypasses origin checks)
+    const { error: uploadError } = await adminClient.storage
       .from('avatars')
       .upload(filePath, buffer, {
         contentType: file.type,
@@ -84,13 +142,17 @@ export async function POST(request: NextRequest) {
     if (uploadError) {
       console.error('Upload error:', uploadError);
       return NextResponse.json(
-        { success: false, error: 'Failed to upload file' },
+        { 
+          success: false, 
+          error: uploadError.message || 'Failed to upload file',
+          details: uploadError
+        },
         { status: 500 }
       );
     }
 
     // Get public URL
-    const { data: { publicUrl } } = supabase.storage
+    const { data: { publicUrl } } = adminClient.storage
       .from('avatars')
       .getPublicUrl(filePath);
 
@@ -107,7 +169,7 @@ export async function POST(request: NextRequest) {
       const fileIndex = urlParts.findIndex((part: string) => part === 'avatars');
       if (fileIndex !== -1 && fileIndex < urlParts.length - 1) {
         const oldPath = urlParts.slice(fileIndex + 1).join('/');
-        await supabase.storage
+        await adminClient.storage
           .from('avatars')
           .remove([oldPath]);
       }
@@ -169,6 +231,48 @@ export async function DELETE(request: NextRequest) {
       .eq('user_id', user.id)
       .single();
 
+    // Use admin client for storage operations to bypass origin checks
+    let adminClient;
+    try {
+      adminClient = createAdminClient();
+    } catch (adminError) {
+      // Fallback to regular client if admin client is not available
+      console.warn('Admin client not available, using regular client:', adminError);
+      
+      if (profile?.avatar_url) {
+        // Extract path from URL
+        const urlParts = profile.avatar_url.split('/');
+        const fileIndex = urlParts.findIndex((part: string) => part === 'avatars');
+        if (fileIndex !== -1 && fileIndex < urlParts.length - 1) {
+          const oldPath = urlParts.slice(fileIndex + 1).join('/');
+
+          // Delete from storage using regular client
+          await supabase.storage
+            .from('avatars')
+            .remove([oldPath]);
+        }
+      }
+
+      // Update profile to remove avatar URL
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: null })
+        .eq('user_id', user.id);
+
+      if (updateError) {
+        console.error('Update error:', updateError);
+        return NextResponse.json(
+          { success: false, error: 'Failed to remove profile picture' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'Profile picture removed successfully'
+      });
+    }
+
     if (profile?.avatar_url) {
       // Extract path from URL
       const urlParts = profile.avatar_url.split('/');
@@ -176,8 +280,8 @@ export async function DELETE(request: NextRequest) {
       if (fileIndex !== -1 && fileIndex < urlParts.length - 1) {
         const oldPath = urlParts.slice(fileIndex + 1).join('/');
 
-        // Delete from storage
-        await supabase.storage
+        // Delete from storage using admin client
+        await adminClient.storage
           .from('avatars')
           .remove([oldPath]);
       }

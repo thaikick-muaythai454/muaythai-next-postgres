@@ -43,3 +43,10 @@ export {
   getSanitizedHTMLProps,
   containsDangerousHTML
 } from './sanitize';
+
+// QR Code utilities
+export {
+  generateQRCodeDataURL,
+  generateQRCodeBuffer,
+  generateQRCodeString
+} from './qrcode';

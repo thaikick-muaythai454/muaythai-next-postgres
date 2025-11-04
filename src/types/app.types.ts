@@ -34,14 +34,58 @@ export interface TrainingPackage {
 }
 
 export interface Event {
-  id: number;
+  id: string; // UUID from database
   slug: string;
   name: string;
-  date: string;
+  name_english?: string | null;
+  description?: string | null;
+  details?: string | null;
+  event_date: string; // ISO timestamp
+  end_date?: string | null; // ISO timestamp
+  date?: string; // Legacy field for backward compatibility
   location: string;
-  details?: string;
-  price?: number;
-  image?: string;
+  address?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  category_id?: string | null;
+  image?: string | null;
+  images?: string[] | null;
+  price_start?: number | null;
+  price?: number; // Legacy field for backward compatibility
+  max_attendees?: number | null;
+  status?: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
+  is_featured?: boolean;
+  is_published?: boolean;
+  published_at?: string | null;
+  views_count?: number;
+  created_at?: string;
+  updated_at?: string;
+  // Relations
+  event_categories?: {
+    id: string;
+    name_thai?: string | null;
+    name_english?: string | null;
+    slug?: string;
+  } | null;
+  tickets?: EventTicket[];
+}
+
+export interface EventTicket {
+  id: string;
+  event_id: string;
+  ticket_type: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  quantity_available: number;
+  quantity_sold: number;
+  max_per_person: number;
+  sale_start_date?: string | null;
+  sale_end_date?: string | null;
+  is_active: boolean;
+  display_order: number;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Product {

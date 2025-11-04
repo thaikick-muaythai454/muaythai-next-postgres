@@ -1,10 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { MapPinIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import Image from "next/image";
 import { Gym } from "@/types";
 import { BaseCard } from "./BaseCard";
+import { sanitizeHTML } from "@/lib/utils/sanitize";
 
 interface GymCardProps {
   gym: Gym;
@@ -12,6 +14,15 @@ interface GymCardProps {
 
 export function GymCard({ gym }: GymCardProps) {
   const imageUrl = gym.images?.[0] || "/assets/images/fallback-img.jpg";
+  const [sanitizedDetails, setSanitizedDetails] = useState<string>("");
+
+  // Sanitize HTML only on client-side after mount to prevent hydration mismatch
+  useEffect(() => {
+    if (gym.gym_details) {
+      const sanitized = sanitizeHTML(gym.gym_details.replace(/\n/g, '<br />'));
+      setSanitizedDetails(sanitized);
+    }
+  }, [gym.gym_details]);
 
   return (
     <BaseCard>
@@ -42,15 +53,10 @@ export function GymCard({ gym }: GymCardProps) {
         )}
 
         {/* Details */}
-        {gym.gym_details && (
+        {sanitizedDetails && (
           <div 
             className="mb-4 text-zinc-400 text-sm line-clamp-3"
-            dangerouslySetInnerHTML={{ 
-              // eslint-disable-next-line @typescript-eslint/no-require-imports
-              __html: require('@/lib/utils/sanitize').sanitizeHTML(
-                gym.gym_details.replace(/\n/g, '<br />')
-              ) 
-            }}
+            dangerouslySetInnerHTML={{ __html: sanitizedDetails }}
           />
         )}
 

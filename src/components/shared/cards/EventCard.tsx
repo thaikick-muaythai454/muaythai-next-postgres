@@ -19,7 +19,9 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, viewMode }: EventCardProps) {
-  const eventDate = new Date(event.date);
+  // Support both old (date) and new (event_date) field names
+  const dateStr = event.event_date || event.date || '';
+  const eventDate = new Date(dateStr);
   const formattedDate = eventDate.toLocaleDateString("th-TH", {
     weekday: "long",
     year: "numeric",
@@ -31,7 +33,9 @@ export function EventCard({ event, viewMode }: EventCardProps) {
     minute: "2-digit",
   });
 
-  const imageUrl = event.image || "/assets/images/fallback-img.jpg";
+  // Support both old (price) and new (price_start) field names
+  const price = event.price_start ?? event.price;
+  const imageUrl = event.image || event.images?.[0] || "/assets/images/fallback-img.jpg";
 
   if (viewMode === "list") {
     return (
@@ -85,11 +89,11 @@ export function EventCard({ event, viewMode }: EventCardProps) {
           fill
           className="object-cover"
         />
-        {event.price && (
+        {price && (
           <div className="top-2 right-2 absolute flex items-center gap-1 bg-black/50 px-3 py-1 rounded-full">
             <TicketIcon className="w-4 h-4 text-green-400" />
             <span className="font-bold text-sm">
-              ฿{event.price.toLocaleString()}
+              ฿{price.toLocaleString()}
             </span>
           </div>
         )}

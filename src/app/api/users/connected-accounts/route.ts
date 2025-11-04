@@ -4,7 +4,7 @@ import { createClient } from '@/lib/database/supabase/server';
 /**
  * Get Connected Accounts API
  * GET /api/users/connected-accounts
- * Returns connected OAuth accounts from Supabase Auth
+ * Returns connected OAuth accounts from Supabase Auth using getUserIdentities()
  */
 export async function GET(request: NextRequest) {
   try {
@@ -19,19 +19,34 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get providers from app_metadata (Supabase Auth stores them here)
-    const providers = (user.app_metadata?.providers || []) as string[];
+    // Get all user identities using the proper Supabase Auth API
+    const { data: identitiesData, error: identitiesError } = await supabase.auth.getUserIdentities();
     
-    // Create identity-like objects for OAuth providers
-    const oauthAccounts = providers
-      .filter(provider => provider !== 'email' && provider !== 'phone')
-      .map(provider => ({
-        id: `${provider}_${user.id}`,
-        provider: provider,
-        email: user.email,
-        name: user.user_metadata?.full_name || user.user_metadata?.display_name || user.email?.split('@')[0],
-        avatar_url: user.user_metadata?.avatar_url,
-        created_at: user.created_at,
+    if (identitiesError) {
+      console.error('Get identities error:', identitiesError);
+      return NextResponse.json(
+        { success: false, error: 'Failed to retrieve connected accounts' },
+        { status: 500 }
+      );
+    }
+
+    if (!identitiesData || !identitiesData.identities) {
+      return NextResponse.json({
+        success: true,
+        data: []
+      });
+    }
+
+    // Filter to only OAuth providers (exclude email and phone)
+    const oauthAccounts = identitiesData.identities
+      .filter(identity => identity.provider !== 'email' && identity.provider !== 'phone')
+      .map(identity => ({
+        id: identity.id,
+        provider: identity.provider,
+        email: identity.identity_data?.email || user.email,
+        name: identity.identity_data?.full_name || identity.identity_data?.name || user.user_metadata?.full_name,
+        avatar_url: identity.identity_data?.avatar_url || user.user_metadata?.avatar_url,
+        created_at: identity.created_at || user.created_at,
       }));
 
     return NextResponse.json({
@@ -52,9 +67,9 @@ export async function GET(request: NextRequest) {
  * Disconnect Account API
  * DELETE /api/users/connected-accounts?provider=google
  * 
- * Note: Unlinking OAuth identities requires admin privileges in Supabase.
- * For now, this endpoint attempts to unlink via the client, but full unlinking
- * may require Supabase Admin API setup.
+ * Note: This endpoint is kept for backward compatibility, but unlinking is now
+ * done client-side using unlinkIdentity() which works when user has at least 2 identities.
+ * For full identity removal, consider using Supabase Admin API with SERVICE_ROLE_KEY.
  */
 export async function DELETE(request: NextRequest) {
   try {
@@ -87,50 +102,51 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // Check if provider is the primary/only authentication method
-    const providers = (user.app_metadata?.providers || []) as string[];
-    const nonOAuthProviders = providers.filter(p => p === 'email' || p === 'phone');
+    // Get all user identities
+    const { data: identitiesData, error: identitiesError } = await supabase.auth.getUserIdentities();
     
-    // If this is the only OAuth provider and there's no email/password auth, prevent unlinking
-    const oauthProviders = providers.filter(p => p !== 'email' && p !== 'phone');
-    if (oauthProviders.length === 1 && oauthProviders[0] === provider && nonOAuthProviders.length === 0) {
+    if (identitiesError) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to retrieve connected accounts' },
+        { status: 500 }
+      );
+    }
+
+    if (!identitiesData || !identitiesData.identities) {
+      return NextResponse.json(
+        { success: false, error: 'No connected accounts found' },
+        { status: 404 }
+      );
+    }
+
+    // Check if user has at least 2 identities (required for unlinking)
+    if (identitiesData.identities.length < 2) {
       return NextResponse.json(
         { success: false, error: 'Cannot disconnect the only authentication method. Please add email/password authentication first.' },
         { status: 400 }
       );
     }
 
-    // Attempt to unlink using client-side method
-    // Note: This may not work without admin privileges, but we'll try
-    try {
-      // Get user identities - we'll need to find the identity ID
-      // Since we can't easily get identity IDs from client, we'll update the metadata
-      // to remove the provider from the providers list
-      const updatedProviders = providers.filter(p => p !== provider);
-      
-      const { error: updateError } = await supabase.auth.updateUser({
-        data: {
-          providers: updatedProviders
-        }
-      });
+    // Find the identity to unlink
+    const identityToUnlink = identitiesData.identities.find(
+      (identity) => identity.provider === provider
+    );
 
-      if (updateError) {
-        console.error('Update providers error:', updateError);
-        // Continue even if metadata update fails - the identity is still unlinked at auth level
-      }
-    } catch (updateError) {
-      console.error('Error updating providers metadata:', updateError);
-      // Continue anyway
+    if (!identityToUnlink) {
+      return NextResponse.json(
+        { success: false, error: `No ${provider} account found to disconnect` },
+        { status: 404 }
+      );
     }
 
-    // Note: Actual identity unlinking from Supabase Auth requires admin API
-    // The identity will remain in auth.identities but won't be used for login
-    // For full removal, consider using Supabase Admin API with SERVICE_ROLE_KEY
-
+    // Attempt to unlink the identity
+    // Note: Server-side unlinking may require admin privileges
+    // For now, we'll return a message directing users to use client-side method
     return NextResponse.json({
-      success: true,
-      message: 'Account disconnected successfully. Note: Full identity removal may require admin privileges.'
-    });
+      success: false,
+      error: 'Server-side unlinking requires admin privileges. Please use the client-side unlinkIdentity() method instead.',
+      message: 'For best results, use the client-side unlinking method in the UI.'
+    }, { status: 501 }); // 501 Not Implemented
 
   } catch (error) {
     console.error('Disconnect account error:', error);
