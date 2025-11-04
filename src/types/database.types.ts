@@ -99,6 +99,66 @@ export interface Booking {
   updated_at: string;
 }
 
+// Partner Payouts Table
+export interface PartnerPayout {
+  id: string;
+  partner_user_id: string;
+  gym_id?: string | null;
+  payout_number: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'processing' | 'completed' | 'failed' | 'cancelled';
+  payout_method?: 'bank_transfer' | 'promptpay' | 'truewallet' | 'paypal' | 'other' | null;
+  total_revenue: number;
+  commission_rate: number;
+  platform_fee: number;
+  net_amount: number;
+  bank_account_name?: string | null;
+  bank_account_number?: string | null;
+  bank_name?: string | null;
+  bank_branch?: string | null;
+  payment_reference?: string | null;
+  transaction_id?: string | null;
+  period_start_date: string;
+  period_end_date: string;
+  related_booking_ids: string[];
+  related_order_ids: string[];
+  notes?: string | null;
+  metadata: Record<string, unknown>;
+  requested_at: string;
+  processed_at?: string | null;
+  completed_at?: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Audit Logs Table
+export interface AuditLog {
+  id: string;
+  user_id?: string | null;
+  user_email?: string | null;
+  user_role?: string | null;
+  ip_address?: string | null;
+  user_agent?: string | null;
+  session_id?: string | null;
+  action_type: 'create' | 'update' | 'delete' | 'view' | 'login' | 'logout' | 'approve' | 'reject' | 'publish' | 'unpublish' | 'activate' | 'deactivate' | 'payment' | 'refund' | 'payout' | 'status_change' | 'permission_change' | 'role_change' | 'password_change' | 'email_change' | 'data_export' | 'data_import' | 'bulk_operation' | 'system_action';
+  resource_type: 'user' | 'profile' | 'gym' | 'booking' | 'order' | 'payment' | 'product' | 'event' | 'article' | 'ticket' | 'package' | 'promotion' | 'affiliate_conversion' | 'partner_payout' | 'notification' | 'favorite' | 'review' | 'analytics' | 'admin_action' | 'system_config' | 'other';
+  resource_id?: string | null;
+  resource_name?: string | null;
+  old_values?: Record<string, unknown> | null;
+  new_values?: Record<string, unknown> | null;
+  changed_fields?: string[] | null;
+  description: string;
+  metadata: Record<string, unknown>;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  request_method?: string | null;
+  request_path?: string | null;
+  request_params?: Record<string, unknown> | null;
+  success: boolean;
+  error_message?: string | null;
+  created_at: string;
+}
+
 // Response Types
 export interface DatabaseApiResponse<T> {
   data: T | null;
