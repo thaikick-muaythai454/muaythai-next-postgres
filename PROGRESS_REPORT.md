@@ -461,23 +461,24 @@
 
 ---
 
-## 14. 🔒 Security - ต้องปรับปรุง (Critical)
+## 14. 🔒 Security - ปรับปรุงแล้วส่วนใหญ่ (Critical) (80%)
 
 ### ยังขาด:
-- ❌ **Rate Limiting** - ไม่มีการป้องกัน API abuse
-- ❌ CSRF Protection
-- ❌ XSS Sanitization - ใช้ user input โดยตรง
-- ❌ File Upload Validation - ไม่มี virus scan
-- ❌ Content Security Policy (CSP)
-- ❌ Security Headers (HSTS, X-Frame-Options)
+- ✅ **Rate Limiting** - มีการป้องกัน API abuse ✅
+- ✅ CSRF Protection - มีการป้องกันแล้ว ✅
+- ✅ **XSS Sanitization** - มี DOMPurify สำหรับ sanitize HTML content ✅
+- ✅ **File Upload Validation** - มีระบบ validation ครบถ้วน (magic bytes, malware detection, filename sanitization) ✅
+- ✅ Content Security Policy (CSP) - มีแล้ว ✅
+- ✅ Security Headers (HSTS, X-Frame-Options) - มีแล้ว ✅
 - ❌ API Key Rotation
 - ❌ Secrets Encryption at Rest
 - ❌ **Audit Logging** - ไม่มีการบันทึกการกระทำสำคัญ
 
 ### Validation Issues:
 - ⚠️ มีเพียง email/phone validation พื้นฐาน
-- ⚠️ ไม่มี Input Sanitization ในหลายฟอร์ม
-- ⚠️ ไม่มีข้อจำกัดขนาด/ประเภทไฟล์
+- ✅ มี Input Sanitization แล้ว - Sanitize HTML ใน Bio และ gym_details ✅
+- ⚠️ ควรเพิ่ม sanitization ในฟอร์มอื่นๆ ที่รับ HTML input
+- ✅ มีข้อจำกัดขนาด/ประเภทไฟล์แล้ว - File Upload Validation ครอบคลุมแล้ว ✅
 
 ---
 
@@ -568,7 +569,7 @@
 | **Event System** | 30% | Static Data |
 | **Admin Analytics** | 10% | Placeholder UI |
 | **Partner Dashboard** | 60% | ขาด Analytics/Payout |
-| **Security** | 50% | ต้องเสริมหลายด้าน |
+| **Security** | 80% | Rate Limiting, CSRF, File Upload Validation, XSS Sanitization, Security Headers เสร็จแล้ว ✅ |
 | **Gamification** | 40% | มี UI แต่ไม่มีลอจิก |
 | **Affiliate** | 60% | Mock conversion data |
 | **Build System** | 100% | ✅ Production build ผ่านเรียบร้อย (2025-01-20) |
@@ -723,9 +724,28 @@
   - [x] ข้าม CSRF protection สำหรับ webhooks (มี signature verification แยก)
   - [x] รองรับ development และ production origins
   - [x] ส่ง HTTP 403 เมื่อตรวจสอบ CSRF ไม่ผ่าน
-- [ ] เพิ่ม XSS Sanitization (DOMPurify)
+- [x] เพิ่ม XSS Sanitization (DOMPurify) ✅
+  - [x] ติดตั้ง isomorphic-dompurify และ jsdom สำหรับ Next.js server-side rendering
+  - [x] สร้าง comprehensive sanitization utility (`src/lib/utils/sanitize.ts`)
+  - [x] สร้าง functions: sanitizeHTML, sanitizeText, sanitizeAttribute, sanitizeURL
+  - [x] สร้าง helper: getSanitizedHTMLProps, containsDangerousHTML
+  - [x] กำหนด configuration ที่ปลอดภัย (ALLOWED_TAGS, FORBID_TAGS, etc.)
+  - [x] อัปเดต BioEditor component ให้ sanitize HTML เมื่อแสดง
+  - [x] อัปเดต API route `/api/users/profile/bio` ให้ sanitize HTML ก่อนบันทึก
+  - [x] อัปเดต components ที่แสดง gym_details (AboutSection, GymCard)
+  - [x] Export sanitization utilities ใน `src/lib/utils/index.ts`
 - [ ] เพิ่ม Input Validation ทุกฟอร์ม
-- [ ] เพิ่ม File Upload Validation - **Critical: ป้องกัน virus/malware**
+- [x] เพิ่ม File Upload Validation - **Critical: ป้องกัน virus/malware** ✅
+  - [x] สร้าง comprehensive file validation utility (`src/lib/utils/file-validation.ts`)
+  - [x] MIME type validation
+  - [x] Magic bytes verification (ตรวจเนื้อหาไฟล์จริง)
+  - [x] File size limits (5MB สำหรับ images)
+  - [x] Filename sanitization (ป้องกัน directory traversal)
+  - [x] Suspicious content detection (malware patterns)
+  - [x] Dangerous file extension blocking (exe, bat, php, etc.)
+  - [x] อัปเดต API route `/api/users/profile/picture` ให้ใช้ validation
+  - [x] อัปเดต client-side components (ProfilePictureUpload, partner file upload)
+  - [x] รองรับ JPEG, PNG, WebP
 - [x] เพิ่ม Security Headers (CSP, HSTS, X-Frame-Options) ✅
   - [x] มี Content-Security-Policy ใน `next.config.ts` แล้ว
   - [x] มี X-Frame-Options: SAMEORIGIN แล้ว
