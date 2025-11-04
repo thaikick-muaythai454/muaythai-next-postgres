@@ -1,34 +1,55 @@
 "use client";
 
-import { useState } from "react";
-import { EVENTS } from "@/lib/data";
+import { useState, useEffect } from "react";
 import { Event } from "@/types";
 import {
   MagnifyingGlassIcon,
   FunnelIcon,
-  MapPinIcon,
-  CalendarIcon,
-  ClockIcon,
-  TicketIcon,
   ViewColumnsIcon,
   ListBulletIcon,
 } from "@heroicons/react/24/outline";
-import Link from "next/link";
 import { PageHeader } from "@/components/shared";
 import { EventCard } from "@/components/shared";
 
 type ViewMode = "list" | "grid";
 
 export default function EventsPage() {
+  const [events, setEvents] = useState<Event[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCity, setSelectedCity] = useState<string>("all");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch events from API
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/events?published=true&limit=100');
+        const data = await response.json();
+
+        if (data.success) {
+          setEvents(data.data || []);
+        } else {
+          setError(data.error || 'Failed to load events');
+        }
+      } catch (err) {
+        console.error('Error fetching events:', err);
+        setError('Failed to load events');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchEvents();
+  }, []);
 
   // Extract unique cities from events
   const cities = [
     "all",
     ...new Set(
-      EVENTS.map((event) => {
+      events.map((event) => {
         // Extract city from location
         const parts = event.location.split(",");
         return parts[parts.length - 1]?.trim() || event.location;
@@ -37,10 +58,12 @@ export default function EventsPage() {
   ];
 
   // Filter events
-  const filteredEvents = EVENTS.filter((event) => {
+  const filteredEvents = events.filter((event) => {
     const matchesSearch =
       event.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.location.toLowerCase().includes(searchQuery.toLowerCase());
+      (event.name_english?.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      event.location.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (event.description?.toLowerCase().includes(searchQuery.toLowerCase()));
 
     const eventCity = event.location.split(",").pop()?.trim() || event.location;
     const matchesCity =
@@ -51,7 +74,11 @@ export default function EventsPage() {
 
   // Sort by date
   const sortedEvents = [...filteredEvents].sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    (a, b) => {
+      const dateA = new Date(a.event_date || a.date || '').getTime();
+      const dateB = new Date(b.event_date || b.date || '').getTime();
+      return dateA - dateB;
+    }
   );
 
   return (
@@ -130,7 +157,21 @@ export default function EventsPage() {
         </div>
 
         {/* Events List */}
-        {sortedEvents.length === 0 ? (
+        {isLoading ? (
+          <div className="py-20 text-center">
+            <p className="text-zinc-400 text-xl">กำลังโหลดอีเวนต์...</p>
+          </div>
+        ) : error ? (
+          <div className="py-20 text-center">
+            <p className="text-red-400 text-xl">{error}</p>
+            <button
+              onClick={() => window.location.reload()}
+              className="bg-brand-primary hover:bg-red-700 mt-4 px-6 py-2 rounded-lg transition-colors"
+            >
+              ลองอีกครั้ง
+            </button>
+          </div>
+        ) : sortedEvents.length === 0 ? (
           <div className="py-20 text-center">
             <p className="text-zinc-400 text-xl">
               ไม่พบอีเวนต์ที่ตรงกับการค้นหา

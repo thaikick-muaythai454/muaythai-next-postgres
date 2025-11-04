@@ -46,8 +46,8 @@
 
 ### Remaining Features:
 1. ⚠️ **Google Maps** - ยังไม่เชื่อมต่อ
-2. ⚠️ **Events/Shop Frontend** - ยังใช้ Static Data (ต้องเชื่อมต่อ API)
-3. ⚠️ **Admin UI** - ยังไม่มี UI สำหรับจัดการ Events, Products, Promotions
+2. ⚠️ **Events/Shop Frontend** - Events เชื่อมต่อ API แล้ว, Shop ยังใช้ Static Data
+3. ⚠️ **Admin UI** - Events UI เสร็จแล้ว, ยังไม่มี UI สำหรับจัดการ Products, Promotions
 4. ⚠️ **Real-time Notifications** - ยังไม่มี WebSocket/SSE
 
 **หมายเหตุ**: 
@@ -82,8 +82,8 @@
 - Production build ผ่านเรียบร้อย
 
 **ยังต้องทำ**: 
-- เชื่อมต่อ Frontend กับ Events/Products API
-- สร้าง Admin UI สำหรับ Events/Products/Promotions
+- เชื่อมต่อ Frontend กับ Products API
+- สร้าง Admin UI สำหรับ Products/Promotions
 - Real-time Notifications (WebSocket/SSE)
 
 **Timeline**: Phase 1 Critical Features เสร็จแล้ว 90% - เหลือเพียง Frontend Integration และ Admin UI
@@ -107,7 +107,7 @@
 | Notifications | 90% ✅ (API + DB + UI Components + Auto-send) |
 | Favorites | 100% ✅ (API + DB) |
 | E-commerce | 95% ✅ (API ครบ: Products, Variants, Images, Orders, Shipping - เชื่อมต่อ Frontend แล้ว - ✅ Admin UI ครบแล้ว) |
-| Events | 60% ⚠️ (API ครบ, ขาด Admin UI + Frontend) |
+| Events | 85% ✅ (API ครบ, Admin UI เสร็จแล้ว, Frontend เชื่อมต่อแล้ว) |
 | Search | 80% ✅ (Full-text search, Autocomplete, Search History, Advanced filters, Sorting) |
 | Payment Features | 90% ✅ (Receipt/Invoice generation เสร็จแล้ว) |
 | Admin Analytics | 100% ✅ (API พร้อม date filtering) |
@@ -125,7 +125,17 @@
 
 ## 📈 ความคืบหน้าล่าสุด
 
-**อัปเดต 2025-01-21 (ล่าสุด)**:
+**อัปเดต 2025-11-04 (วันนี้)**:
+- ✅ **Admin Events Management UI**: สร้าง Admin UI สำหรับจัดการ Events ครบถ้วน - มี page `/admin/dashboard/events` พร้อม CRUD operations
+- ✅ **Event Management Components**: สร้าง components ครบ 5 ตัว (EventCreateModal, EventEditModal, EventDetailModal, EventDeleteDialog, EventTicketsModal)
+- ✅ **Events API Refactoring**: ปรับโครงสร้าง API จาก `/api/events/[id]` เป็น `/api/events/[slug]` เพื่อรองรับทั้ง slug และ UUID
+- ✅ **Events Frontend Integration**: เชื่อมต่อ Frontend กับ Events API แล้ว (หน้า `/events` และ `/events/[slug]`)
+- ✅ **Email Confirmation Testing**: เพิ่ม script `test-email-confirmation.sh` สำหรับทดสอบ flow การยืนยันอีเมล
+- ✅ **Auth Callback Improvements**: ปรับปรุง auth callback route สำหรับจัดการ email confirmation
+- ✅ **RoleGuard Updates**: อัปเดต RoleGuard component
+- ✅ **Admin Menu Items**: เพิ่ม Events management ใน admin menu
+
+**อัปเดต 2025-11-03 (ล่าสุด)**:
 - ✅ **Shipping System**: ระบบจัดส่งเสร็จแล้ว - มีตาราง `shipping_methods` และ `shipping_history`, API ครบ 5 endpoints (GET, POST, PUT/[id], DELETE/[id])
 - ✅ **Orders Management**: API สำหรับจัดการ Orders เสร็จแล้ว (GET `/api/orders/products`, GET `/api/orders/products/[id]`, GET `/api/orders/products/[id]/tracking`)
 - ✅ **Product Variants API**: CRUD Variants เสร็จแล้ว (4 endpoints: GET, POST, PUT/[variantId], DELETE/[variantId])
@@ -133,7 +143,7 @@
 - ✅ **Database Tables**: เพิ่มเป็น 44 ตาราง (รวม shipping_methods, shipping_history)
 - ✅ **API Endpoints**: เพิ่มเป็น 104 endpoints (91%) - เพิ่ม Shipping (5), Orders (3), Product Variants (4), Product Images (3)
 
-**อัปเดต 2025-01-21**:
+**อัปเดต 2025-10-31**:
 - ✅ **Database Tables**: ตารางครบ 42 ตารางแล้ว (100%) - รวม favorites, notifications, articles, products, events, affiliate_conversions, analytics_events, audit_logs, search_history
 - ✅ **API Endpoints**: เพิ่มเป็น 94 endpoints (82%) - เพิ่ม Admin Promotions (4), Partner Payouts (3), Cron Jobs (1), Audit Logs (1)
 - ✅ **Admin Promotions API**: ครบ 4 endpoints (GET, POST, PUT/[id], DELETE/[id]) - ส่ง notification อัตโนมัติเมื่อสร้างโปรโมชั่น
@@ -143,7 +153,7 @@
 - ✅ **Gamification Notifications**: ส่ง notification อัตโนมัติเมื่อได้ Badge และ Level Up
 - ✅ **Notification System**: 90% - การส่งอัตโนมัติส่วนใหญ่เสร็จแล้ว (booking, payment, badge, level up, reminder, promotion)
 
-**อัปเดต 2025-01-20**:
+**อัปเดต 2025-10-30**:
 - เพิ่มระบบ Connected Accounts (Google OAuth) - เชื่อมต่อ/ยกเลิกการเชื่อมต่อได้
 - Production build ผ่านเรียบร้อย
 - แก้ไข TypeScript build errors แล้ว, เพิ่ม VS Code workspace settings สำหรับทีม

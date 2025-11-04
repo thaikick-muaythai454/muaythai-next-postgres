@@ -49,9 +49,24 @@ Current values:
     throw new Error(errorMessage);
   }
 
-  // Validate API key format (basic check - should start with eyJ for JWT)
-  if (supabaseAnonKey.length < 50 || !supabaseAnonKey.startsWith('eyJ')) {
-    console.warn('⚠️  NEXT_PUBLIC_SUPABASE_ANON_KEY format may be invalid. Expected JWT token.');
+  // Validate API key format (basic check)
+  // Supabase keys can be:
+  // - JWT tokens (eyJ...)
+  // - Publishable keys (sb_publishable_...)
+  // - API keys (sb_...)
+  // - Local development keys (shorter, for testing)
+  const isJWT = supabaseAnonKey.startsWith('eyJ');
+  const isPublishableKey = supabaseAnonKey.startsWith('sb_publishable_');
+  const isAPIKey = supabaseAnonKey.startsWith('sb_');
+  const isLocalDev = supabaseUrl.includes('localhost') || supabaseUrl.includes('127.0.0.1');
+  
+  // Only warn if key seems obviously invalid (too short and not a known format)
+  // For local dev, we allow shorter keys
+  const minLength = isLocalDev ? 20 : 50;
+  const isValidFormat = isJWT || isPublishableKey || isAPIKey;
+  
+  if (supabaseAnonKey.length < minLength && !isValidFormat) {
+    console.warn('⚠️  NEXT_PUBLIC_SUPABASE_ANON_KEY format may be invalid. Expected JWT token (eyJ...), publishable key (sb_publishable_...), or API key (sb_...).');
   }
 
   // Create client with validated credentials

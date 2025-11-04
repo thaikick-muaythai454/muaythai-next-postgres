@@ -1,20 +1,55 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
-import { withAdminAuth } from '@/lib/api/withAdminAuth';
 
 /**
- * POST /api/articles/[id]/publish
+ * POST /api/articles/[id]-admin/publish
  * เผยแพร่บทความ (Admin only)
  * Body: { is_published: boolean }
+ * 
+ * Note: Next.js 15 doesn't recognize dynamic params in [id]-admin route structure.
+ * We extract the id from the URL path instead.
  */
-const publishArticleHandler = withAdminAuth<{ id: string }>(async (
-  request,
-  context,
-  _user
-) => {
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<Record<string, string>> }
+): Promise<NextResponse> {
   try {
     const supabase = await createClient();
-    const { id } = await context.params;
+    // Extract id from URL path since Next.js 15 doesn't recognize [id] in [id]-admin structure
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const idIndex = pathParts.findIndex(part => part === 'articles') + 1;
+    const id = pathParts[idIndex]?.replace('-admin', '') || '';
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Article ID is required' },
+        { status: 400 }
+      );
+    }
+    
+    // Check admin authorization
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized - Please log in' },
+        { status: 401 }
+      );
+    }
+
+    const { data: roleData, error: roleError } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (roleError || roleData?.role !== 'admin') {
+      return NextResponse.json(
+        { success: false, error: 'Forbidden - Admin access required' },
+        { status: 403 }
+      );
+    }
 
     const body = await request.json();
     const { is_published } = body;
@@ -81,7 +116,5 @@ const publishArticleHandler = withAdminAuth<{ id: string }>(async (
       { status: 500 }
     );
   }
-});
-
-export { publishArticleHandler as POST };
+}
 

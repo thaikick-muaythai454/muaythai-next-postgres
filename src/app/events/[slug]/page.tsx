@@ -1,7 +1,7 @@
 "use client";
 
-import { use } from "react";
-import { EVENTS } from "@/lib/data";
+import { use, useEffect, useState } from "react";
+import { Event } from "@/types";
 import {
   MapPinIcon,
   CalendarIcon,
@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Image from "next/image";
 
 export default function EventDetailPage({
   params,
@@ -20,13 +21,60 @@ export default function EventDetailPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = use(params);
-  const event = EVENTS.find((e) => e.slug === slug);
+  const [event, setEvent] = useState<Event | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  if (!event) {
+  useEffect(() => {
+    async function fetchEvent() {
+      try {
+        setIsLoading(true);
+        // Fetch all events and find by slug
+        const response = await fetch('/api/events?limit=1000');
+        const data = await response.json();
+
+        if (data.success) {
+          const foundEvent = data.data?.find((e: Event) => e.slug === slug);
+          if (foundEvent) {
+            // Fetch full details including tickets
+            const detailResponse = await fetch(`/api/events/${foundEvent.id}`);
+            const detailData = await detailResponse.json();
+            if (detailData.success) {
+              setEvent(detailData.data);
+            } else {
+              setEvent(foundEvent); // Fallback to basic event data
+            }
+          } else {
+            setError('Event not found');
+          }
+        } else {
+          setError(data.error || 'Failed to load event');
+        }
+      } catch (err) {
+        console.error('Error fetching event:', err);
+        setError('Failed to load event');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchEvent();
+  }, [slug]);
+
+  if (isLoading) {
+    return (
+      <div className="bg-zinc-950 min-h-screen mt-16 flex items-center justify-center">
+        <p className="text-zinc-400 text-xl">กำลังโหลดอีเวนต์...</p>
+      </div>
+    );
+  }
+
+  if (error || !event) {
     notFound();
   }
 
-  const eventDate = new Date(event.date);
+  const dateStr = event.event_date || event.date || '';
+  const eventDate = new Date(dateStr);
   const formattedDate = eventDate.toLocaleDateString("th-TH", {
     weekday: "long",
     year: "numeric",
@@ -37,6 +85,9 @@ export default function EventDetailPage({
     hour: "2-digit",
     minute: "2-digit",
   });
+
+  const price = event.price_start ?? event.price;
+  const imageUrl = event.image || event.images?.[0] || "/assets/images/fallback-img.jpg";
 
   return (
     <div className="bg-zinc-950 min-h-screen mt-16">
@@ -74,12 +125,14 @@ export default function EventDetailPage({
               </div>
             </div>
 
-            {/* Image Gallery Placeholder */}
-            <div className="flex justify-center items-center bg-gradient-to-br from-zinc-700 to-zinc-950 rounded-lg h-96">
-              <div className="text-center">
-                <div className="mb-4 text-zinc-600 text-9xl">🥊</div>
-                <p className="text-zinc-400">ภาพประกอบจะมาเร็วๆ นี้</p>
-              </div>
+            {/* Image Gallery */}
+            <div className="relative w-full h-96 rounded-lg overflow-hidden">
+              <Image
+                src={imageUrl}
+                alt={event.name || "Event image"}
+                fill
+                className="object-cover"
+              />
             </div>
 
             {/* About Event */}
@@ -89,7 +142,7 @@ export default function EventDetailPage({
                 รายละเอียดอีเวนต์
               </h2>
               <p className="mb-4 text-zinc-300 leading-relaxed">
-                {event.details || "รายละเอียดเพิ่มเติมจะประกาศในเร็วๆ นี้"}
+                {event.details || event.description || "รายละเอียดเพิ่มเติมจะประกาศในเร็วๆ นี้"}
               </p>
               <div className="pt-4 border-zinc-700 border-t">
                 <h3 className="mb-3 font-semibold text-lg">
@@ -171,20 +224,38 @@ export default function EventDetailPage({
                   ข้อมูลตั๋ว
                 </h3>
                 <div className="space-y-4">
-                  {event.price ? (
+                  {price ? (
                     <>
                       <div>
                         <p className="mb-1 text-zinc-400 text-xs">ราคาเริ่มต้น</p>
                         <p className="font-bold text-red-500 text-3xl">
-                          ฿{event.price.toLocaleString()}
+                          ฿{price.toLocaleString()}
                         </p>
                       </div>
+                      {event.tickets && event.tickets.length > 0 && (
+                        <div className="pt-4 border-zinc-700 border-t space-y-2">
+                          {event.tickets.map((ticket) => (
+                            <div key={ticket.id} className="flex justify-between items-center">
+                              <div>
+                                <p className="text-zinc-300 text-sm font-medium">{ticket.name}</p>
+                                <p className="text-zinc-400 text-xs">
+                                  เหลือ {ticket.quantity_available - ticket.quantity_sold} ที่นั่ง
+                                </p>
+                              </div>
+                              <p className="font-bold text-red-500">฿{ticket.price.toLocaleString()}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 pt-4 border-zinc-700 border-t">
                         <UserGroupIcon className="w-5 h-5 text-blue-500" />
                         <div>
                           <p className="text-zinc-400 text-xs">สถานะ</p>
                           <p className="font-semibold text-green-400 text-sm">
-                            มีที่นั่งว่าง
+                            {event.status === 'upcoming' ? 'กำลังเปิดขาย' : 
+                             event.status === 'ongoing' ? 'กำลังจัดงาน' :
+                             event.status === 'completed' ? 'จัดงานเสร็จสิ้น' :
+                             event.status === 'cancelled' ? 'ยกเลิก' : 'มีที่นั่งว่าง'}
                           </p>
                         </div>
                       </div>
@@ -225,7 +296,7 @@ export default function EventDetailPage({
                   อย่าพลาดการแข่งขันที่น่าตื่นเต้น!
                 </p>
                 <Link
-                  href="/contact"
+                  href={`/events/${event.slug}/book`}
                   className="block bg-white hover:bg-zinc-100 px-6 py-3 rounded-lg w-full font-semibold text-red-600 transition-colors"
                 >
                   จองตั๋วเลย

@@ -21,9 +21,15 @@ playwright/.cache/
 # next.js
 /.next/
 /out/
+/.next
+/out
+.next/
+out/
 
 # production
 /build
+/build/
+build/
 
 # misc
 *.pem
@@ -76,6 +82,7 @@ DEPLOYMENT.md
 scripts/test-login.js
 scripts/create-user.js
 scripts/production-user-creation.js
+scripts/test-email-confirmation.sh
 
 # vercel
 .vercel
@@ -83,10 +90,13 @@ scripts/production-user-creation.js
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+.tsbuildinfo
 
 # build outputs
 /dist
 *.js.map
+*.map
+.eslintcache
 
 # supabase
 .branches
@@ -108,7 +118,13 @@ supabase/.temp
 
 # OS
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+Desktop.ini
 
 # logs
 *.log
@@ -119,6 +135,9 @@ logs/
 *.temp
 *.backup
 .cache
+*.cache
+.turbo
+.swc
 
 # temporary scripts
 cleanup-files.sh
@@ -131,3 +150,30 @@ cleanup-files.sh
 # docs/ is commented out since it contains important documentation
 
 test-smtp.js
+
+# Package manager
+package-lock.json.backup
+yarn.lock.backup
+pnpm-lock.yaml.backup
+
+# Editor directories
+.vscode-test/
+*.code-workspace
+
+# Storybook
+storybook-static/
+
+# PWA files
+**/public/sw.js
+**/public/workbox-*.js
+**/public/worker-*.js
+**/public/sw.js.map
+**/public/workbox-*.js.map
+**/public/worker-*.js.map
+
+# Sentry
+.sentryclirc
+
+# Local development
+.local/
+.localhost/

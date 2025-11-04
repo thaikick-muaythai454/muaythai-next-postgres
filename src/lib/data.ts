@@ -93,47 +93,55 @@ export const GYMS: Gym[] = [
 // Events
 export const EVENTS: Event[] = [
   {
-    id: 1,
+    id: "1",
     slug: "one-championship-bangkok",
     name: "ONE Championship: Bangkok Fight Night",
     date: "2025-11-15T19:00:00.000Z",
+    event_date: "2025-11-15T19:00:00.000Z",
     location: "Impact Arena, Bangkok",
     details:
       "Experience the best of Muay Thai and mixed martial arts at ONE Championship. World-class fighters compete for glory.",
     price: 1500,
+    price_start: 1500,
     image: undefined,
   },
   {
-    id: 2,
+    id: "2",
     slug: "lumpinee-friday-fights",
     name: "Lumpinee Stadium Friday Fights",
     date: "2025-10-25T18:00:00.000Z",
+    event_date: "2025-10-25T18:00:00.000Z",
     location: "Lumpinee Boxing Stadium, Bangkok",
     details:
       "Traditional Muay Thai fights at the legendary Lumpinee Stadium. Every Friday night features top Thai fighters.",
     price: 800,
+    price_start: 800,
     image: undefined,
   },
   {
-    id: 3,
+    id: "3",
     slug: "rajadamnern-championship",
     name: "Rajadamnern Stadium Championship",
     date: "2025-11-01T19:00:00.000Z",
+    event_date: "2025-11-01T19:00:00.000Z",
     location: "Rajadamnern Stadium, Bangkok",
     details:
       "Championship fights at the historic Rajadamnern Stadium. Watch rising stars and established champions battle it out.",
     price: 1000,
+    price_start: 1000,
     image: undefined,
   },
   {
-    id: 4,
+    id: "4",
     slug: "thai-fight-phuket",
     name: "Thai Fight: Phuket Showdown",
     date: "2025-12-05T20:00:00.000Z",
+    event_date: "2025-12-05T20:00:00.000Z",
     location: "Phuket Provincial Stadium",
     details:
       "Thai Fight brings exciting Muay Thai action to Phuket. International and Thai fighters compete in spectacular matches.",
     price: 1200,
+    price_start: 1200,
     image: undefined,
   },
 ];

@@ -28,5 +28,10 @@ site_url = "http://127.0.0.1:3000"
 enable_signup = true
 
 [auth.email]
-# ปิดการยืนยันอีเมลสำหรับ local development
-enable_confirmations = false
+# เปิดการยืนยันอีเมลสำหรับทดสอบ email confirmation
+enable_confirmations = true
+
+[auth.security]
+# Enable manual identity linking (beta)
+# Allows users to link multiple OAuth accounts to the same user account
+manual_linking_enabled = true

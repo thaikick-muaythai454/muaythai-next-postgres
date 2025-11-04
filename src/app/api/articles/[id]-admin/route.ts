@@ -2,18 +2,32 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 
 /**
- * PUT /api/articles/[id]
+ * PUT /api/articles/[id]-admin
  * แก้ไขบทความ
  * - Admin: แก้ไขได้ทุกบทความ
  * - Author: แก้ไขได้เฉพาะบทความของตัวเอง
+ * 
+ * Note: Next.js 15 doesn't recognize dynamic params in [id]-admin route structure.
+ * We extract the id from the URL path instead.
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<Record<string, string>> }
 ) {
   try {
     const supabase = await createClient();
-    const { id } = await params;
+    // Extract id from URL path since Next.js 15 doesn't recognize [id] in [id]-admin structure
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const idIndex = pathParts.findIndex(part => part === 'articles') + 1;
+    const id = pathParts[idIndex]?.replace('-admin', '') || '';
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Article ID is required' },
+        { status: 400 }
+      );
+    }
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -146,16 +160,30 @@ export async function PUT(
 }
 
 /**
- * DELETE /api/articles/[id]
+ * DELETE /api/articles/[id]-admin
  * ลบบทความ (Admin only)
+ * 
+ * Note: Next.js 15 doesn't recognize dynamic params in [id]-admin route structure.
+ * We extract the id from the URL path instead.
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<Record<string, string>> }
 ) {
   try {
     const supabase = await createClient();
-    const { id } = await params;
+    // Extract id from URL path since Next.js 15 doesn't recognize [id] in [id]-admin structure
+    const url = new URL(request.url);
+    const pathParts = url.pathname.split('/');
+    const idIndex = pathParts.findIndex(part => part === 'articles') + 1;
+    const id = pathParts[idIndex]?.replace('-admin', '') || '';
+    
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: 'Article ID is required' },
+        { status: 400 }
+      );
+    }
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 

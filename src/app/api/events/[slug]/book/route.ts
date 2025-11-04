@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
+import { generateQRCodeString } from '@/lib/utils/qrcode';
 
 /**
- * POST /api/events/[id]/book
+ * Helper function to check if a string is a UUID
+ */
+function isUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+/**
+ * POST /api/events/[slug]/book
  * จองตั๋วอีเวนต์
+ * รองรับทั้ง slug และ id (UUID)
  * Body: {
  *   ticket_id: UUID (event_tickets.id)
  *   ticket_count: number (จำนวนตั๋ว)
@@ -15,11 +25,14 @@ import { createClient } from '@/lib/database/supabase/server';
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const { id: eventId } = await params;
+    const { slug } = await params;
+    
+    // Determine if parameter is UUID (id) or slug
+    const isId = isUUID(slug);
 
     // Check if user is authenticated
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -49,13 +62,19 @@ export async function POST(
       );
     }
 
-    // Get event
-    const { data: event, error: eventError } = await supabase
+    // Get event - support both slug and id
+    let eventQuery = supabase
       .from('events')
       .select('*')
-      .eq('id', eventId)
-      .eq('is_published', true)
-      .maybeSingle();
+      .eq('is_published', true);
+    
+    if (isId) {
+      eventQuery = eventQuery.eq('id', slug);
+    } else {
+      eventQuery = eventQuery.eq('slug', slug);
+    }
+    
+    const { data: event, error: eventError } = await eventQuery.maybeSingle();
 
     if (eventError || !event) {
       return NextResponse.json(
@@ -86,7 +105,7 @@ export async function POST(
       .from('event_tickets')
       .select('*')
       .eq('id', ticket_id)
-      .eq('event_id', eventId)
+      .eq('event_id', event.id)
       .eq('is_active', true)
       .maybeSingle();
 
@@ -168,7 +187,7 @@ export async function POST(
           items: [
             {
               type: 'event_ticket',
-              event_id: eventId,
+              event_id: event.id,
               event_name: event.name,
               event_name_en: event.name_english,
               event_date: event.event_date,
@@ -184,7 +203,7 @@ export async function POST(
           customer_email: finalCustomerEmail,
           customer_phone: finalCustomerPhone,
           metadata: {
-            event_id: eventId,
+              event_id: event.id,
             ticket_id: ticket_id,
             ticket_count: ticket_count,
           },
@@ -200,13 +219,16 @@ export async function POST(
         );
       }
 
+      // Generate booking reference first
+      const bookingReference = await generateBookingReference(supabase);
+
       // Create ticket booking
       const { data: ticketBooking, error: bookingError } = await supabase
         .from('ticket_bookings')
         .insert({
           order_id: order.id,
           user_id: user.id,
-          event_id: eventId,
+          event_id: event.id,
           event_name: event.name,
           event_name_en: event.name_english,
           event_date: event.event_date,
@@ -214,7 +236,8 @@ export async function POST(
           ticket_count: ticket_count,
           unit_price: ticket.price,
           total_price: totalPrice,
-          booking_reference: await generateBookingReference(supabase),
+          booking_reference: bookingReference,
+          qr_code: generateQRCodeString('temp', bookingReference),
         })
         .select()
         .single();
@@ -229,6 +252,15 @@ export async function POST(
         );
       }
 
+      // Update QR code with actual ticket ID
+      const finalQrCode = generateQRCodeString(ticketBooking.id, bookingReference);
+      await supabase
+        .from('ticket_bookings')
+        .update({
+          qr_code: finalQrCode,
+        })
+        .eq('id', ticketBooking.id);
+
       // Create payment intent
       const { createPaymentIntent } = await import('@/services');
       const paymentResult = await createPaymentIntent({
@@ -238,7 +270,7 @@ export async function POST(
         payment_type: 'ticket',
         metadata: {
           order_id: order.id,
-          event_id: eventId,
+              event_id: event.id,
           ticket_booking_id: ticketBooking.id,
           ticket_id: ticket_id,
           ticket_count: ticket_count,
@@ -287,7 +319,7 @@ export async function POST(
           items: [
             {
               type: 'event_ticket',
-              event_id: eventId,
+              event_id: event.id,
               event_name: event.name,
               event_name_en: event.name_english,
               event_date: event.event_date,
@@ -303,7 +335,7 @@ export async function POST(
           customer_email: finalCustomerEmail,
           customer_phone: finalCustomerPhone,
           metadata: {
-            event_id: eventId,
+              event_id: event.id,
             ticket_id: ticket_id,
             ticket_count: ticket_count,
           },
@@ -319,13 +351,16 @@ export async function POST(
         );
       }
 
+      // Generate booking reference
+      const bookingReferenceNoPayment = await generateBookingReference(supabase);
+
       // Create ticket booking
       const { data: ticketBooking, error: bookingError } = await supabase
         .from('ticket_bookings')
         .insert({
           order_id: order.id,
           user_id: user.id,
-          event_id: eventId,
+          event_id: event.id,
           event_name: event.name,
           event_name_en: event.name_english,
           event_date: event.event_date,
@@ -333,7 +368,8 @@ export async function POST(
           ticket_count: ticket_count,
           unit_price: ticket.price,
           total_price: totalPrice,
-          booking_reference: await generateBookingReference(supabase),
+          booking_reference: bookingReferenceNoPayment,
+          qr_code: generateQRCodeString('temp', bookingReferenceNoPayment),
         })
         .select()
         .single();
@@ -346,6 +382,15 @@ export async function POST(
           { status: 500 }
         );
       }
+
+      // Update QR code with actual ticket ID
+      const finalQrCodeNoPayment = generateQRCodeString(ticketBooking.id, bookingReferenceNoPayment);
+      await supabase
+        .from('ticket_bookings')
+        .update({
+          qr_code: finalQrCodeNoPayment,
+        })
+        .eq('id', ticketBooking.id);
 
       // Update ticket quantity_sold (but don't commit yet - wait for payment)
       // This will be updated when payment is confirmed via webhook

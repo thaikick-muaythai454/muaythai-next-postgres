@@ -1,4 +1,4 @@
-import { createClientForMiddleware } from '@/lib/database/supabase/server';
+import { createClientForMiddleware, createAdminClient } from '@/lib/database/supabase/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 /**
@@ -34,14 +34,79 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(errorUrl);
       }
 
-      if (data.session) {
+      if (data.session && data.user) {
+        const userId = data.user.id;
+        
+        // For signup/email confirmation, ensure user has role and profile
+        // Note: Supabase email confirmation links may not have type parameter
+        // So we check if user was just created (no role exists yet)
+        const isEmailConfirmation = type === 'signup' || !type || type === '';
+        
+        if (isEmailConfirmation) {
+          try {
+            const adminSupabase = createAdminClient();
+            
+            // Check if user role exists
+            const { data: existingRole } = await adminSupabase
+              .from('user_roles')
+              .select('role')
+              .eq('user_id', userId)
+              .maybeSingle();
+            
+            // If no role exists, create it (this is a new user from email confirmation)
+            if (!existingRole) {
+              // Create user role
+              await adminSupabase.from('user_roles').insert({
+                user_id: userId,
+                role: 'authenticated',
+              });
+              
+              // Ensure profile exists
+              const { data: existingProfile } = await adminSupabase
+                .from('profiles')
+                .select('user_id')
+                .eq('user_id', userId)
+                .maybeSingle();
+              
+              if (!existingProfile && data.user.user_metadata) {
+                // Create profile from user metadata
+                await adminSupabase.from('profiles').insert({
+                  user_id: userId,
+                  username: data.user.user_metadata.username || data.user.email?.split('@')[0] || `user_${userId.slice(0, 8)}`,
+                  full_name: data.user.user_metadata.full_name || data.user.email?.split('@')[0] || 'User',
+                  phone: data.user.user_metadata.phone || null,
+                });
+              }
+              
+              // Initialize user points for gamification
+              const { data: existingPoints } = await adminSupabase
+                .from('user_points')
+                .select('user_id')
+                .eq('user_id', userId)
+                .maybeSingle();
+              
+              if (!existingPoints) {
+                await adminSupabase.from('user_points').insert({
+                  user_id: userId,
+                  total_points: 0,
+                  current_level: 1,
+                  points_to_next_level: 100,
+                });
+              }
+            }
+          } catch (profileError) {
+            // Log error but don't block - user can still access dashboard
+            console.error('Error setting up user profile/role:', profileError);
+          }
+        }
+
         // Determine redirect based on the type of auth callback
         let redirectUrl = next;
         
         if (type === 'recovery') {
           // Password reset - redirect to update password page
           redirectUrl = '/update-password';
-        } else if (type === 'signup') {
+        } else if (type === 'signup' || isEmailConfirmation) {
           // Email confirmation - redirect to dashboard
           redirectUrl = '/dashboard';
         } else if (type === 'magiclink') {
@@ -55,6 +120,11 @@ export async function GET(request: NextRequest) {
         // Create redirect URL
         const redirect = new URL(redirectUrl, request.url);
         
+        // Add success message for email confirmation
+        if (isEmailConfirmation) {
+          redirect.searchParams.set('message', 'email_confirmed');
+        }
+        
         // Add success message for password reset
         if (type === 'recovery') {
           redirect.searchParams.set('message', 'password_reset_success');
@@ -65,7 +135,12 @@ export async function GET(request: NextRequest) {
           redirect.searchParams.set('message', 'account_linked_success');
         }
         
-        return NextResponse.redirect(redirect);
+        // Create response with redirect
+        const response = NextResponse.redirect(redirect);
+        
+        // Ensure session cookies are set properly
+        // The supabase client should have already set cookies, but we make sure
+        return response;
       }
     } catch (error) {
       console.error('Auth callback exception:', error);

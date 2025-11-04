@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/database/supabase/client';
-import { UserRole, getUserRole, getDashboardPath, hasRole } from '@/lib/auth';
+import { UserRole, getUserRole, getDashboardPath } from '@/lib/auth';
 import { User } from '@supabase/supabase-js';
 import { Loading } from '@/components/shared';
 
@@ -42,6 +42,9 @@ export function RoleGuard({
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
+    const maxRetries = 3;
+    const retryDelay = 1000; // 1 second
+
     async function checkAuth() {
       try {
         // Check if user is logged in
@@ -56,13 +59,38 @@ export function RoleGuard({
 
         setUser(user);
 
-        // Get user role (may throw error and logout if session invalid)
-        let userRole: UserRole;
-        try {
-          userRole = await getUserRole(user.id);
-        } catch (error) {
-          // getUserRole will handle logout if error 406 or session invalid
-          console.error('[RoleGuard] Error getting role, user will be logged out');
+        // Get user role with retry mechanism
+        // This handles cases where user role is still being created (e.g., after email confirmation)
+        let userRole: UserRole | null = null;
+        
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
+          try {
+            userRole = await getUserRole(user.id);
+            break; // Success, exit retry loop
+          } catch (error: unknown) {
+            // Check if this is a "no role found" error (PGRST116)
+            // This might happen if the user was just created and role hasn't been set up yet
+            const isPgError = error && typeof error === 'object' && 'code' in error && error.code === 'PGRST116';
+            
+            if (isPgError && attempt < maxRetries) {
+              // Wait before retrying (role might be getting created)
+              console.log(`[RoleGuard] Role not found, retrying... (attempt ${attempt + 1}/${maxRetries + 1})`);
+              await new Promise(resolve => setTimeout(resolve, retryDelay));
+              continue;
+            }
+            
+            // For other errors (406, session invalid, etc.), getUserRole will handle logout
+            // Don't retry these - they're real errors
+            console.error('[RoleGuard] Error getting role:', error);
+            return;
+          }
+        }
+        
+        // If we still don't have a role after retries, something went wrong
+        if (!userRole) {
+          console.error('[RoleGuard] Could not get user role after retries');
+          // Don't logout - let the user see an error message or redirect to login
+          router.push('/login?error=role_not_found');
           return;
         }
         

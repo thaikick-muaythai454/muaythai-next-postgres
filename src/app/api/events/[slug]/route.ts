@@ -2,21 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 
 /**
- * GET /api/events/[id]
+ * Helper function to check if a string is a UUID
+ */
+function isUUID(str: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(str);
+}
+
+/**
+ * GET /api/events/[slug]
  * ดูอีเวนต์เดียวพร้อม tickets
+ * รองรับทั้ง slug และ id (UUID)
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const { id } = await params;
+    const { slug: eventSlug } = await params;
 
     // Check if user is admin
     const { data: { user } } = await supabase.auth.getUser();
     const isAdmin = user ? await checkIsAdmin(await supabase, user.id) : false;
 
+    // Determine if parameter is UUID (id) or slug
+    const isId = isUUID(eventSlug);
+    
     let query = supabase
       .from('events')
       .select(`
@@ -27,8 +39,14 @@ export async function GET(
           name_english,
           slug
         )
-      `)
-      .eq('id', id);
+      `);
+    
+    // Query by id or slug
+    if (isId) {
+      query = query.eq('id', eventSlug);
+    } else {
+      query = query.eq('slug', eventSlug);
+    }
 
     // Non-admin users can only see published events
     if (!isAdmin) {
@@ -56,7 +74,7 @@ export async function GET(
     const { data: tickets } = await supabase
       .from('event_tickets')
       .select('*')
-      .eq('event_id', id)
+      .eq('event_id', event.id)
       .eq('is_active', true)
       .order('display_order', { ascending: true });
 
@@ -64,7 +82,7 @@ export async function GET(
     await supabase
       .from('events')
       .update({ views_count: (event.views_count || 0) + 1 })
-      .eq('id', id);
+      .eq('id', event.id);
 
     return NextResponse.json({
       success: true,
@@ -84,16 +102,20 @@ export async function GET(
 }
 
 /**
- * PUT /api/events/[id]
+ * PUT /api/events/[slug]
  * แก้ไขอีเวนต์ (Admin only)
+ * รองรับทั้ง slug และ id (UUID)
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const { id } = await params;
+    const { slug: eventSlug } = await params;
+    
+    // Determine if parameter is UUID (id) or slug
+    const isId = isUUID(eventSlug);
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -115,11 +137,17 @@ export async function PUT(
     }
 
     // Get existing event
-    const { data: existingEvent, error: fetchError } = await supabase
+    let query = supabase
       .from('events')
-      .select('*')
-      .eq('id', id)
-      .maybeSingle();
+      .select('*');
+    
+    if (isId) {
+      query = query.eq('id', eventSlug);
+    } else {
+      query = query.eq('slug', eventSlug);
+    }
+    
+    const { data: existingEvent, error: fetchError } = await query.maybeSingle();
 
     if (fetchError || !existingEvent) {
       return NextResponse.json(
@@ -269,7 +297,7 @@ export async function PUT(
     const { data, error } = await supabase
       .from('events')
       .update(updateData)
-      .eq('id', id)
+      .eq('id', existingEvent.id)
       .select()
       .single();
 
@@ -297,16 +325,20 @@ export async function PUT(
 }
 
 /**
- * DELETE /api/events/[id]
+ * DELETE /api/events/[slug]
  * ลบอีเวนต์ (Admin only)
+ * รองรับทั้ง slug และ id (UUID)
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const supabase = await createClient();
-    const { id } = await params;
+    const { slug: eventSlug } = await params;
+    
+    // Determine if parameter is UUID (id) or slug
+    const isId = isUUID(eventSlug);
 
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
@@ -328,11 +360,17 @@ export async function DELETE(
     }
 
     // Check if event exists
-    const { data: existingEvent, error: fetchError } = await supabase
+    let query = supabase
       .from('events')
-      .select('id, name')
-      .eq('id', id)
-      .maybeSingle();
+      .select('id, name');
+    
+    if (isId) {
+      query = query.eq('id', eventSlug);
+    } else {
+      query = query.eq('slug', eventSlug);
+    }
+    
+    const { data: existingEvent, error: fetchError } = await query.maybeSingle();
 
     if (fetchError || !existingEvent) {
       return NextResponse.json(
@@ -345,7 +383,7 @@ export async function DELETE(
     const { error } = await supabase
       .from('events')
       .delete()
-      .eq('id', id);
+      .eq('id', existingEvent.id);
 
     if (error) {
       console.error('Delete event error:', error);
