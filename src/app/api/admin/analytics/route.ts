@@ -208,6 +208,61 @@ const getAnalyticsHandler = withAdminAuth(async (
       }
     }
     
+    // Get popular search terms (aggregated from search_history)
+    // Query all search history in date range
+    const { data: searchHistoryData, error: searchHistoryError } = await supabase
+      .from('search_history')
+      .select('query, search_type, created_at, total_results')
+      .gte('created_at', startDateISO)
+      .lte('created_at', endDateISO)
+      .order('created_at', { ascending: false });
+    
+    // Aggregate search queries
+    const searchTermsMap: Record<string, {
+      query: string;
+      count: number;
+      search_type: string | null;
+      avg_results: number;
+      last_searched: string;
+    }> = {};
+    
+    if (searchHistoryData && !searchHistoryError) {
+      for (const search of searchHistoryData) {
+        const queryKey = search.query.trim().toLowerCase();
+        
+        if (!searchTermsMap[queryKey]) {
+          searchTermsMap[queryKey] = {
+            query: search.query.trim(),
+            count: 0,
+            search_type: search.search_type || null,
+            avg_results: 0,
+            last_searched: search.created_at,
+          };
+        }
+        
+        searchTermsMap[queryKey].count += 1;
+        searchTermsMap[queryKey].avg_results = 
+          ((searchTermsMap[queryKey].avg_results * (searchTermsMap[queryKey].count - 1)) + 
+           (search.total_results || 0)) / searchTermsMap[queryKey].count;
+        
+        // Update last_searched if this is more recent
+        if (new Date(search.created_at) > new Date(searchTermsMap[queryKey].last_searched)) {
+          searchTermsMap[queryKey].last_searched = search.created_at;
+        }
+      }
+    }
+    
+    // Convert to array and sort by count (most popular first)
+    const popularSearchTerms = Object.values(searchTermsMap)
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 20); // Top 20
+    
+    // Get total search count for the period
+    const totalSearches = searchHistoryData?.length || 0;
+    
+    // Get unique search queries count
+    const uniqueSearchQueries = Object.keys(searchTermsMap).length;
+    
     return NextResponse.json({
       success: true,
       data: {
@@ -231,6 +286,11 @@ const getAnalyticsHandler = withAdminAuth(async (
         charts: {
           userGrowth: userGrowthByDate,
           revenue: revenueByDate,
+        },
+        search: {
+          totalSearches,
+          uniqueQueries: uniqueSearchQueries,
+          popularTerms: popularSearchTerms,
         },
       },
     });
