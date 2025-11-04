@@ -55,8 +55,28 @@
 ### 9. 🎫 ระบบอีเวนต์และบัตรเข้างาน (95%)
 หน้าแสดงอีเวนต์, รายละเอียด, API ครบ, Admin UI, ระบบจัดการจำนวนตั๋ว, QR Code ✅, Check-in UI ✅, หมวดหมู่อีเวนต์ ✅
 
-### 10. 📧 ระบบ Email (100%)
-ยืนยันอีเมล, รีเซ็ตรหัสผ่าน, ฟอร์มติดต่อ, Email Templates (Resend), Email Queue System, Email Service Layer
+### 10. 📧 ระบบ Email (90%)
+ยืนยันอีเมล, รีเซ็ตรหัสผ่าน, ฟอร์มติดต่อ, Email Templates (Resend), Email Queue System, Email Service Layer  
+⚠️ ยังใช้ Gmail SMTP สำหรับบาง emails - ต้อง migrate ไป Resend ทั้งหมด
+
+### 15. 🎯 Partner Promotions (50%)
+Partner สามารถสร้างและจัดการ promotions สำหรับการจองค่ายมวยได้
+
+✅ **Backend (100%)**:
+- ✅ API Endpoints (GET, POST, PATCH, DELETE `/api/partner/promotions`)
+- ✅ Database Migration (เพิ่ม `gym_id` ใน promotions table)
+- ✅ RLS Policies สำหรับ security
+
+⚠️ **Frontend (0%)** - ยังต้องทำ:
+- ⚠️ สร้างหน้า `/partner/dashboard/promotions` สำหรับจัดการ promotions
+- ⚠️ เพิ่ม menu item "โปรโมชั่น" ใน Partner Dashboard (ใช้ MegaphoneIcon)
+- ⚠️ สร้าง PromotionList component (แสดงรายการ promotions ของ gym ตัวเอง)
+- ⚠️ สร้าง PromotionCreateModal component (สร้าง promotion ใหม่)
+- ⚠️ สร้าง PromotionEditModal component (แก้ไข promotion)
+- ⚠️ สร้าง PromotionDeleteDialog component (ลบ promotion)
+- ⚠️ Update menu items ในทุกหน้า partner dashboard เพื่อให้สอดคล้องกัน
+- ⚠️ เพิ่ม filtering และ sorting (active/inactive, date range, priority)
+- ⚠️ เพิ่ม validation และ error handling ใน frontend
 
 ### 14. 📬 ระบบ Newsletter และ Promotional Emails (100%)
 สมัครรับ/ยกเลิกจดหมายข่าว, Newsletter Campaigns, ส่งอีเมลโปรโมชั่นอัตโนมัติ, Unsubscribe Page, Preferences Management
@@ -130,6 +150,12 @@
 - ✅ **มากกว่า 50 หน้า**
 - ✅ **มากกว่า 100 components**
 
+### Code Optimization
+- ✅ **Migration Files Optimization**
+  - สร้างสคริปต์ `optimize-migrations.js` สำหรับลดขนาด migrations
+  - เพิ่ม npm script `db:optimize-migrations`
+- ✅ **Scripts Cleanup**: ลบไฟล์ scripts ที่ไม่จำเป็น (migrate-articles-to-db.js, production-user-creation.js)
+
 ### การทดสอบระบบ
 - ✅ E2E Test (Playwright)
 - ✅ Database Scripts
@@ -157,7 +183,7 @@
 | **Check-in System** | 100% | ระบบเช็คอินตั๋วสำหรับ Admin ✅ |
 | **Event Categories** | 100% | API + Admin UI ครบ (3 endpoints) ✅ |
 | **Admin Analytics** | 100% | มี API พร้อม date filtering และ chart data |
-| **Partner Dashboard** | 85% | มี Analytics API, Payout API, ตาราง Payout แล้ว |
+| **Partner Dashboard** | 85% | มี Analytics API, Payout API, ตาราง Payout แล้ว - ⚠️ ต้องเพิ่มหน้า Promotions |
 | **Admin Promotions** | 100% | มี API ครบ 4 endpoints - Admin UI เสร็จแล้ว ✅ |
 | **Partner Payouts** | 100% | มี API ครบ 3 endpoints |
 | **Cron Jobs** | 100% | Booking Reminders, Scheduled Reports Generation |
@@ -200,8 +226,23 @@
 2. ✅ Report Generation (PDF/CSV) - เสร็จแล้ว
 3. ✅ Promotion Management UI - **เสร็จแล้ว!** (Admin UI พร้อมใช้งาน)
 4. ✅ Products Admin UI - **เสร็จแล้ว!** (Admin UI พร้อมใช้งาน)
-5. ❌ Google Analytics Integration
-6. ❌ Admin Content Moderation Tools
+5. ⚠️ **Partner Promotions Frontend**: สร้าง UI สำหรับ Partner จัดการ promotions
+   - ⚠️ สร้างหน้า `/partner/dashboard/promotions`
+   - ⚠️ สร้าง components (List, CreateModal, EditModal, DeleteDialog)
+   - ⚠️ เพิ่ม menu item ใน Partner Dashboard
+   - ⚠️ Update menu items ให้สอดคล้องกันทุกหน้า
+6. ⚠️ **Migration Email Service**: เปลี่ยนการส่ง emails จาก Gmail SMTP เป็น Resend
+   - ⚠️ เปลี่ยน Verification emails (OTP)
+   - ⚠️ เปลี่ยน Booking confirmation/reminder emails
+   - ⚠️ เปลี่ยน Payment receipt/failed emails
+   - ⚠️ เปลี่ยน Partner approval/rejection emails
+   - ⚠️ เปลี่ยน Admin alert emails
+   - ⚠️ เปลี่ยน Password reset email (smtp-reset-password route)
+   - ⚠️ อัปเดต Email Queue Processor ให้ใช้ Resend เป็น default
+   - ⚠️ อัปเดต environment variables และ configuration
+   - ℹ️ Contact form ใช้ Resend อยู่แล้ว
+6. ❌ Google Analytics Integration
+7. ❌ Admin Content Moderation Tools
 
 ### 🟢 Low Priority
 1. ✅ Gamification Logic (ส่วนใหญ่เสร็จแล้ว)
@@ -233,8 +274,13 @@
 - ✅ Performance Metrics - เสร็จแล้ว
 - ✅ Booking Calendar View - เสร็จแล้ว
 - ✅ Availability Management - เสร็จแล้ว
+- ⚠️ **Promotion Management** - Backend เสร็จแล้ว (API + RLS Policies), Frontend ยังต้องทำ (0%)
+  - ✅ API Endpoints พร้อมใช้งาน
+  - ⚠️ ต้องสร้างหน้า `/partner/dashboard/promotions`
+  - ⚠️ ต้องสร้าง components (List, CreateModal, EditModal, DeleteDialog)
+  - ⚠️ ต้องเพิ่ม menu item และ update menu items
 - ❌ Customer Insights
-- ❌ Marketing Tools (coupons, promotions)
+- ❌ Marketing Tools (coupons - ยังไม่มี)
 
 ### Analytics & Tracking
 - ❌ Google Analytics Integration
@@ -345,13 +391,13 @@
 - ✅ Shop Frontend Integration (เชื่อมต่อกับ Products API)
 - ✅ Products Admin UI (Admin UI สำหรับจัดการสินค้า)
 - ✅ Promotions Admin UI (Admin UI สำหรับจัดการโปรโมชั่น)
+- ✅ Partner Promotions API - Partner สามารถสร้าง promotion สำหรับการจองค่ายมวยได้
+- ✅ **Migration Optimization Script**: สร้างสคริปต์ optimize-migrations.js เพื่อลดขนาดไฟล์ migrations (ลดได้ 15.8 KB / 6.8%)
+- ✅ **Code Cleanup**: ลบไฟล์ scripts/node/migrate-articles-to-db.js และ production-user-creation.js (ลดขนาดได้ 32 KB)
 
 ---
 
 ## 📊 สรุปความคืบหน้าโครงการ
-
-### ✅ ระบบที่เสร็จสมบูรณ์ (99.8%)
-
 1. **ระบบหลัก** (100%)
    - Authentication & Authorization
    - User Profile & Connected Accounts
@@ -378,7 +424,8 @@
 
 1. **Google Maps Integration** - ยังไม่ได้เชื่อมต่อจริง
 2. **Affiliate Commission System** - ใช้ mock data
-3. **Google Analytics Integration** - ยังไม่ได้ติดตั้ง
+3. **Email Service Migration** - เปลี่ยนจาก Gmail SMTP เป็น Resend (90% เสร็จ - Contact form ใช้ Resend แล้ว)
+4. **Google Analytics Integration** - ยังไม่ได้ติดตั้ง
 
 ### 📈 สถิติสำคัญ
 
@@ -491,6 +538,14 @@
 - [x] Booking Reminder Email Scheduler ✅
 - [x] Email Queue System ✅
 - [x] Email Service Layer ✅
+- [⚠️] Migration Email Service: เปลี่ยนจาก Gmail SMTP เป็น Resend ⚠️
+  - [⚠️] Verification emails
+  - [⚠️] Booking emails
+  - [⚠️] Payment emails
+  - [⚠️] Partner emails
+  - [⚠️] Admin alerts
+  - [⚠️] Password reset
+  - [⚠️] Email Queue Processor
 
 ---
 
