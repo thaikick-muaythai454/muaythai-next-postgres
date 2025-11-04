@@ -136,9 +136,22 @@
 ## 📈 ข้อมูลและสถิติ
 
 ### API Endpoints
-- ✅ **สร้างแล้ว**: 33+ จุดเชื่อมต่อ (+5: Favorites & Notifications)
-- 🔄 **กำลังพัฒนา**: 3 จุดเชื่อมต่อ
-- 📋 **วางแผนไว้**: มากกว่า 15 จุดเชื่อมต่อ
+- ✅ **สร้างแล้ว**: 70 จุดเชื่อมต่อ (62%)
+- ❌ **ยังไม่มี**: 43 จุดเชื่อมต่อ (38%)
+- 🔴 **Critical Missing**: 3 จุดเชื่อมต่อ (Admin Analytics, Partner Analytics, Booking Reminders Cron)
+
+**รายละเอียด API Endpoints ที่มีอยู่แล้ว**:
+- ✅ Authentication (6), Users (18), Gyms (7), Bookings (4), Payments (4)
+- ✅ Gamification (10), Notifications (5), Favorites (3), Affiliate (4)
+- ✅ Partner Packages (5), Partner Applications (3)
+- ✅ Admin Reports Export (1), Contact (2), Health (1)
+
+**รายละเอียด API Endpoints ที่ยังไม่มี**:
+- ❌ Articles (6), Products (6), Events (6), Tickets (4)
+- ❌ Analytics (2), Search (2)
+- 🔴 Admin Analytics (1 - Critical), Admin Promotions (4)
+- 🔴 Partner Analytics (1 - Critical), Partner Payouts (3)
+- 🔴 Cron Jobs (1 - Critical)
 
 ### Database Tables
 - ✅ **สร้างแล้ว**: มากกว่า 22 ตาราง (เพิ่ม user_favorites, notifications)
@@ -557,25 +570,26 @@
 
 | หมวดหมู่ | สถานะ | หมายเหตุ |
 |---------|-------|----------|
-| **Database Tables** | 60% | ขาด 10+ ตารางสำคัญ |
-| **API Endpoints** | 50% | ขาด 15+ endpoints |
+| **Database Tables** | 85% | ✅ ตารางหลักครบ (40 ตาราง) ขาดเฉพาะตารางเสริม: `partner_payouts`, `audit_logs` |
+| **API Endpoints** | 62% | ✅ มี 70 endpoints, ขาด 43 endpoints (Critical: Admin/Partner Analytics, Cron) |
 | **Payment Features** | 80% | ขาด Receipt/Invoice generation |
-| **Notification System** | 10% | มีเฉพาะ Gamification |
-| **Review System** | 100% | ใช้ Google Maps Reviews |
-| **User Profile** | 100% | ✅ เสร็จสมบูรณ์แล้ว |
-| **Favorites System** | 30% | Mock Data เท่านั้น |
-| **Search & Filter** | 40% | พื้นฐานเท่านั้น |
-| **Shop System** | 30% | Static Data |
-| **Event System** | 30% | Static Data |
-| **Admin Analytics** | 10% | Placeholder UI |
-| **Partner Dashboard** | 60% | ขาด Analytics/Payout |
-| **Security** | 80% | Rate Limiting, CSRF, File Upload Validation, XSS Sanitization, Security Headers เสร็จแล้ว ✅ |
-| **Gamification** | 40% | มี UI แต่ไม่มีลอจิก |
-| **Affiliate** | 60% | Mock conversion data |
+| **Notification System** | 70% | ✅ มี API ครบ, ตารางครบ, UI Components ครบ - ขาดการส่งอัตโนมัติบางส่วน |
+| **Review System** | 100% | ✅ ใช้ Google Maps Reviews |
+| **User Profile** | 100% | ✅ เสร็จสมบูรณ์แล้ว รวมถึง Connected Accounts (Google OAuth) |
+| **Favorites System** | 90% | ✅ มี API ครบ, ตารางครบ, UI Components ครบ - รองรับ Product/Event แล้ว |
+| **Search & Filter** | 40% | พื้นฐานเท่านั้น - ขาด Full-text search, Autocomplete, Advanced filters |
+| **Shop System** | 30% | Static Data - ขาด API และตาราง products |
+| **Event System** | 30% | Static Data - ขาด API และตาราง events |
+| **Admin Analytics** | 0% | 🔴 Placeholder UI - ขาด API `/api/admin/analytics` (Critical) |
+| **Partner Dashboard** | 60% | 🔴 ขาด Analytics API (`/api/partner/analytics` - Critical) และ Payout System |
+| **Security** | 80% | ✅ Rate Limiting, CSRF, File Upload Validation, XSS Sanitization, Security Headers เสร็จแล้ว - ขาด Audit Logging |
+| **Gamification** | 70% | ✅ มี UI, API ครบ, ลอจิกส่วนใหญ่เสร็จ - ขาด Notification เมื่อได้ Badge/Level Up |
+| **Affiliate** | 60% | Mock conversion data - ขาดระบบคำนวณ Commission จริง |
 | **Build System** | 100% | ✅ Production build ผ่านเรียบร้อย (2025-01-20) |
-| **User Profile** | 100% | ✅ รวมถึง Connected Accounts (Google OAuth) |
+| **Authentication** | 100% | ✅ เสร็จสมบูรณ์ - Signup, Login, OAuth, Password Reset |
+| **Bookings** | 90% | ✅ ระบบจองครบ - ไม่มีระบบยกเลิก (ตามนโยบายธุรกิจ) |
 
-### **ความสมบูรณ์โดยรวม: 50-60%**
+### **ความสมบูรณ์โดยรวม: 65-70%**
 
 ---
 
@@ -628,22 +642,22 @@
 #### Database Tables
 - [x] สร้างตาราง `user_favorites` - รายการโปรด ✅
 - [x] สร้างตาราง `notifications` - การแจ้งเตือนในแอป ✅
-- [ ] สร้างตาราง `articles` - บทความ
-- [ ] สร้างตาราง `products` - สินค้า
-  - [ ] สร้าง product_categories
-  - [ ] สร้าง product_variants
-  - [ ] สร้าง product_images
-- [ ] สร้างตาราง `events` - อีเวนต์
-  - [ ] สร้าง event_tickets
-  - [ ] สร้าง event_categories
-- [ ] สร้างตาราง `analytics_events` - เก็บข้อมูลการใช้งาน
-- [ ] สร้างตาราง `affiliate_conversions` - ติดตาม conversion
+- [x] สร้างตาราง `articles` - บทความ ✅
+- [x] สร้างตาราง `products` - สินค้า ✅
+  - [x] สร้าง product_categories ✅
+  - [x] สร้าง product_variants ✅
+  - [x] สร้าง product_images ✅
+- [x] สร้างตาราง `events` - อีเวนต์ ✅
+  - [x] สร้าง event_tickets ✅
+  - [x] สร้าง event_categories ✅
+- [x] สร้างตาราง `analytics_events` - เก็บข้อมูลการใช้งาน ✅
+- [x] สร้างตาราง `affiliate_conversions` - ติดตาม conversion ✅
 
 #### API Endpoints - Favorites (✅ เสร็จแล้ว)
 - [x] POST `/api/favorites` - เพิ่มรายการโปรด ✅
 - [x] GET `/api/favorites` - ดูรายการโปรด ✅
 - [x] DELETE `/api/favorites` - ลบรายการโปรด ✅
-- [ ] GET `/api/favorites/check` - เช็คว่าเป็นรายการโปรดหรือไม่ (optional - สามารถใช้ GET ได้)
+- [x] GET `/api/favorites/check` - เช็คว่าเป็นรายการโปรดหรือไม่ ✅
 
 #### API Endpoints - Connected Accounts (✅ เสร็จแล้ว)
 - [x] GET `/api/users/connected-accounts` - ดูบัญชีที่เชื่อมต่อ ✅
@@ -656,13 +670,13 @@
 - [x] POST `/api/notifications/mark-all-read` - อ่านทั้งหมด ✅
 - [x] DELETE `/api/notifications/[id]` - ลบการแจ้งเตือน ✅
 
-#### API Endpoints - Articles
-- [ ] POST `/api/articles` - สร้างบทความ (Admin)
-- [ ] GET `/api/articles` - ดูบทความทั้งหมด
-- [ ] GET `/api/articles/[slug]` - ดูบทความเดียว
-- [ ] PUT `/api/articles/[id]` - แก้ไขบทความ
-- [ ] DELETE `/api/articles/[id]` - ลบบทความ
-- [ ] POST `/api/articles/[id]/publish` - เผยแพร่บทความ
+#### API Endpoints - Articles (✅ เสร็จแล้ว)
+- [x] POST `/api/articles` - สร้างบทความ (Admin) ✅
+- [x] GET `/api/articles` - ดูบทความทั้งหมด ✅
+- [x] GET `/api/articles/[slug]` - ดูบทความเดียว ✅
+- [x] PUT `/api/articles/[id]` - แก้ไขบทความ ✅
+- [x] DELETE `/api/articles/[id]` - ลบบทความ ✅
+- [x] POST `/api/articles/[id]/publish` - เผยแพร่บทความ ✅
 
 #### API Endpoints - Products
 - [ ] POST `/api/products` - สร้างสินค้า (Admin)
@@ -680,15 +694,42 @@
 - [ ] DELETE `/api/events/[id]` - ลบอีเวนต์
 - [ ] POST `/api/events/[id]/book` - จองตั๋ว
 
-#### API Endpoints - Admin
+#### API Endpoints - Tickets
+- [ ] POST `/api/tickets` - สร้าง ticket booking
+- [ ] GET `/api/tickets` - ดู user tickets
+- [ ] GET `/api/tickets/[id]` - ดู ticket details
+- [ ] POST `/api/tickets/[id]/check-in` - Check-in ticket
+
+#### API Endpoints - Analytics
+- [ ] GET `/api/analytics` - Analytics events
+- [ ] POST `/api/analytics` - Track event
+
+#### API Endpoints - Search
+- [ ] GET `/api/search` - Advanced search
+- [ ] GET `/api/search/suggestions` - Search suggestions
+
+#### API Endpoints - Admin Analytics (🔴 CRITICAL)
 - [ ] GET `/api/admin/analytics` - ข้อมูล analytics จริง - **Critical: ต้องสร้างเพื่อแก้ Analytics Page**
+  - [ ] Query ข้อมูลผู้ใช้ใหม่เดือนนี้
+  - [ ] Query ข้อมูลยิมใหม่เดือนนี้
+  - [ ] Query ข้อมูลการจองเดือนนี้
+  - [ ] Query ข้อมูลรายได้เดือนนี้
+  - [ ] Query ข้อมูลผู้ใช้ทั้งหมด
+  - [ ] เพิ่มกราฟ/แผนภูมิ (Chart.js/Recharts)
+  - [ ] เพิ่มตัวกรองช่วงวันที่
+  - [ ] Query กิจกรรมล่าสุด
+
+#### API Endpoints - Admin Reports
 - [ ] GET `/api/admin/reports/bookings` - รายงานการจอง
 - [ ] GET `/api/admin/reports/revenue` - รายงานรายได้
 - [ ] GET `/api/admin/reports/users` - รายงานผู้ใช้
-- [ ] POST `/api/admin/reports/export` - Export รายงาน (PDF/CSV)
+- [x] POST `/api/admin/reports/export` - Export รายงาน (PDF/CSV) ✅
+
+#### API Endpoints - Admin Promotions
 - [ ] GET `/api/admin/promotions` - ดูโปรโมชั่น
 - [ ] POST `/api/admin/promotions` - สร้างโปรโมชั่น
 - [ ] PUT `/api/admin/promotions/[id]` - แก้ไขโปรโมชั่น
+- [ ] DELETE `/api/admin/promotions/[id]` - ลบโปรโมชั่น
 
 #### API Endpoints - Partner Analytics
 - [ ] GET `/api/partner/analytics` - ข้อมูล analytics จริง - **Critical: ต้องสร้างเพื่อแก้ Partner Analytics Page**
@@ -699,6 +740,11 @@
   - [ ] Query รายได้เดือนนี้
   - [ ] Query กราฟรายได้ (รายเดือน/รายสัปดาห์)
   - [ ] Query บริการยอดนิยม
+
+#### API Endpoints - Partner Payouts
+- [ ] GET `/api/partner/payouts` - ดู payouts
+- [ ] POST `/api/partner/payouts` - Request payout
+- [ ] GET `/api/partner/payouts/[id]` - ดู payout details
 
 #### API Endpoints - Scheduled Tasks
 - [ ] GET/POST `/api/cron/send-booking-reminders` - ส่ง Booking Reminder Emails - **Critical: ต้องสร้าง**
