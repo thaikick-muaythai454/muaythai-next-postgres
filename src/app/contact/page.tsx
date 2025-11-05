@@ -9,6 +9,7 @@ import {
   PaperAirplaneIcon
 } from "@heroicons/react/24/outline";
 import { PageHeader } from "@/components/shared";
+import { ContactMap } from "@/components/shared/maps/ContactMap";
 import { showSuccessToast, showErrorToast } from "@/lib/utils";
 import { validateName, validateEmail, validatePhone, validateSubject, validateMessage } from "@/lib/utils/validation";
 
@@ -422,16 +423,11 @@ export default function ContactPage() {
 
         {/* Map Section */}
         <div className="mt-16">
-          <h2 className="mb-6 font-bold text-2xl text-center">แผนที่สำนักงาน</h2>
-          <div className="bg-zinc-950 p-8 rounded-lg">
-            <div className="flex justify-center items-center bg-zinc-700 rounded-lg aspect-video">
-              <div className="text-center">
-                <MapPinIcon className="mx-auto mb-4 w-16 h-16 text-zinc-500" />
-                <p className="text-zinc-400">แผนที่ Google Maps</p>
-                <p className="text-zinc-500 text-sm">(Map integration coming soon)</p>
-              </div>
-            </div>
-          </div>
+          <ContactMap 
+            address="123 ถนนสุขุมวิท แขวงคลองตัน เขตวัฒนา กรุงเทพฯ 10110"
+            latitude={13.7300}
+            longitude={100.5680}
+          />
         </div>
       </div>
     </div>

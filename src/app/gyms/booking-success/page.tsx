@@ -115,6 +115,28 @@ function BookingSuccessContent() {
 
           if (!bookingError && bookingData) {
             const gyms = Array.isArray(bookingData.gyms) ? bookingData.gyms[0] : bookingData.gyms;
+            
+            // Track booking completion with actual booking data
+            try {
+              const { trackBookingCompletion, trackPaymentSuccess } = await import('@/lib/utils/analytics');
+              if (bookingData.price_paid && gyms) {
+                trackPaymentSuccess(paymentData.id, bookingData.price_paid, bookingData.id);
+                // Get gym_id from the relation
+                const gymId = (typeof gyms === 'object' && gyms !== null && 'id' in gyms) 
+                  ? String((gyms as { id: string }).id) 
+                  : paymentData.metadata?.gymId || '';
+                const packageId = paymentData.metadata?.packageId || '';
+                trackBookingCompletion(
+                  bookingData.id,
+                  gymId,
+                  packageId,
+                  bookingData.price_paid
+                );
+              }
+            } catch (error) {
+              console.warn('Analytics tracking error:', error);
+            }
+            
             const normalized: BookingDetails = {
               id: bookingData.id,
               booking_number: bookingData.booking_number,

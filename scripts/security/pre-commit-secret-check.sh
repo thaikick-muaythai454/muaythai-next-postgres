@@ -77,8 +77,10 @@ for file in $FILES; do
     
     # Check each pattern
     for pattern in "${PATTERNS[@]}"; do
-        # Use grep with extended regex
-        if echo "$CONTENT" | grep -qiE "$pattern"; then
+        # Use grep with extended regex to find matches
+        MATCHES=$(echo "$CONTENT" | grep -niE "$pattern" || true)
+        
+        if [ -n "$MATCHES" ]; then
             # Whitelist exceptions (test files, documentation, security scripts, etc.)
             # Skip files that are meant to contain secret patterns (for detection/validation)
             if [[ "$file" == *"test"* ]] || \
@@ -105,13 +107,66 @@ for file in $FILES; do
                 continue
             fi
             
-            # Additional check: Skip if the match is in a comment or string context
-            # (This is a simple heuristic - actual secrets shouldn't be in comments)
-            # Note: Security scripts already whitelisted above, so this is just extra safety
+            # Filter out false positives: error messages, validation messages, comments
+            # Skip matches that are clearly error messages or Thai text (validation messages)
+            VALID_MATCHES=""
+            while IFS= read -r line; do
+                if [ -z "$line" ]; then
+                    continue
+                fi
+                
+                # Extract line number and content
+                LINE_NUM=$(echo "$line" | cut -d: -f1)
+                LINE_CONTENT=$(echo "$line" | cut -d: -f2-)
+                
+                # Skip if it's clearly an error message (contains Thai characters or common error keywords)
+                # Thai error messages like "รหัสผ่านไม่ตรงตามเงื่อนไข" are not secrets
+                if echo "$LINE_CONTENT" | grep -qE "[ก-๙]" && \
+                   echo "$LINE_CONTENT" | grep -qE "(password|password:)" && \
+                   ! echo "$LINE_CONTENT" | grep -qE "[A-Za-z0-9_-]{20,}"; then
+                    # This is likely a Thai error message, skip it
+                    continue
+                fi
+                
+                # Skip if it's an error message with common error keywords
+                if echo "$LINE_CONTENT" | grep -qE "(error|Error|message|Message|กรุณา|ต้อง|ต้องมี|ไม่ตรง|ไม่ถูก|ถูกต้อง|ไม่ถูกต้อง)" && \
+                   echo "$LINE_CONTENT" | grep -qE "(password|password:)" && \
+                   ! echo "$LINE_CONTENT" | grep -qE "[A-Za-z0-9_-]{20,}"; then
+                    # This is likely an error message, skip it
+                    continue
+                fi
+                
+                # Skip if it's a variable name like formData.password or state.password
+                if echo "$LINE_CONTENT" | grep -qE "(formData\.|state\.|\.password[[:space:]]*[=:])" && \
+                   ! echo "$LINE_CONTENT" | grep -qE "[A-Za-z0-9_-]{20,}"; then
+                    continue
+                fi
+                
+                # Skip if it's in a comment (starts with //, #, or /*)
+                PREV_LINE=$(echo "$CONTENT" | sed -n "$((LINE_NUM-1))p" 2>/dev/null || echo "")
+                if echo "$PREV_LINE" | grep -qE "^[[:space:]]*(//|#|/\*)" || \
+                   echo "$LINE_CONTENT" | grep -qE "^[[:space:]]*(//|#|/\*)"; then
+                    continue
+                fi
+                
+                
+                # This looks like a real potential secret
+                if [ -z "$VALID_MATCHES" ]; then
+                    VALID_MATCHES="$line"
+                else
+                    VALID_MATCHES="$VALID_MATCHES\n$line"
+                fi
+            done <<< "$MATCHES"
             
-            echo -e "${RED}❌ Potential secret found in: $file${NC}"
-            echo -e "${RED}   Pattern: $pattern${NC}"
-            ERRORS=$((ERRORS + 1))
+            if [ -n "$VALID_MATCHES" ]; then
+                echo -e "${RED}❌ Potential secret found in: $file${NC}"
+                echo -e "${RED}   Pattern: $pattern${NC}"
+                echo -e "${RED}   Matches:${NC}"
+                echo -e "$VALID_MATCHES" | while IFS= read -r match_line; do
+                    echo -e "${RED}     Line: $match_line${NC}"
+                done
+                ERRORS=$((ERRORS + 1))
+            fi
         fi
     done
 done

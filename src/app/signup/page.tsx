@@ -349,6 +349,16 @@ export default function SignupPage() {
           return;
         }
 
+        // Track signup with Google Analytics
+        try {
+          const { trackUserSignup } = await import('@/lib/utils/analytics');
+          const signupMethod = data.user.identities?.[0]?.provider || 'email';
+          trackUserSignup(data.user.id, signupMethod);
+        } catch (error) {
+          // Analytics error shouldn't break signup flow
+          console.warn('Analytics tracking error:', error);
+        }
+
         // Signup successful - Get user role and redirect to appropriate dashboard
         // Note: profile and user_role are created automatically by database trigger
         try {

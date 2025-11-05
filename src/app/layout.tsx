@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Bai_Jamjuree } from "next/font/google";
 import "./globals.css";
 import { LayoutWrapper, ErrorBoundary } from "@/components/shared";
+import { GoogleAnalytics } from "@/components/shared/analytics/GoogleAnalytics";
 import { Providers } from "./providers";
 import { FixedBackground } from "@/components/shared/ui";
 import AssetLoader from "@/components/shared/ui/AssetLoader";
@@ -36,6 +37,7 @@ export default function RootLayout({
             </LayoutWrapper>
           </Providers>
         </AssetLoader>
+        <GoogleAnalytics />
       </body>
     </html>
   );
