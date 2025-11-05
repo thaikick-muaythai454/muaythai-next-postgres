@@ -28,6 +28,8 @@
     "supabase:keys": "node scripts/node/get-supabase-keys.js",
     "supabase:test": "node scripts/node/test-supabase-connection.js",
     "supabase:fix-keys": "bash scripts/shell/fix-supabase-keys.sh",
+    "env:setup": "cp .env.example .env.local && echo '✅ Created .env.local from .env.example - Please edit it with your actual values!'",
+    "env:check": "node scripts/node/check-env-production.js",
     "test:smtp": "node scripts/node/test-smtp.js",
     "test:resend": "node scripts/node/test-resend-emails.js",
     "check:env": "node scripts/node/check-env-production.js",

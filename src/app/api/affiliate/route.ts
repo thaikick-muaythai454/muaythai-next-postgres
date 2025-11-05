@@ -9,27 +9,47 @@ const DEFAULT_STATS = {
   referralHistory: []
 };
 
-const calculateStats = (referrals: any[]) => {
+const calculateStats = (conversions: any[], profiles: Record<string, any>) => {
   const now = new Date();
-  const totalReferrals = referrals.length;
-  const totalEarnings = referrals.reduce((sum, ref) => sum + ref.points, 0);
-  const currentMonthReferrals = referrals.filter(ref => {
-    const refDate = new Date(ref.created_at);
-    return refDate.getMonth() === now.getMonth() && refDate.getFullYear() === now.getFullYear();
+  const totalReferrals = conversions.length;
+  // Calculate total earnings from commission_amount (convert to points equivalent or use commission directly)
+  const totalEarnings = conversions.reduce((sum, conv) => sum + (conv.commission_amount || 0), 0);
+  const currentMonthReferrals = conversions.filter(conv => {
+    const convDate = new Date(conv.created_at);
+    return convDate.getMonth() === now.getMonth() && convDate.getFullYear() === now.getFullYear();
   }).length;
+
+  // Calculate conversion rate: confirmed + paid conversions / total conversions
+  const confirmedConversions = conversions.filter(conv => 
+    conv.status === 'confirmed' || conv.status === 'paid'
+  ).length;
+  const conversionRate = totalReferrals > 0 
+    ? Math.round((confirmedConversions / totalReferrals) * 100) 
+    : 0;
 
   return {
     totalReferrals,
     totalEarnings,
     currentMonthReferrals,
-    conversionRate: totalReferrals > 0 ? Math.min(Math.round((totalReferrals / 10) * 100), 100) : 0,
-    referralHistory: referrals.map(ref => ({
-      id: ref.id,
-      referred_user_email: ref.action_description || 'Unknown',
-      status: 'rewarded' as const,
-      points_earned: ref.points,
-      created_at: ref.created_at
-    }))
+    conversionRate,
+    referralHistory: conversions.map(conv => {
+      const profile = conv.referred_user_id ? profiles[conv.referred_user_id] : null;
+      const email = profile?.email || (conv.metadata as any)?.email || 'Unknown';
+      
+      return {
+        id: conv.id,
+        referred_user_email: email,
+        status: conv.status === 'paid' ? 'rewarded' as const : 
+                conv.status === 'confirmed' ? 'completed' as const : 
+                'pending' as const,
+        points_earned: conv.commission_amount || 0,
+        created_at: conv.created_at,
+        conversion_type: conv.conversion_type,
+        conversion_value: conv.conversion_value,
+        commission_amount: conv.commission_amount,
+        source: conv.referral_source || 'Direct'
+      };
+    })
   };
 };
 
@@ -42,15 +62,52 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { data: referrals } = await supabase
-      .from('points_history')
+    // Query affiliate_conversions table instead of points_history
+    const { data: conversions, error: conversionsError } = await supabase
+      .from('affiliate_conversions')
       .select('*')
-      .eq('user_id', user.id)
-      .eq('action_type', 'referral')
+      .eq('affiliate_user_id', user.id)
       .order('created_at', { ascending: false });
 
-    return NextResponse.json(referrals ? calculateStats(referrals) : DEFAULT_STATS);
+    if (conversionsError) {
+      console.error('Error fetching affiliate conversions:', conversionsError);
+      return NextResponse.json({ error: 'Failed to fetch affiliate data' }, { status: 500 });
+    }
+
+    // Get user profiles for referred users to get emails
+    const referredUserIds = conversions
+      ?.filter(conv => conv.referred_user_id)
+      .map(conv => conv.referred_user_id) || [];
+    
+    const profiles: Record<string, any> = {};
+    
+    if (referredUserIds.length > 0) {
+      // Get profiles for referred users
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('user_id, username, full_name')
+        .in('user_id', referredUserIds);
+
+      if (profileData) {
+        // Get user emails from auth (we'll need to use admin API or store in metadata)
+        // For now, use username or full_name as fallback
+        profileData.forEach(profile => {
+          profiles[profile.user_id] = {
+            email: profile.username || profile.full_name || 'Unknown',
+            username: profile.username,
+            full_name: profile.full_name
+          };
+        });
+      }
+    }
+
+    return NextResponse.json(
+      conversions && conversions.length > 0 
+        ? calculateStats(conversions, profiles) 
+        : DEFAULT_STATS
+    );
   } catch (error) {
+    console.error('Error in GET /api/affiliate:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
