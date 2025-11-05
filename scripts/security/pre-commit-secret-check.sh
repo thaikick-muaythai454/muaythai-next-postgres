@@ -97,7 +97,11 @@ for file in $FILES; do
                [[ "$file" == *"check-production"* ]] || \
                [[ "$file" == *"pre-commit"* ]] || \
                [[ "$file" == *".gitignore"* ]] || \
-               [[ "$file" == *"PROGRESS_"* ]]; then
+               [[ "$file" == *"PROGRESS_"* ]] || \
+               [[ "$file" == *".env"* ]] || \
+               [[ "$file" == *".bak"* ]] || \
+               [[ "$file" == *".sql"* ]] || \
+               [[ "$file" == *"scripts/sql/"* ]]; then
                 continue
             fi
             

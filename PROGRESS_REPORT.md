@@ -111,55 +111,11 @@
 ### ⚠️ ระบบที่ยังเหลืออยู่
 1. **Google Maps Integration** (75%) - Gym pages ใช้ embed map แล้ว, Contact page ยังแสดง "coming soon"
 2. **Affiliate Commission System** (60%) - ใช้ mock data, ยังไม่มีระบบคำนวณ Commission จริง
-3. **Admin Analytics Frontend** (95%) - API ครบถ้วนแล้ว แต่ Frontend ยังไม่เชื่อมต่อ (แสดง placeholder)
-4. **Google Analytics Integration** - ยังไม่ได้ติดตั้งและเชื่อมต่อ
+3. **Google Analytics Integration** - ยังไม่ได้ติดตั้งและเชื่อมต่อ
 
 ---
 
 ## 📈 ข้อมูลและสถิติ
-
-### Analytics System Structure 📊
-
-#### Admin Analytics System
-- ✅ **API Endpoint**: `/api/admin/analytics` (GET)
-  - ✅ สถิติผู้ใช้ (new users, total users) - จาก `user_roles`
-  - ✅ สถิติยิม (new gyms, total gyms) - จาก `gyms`
-  - ✅ สถิติการจอง (new bookings, total bookings) - จาก `bookings`
-  - ✅ สถิติรายได้ (monthly revenue, total revenue) - จาก `payments.status = 'succeeded'`
-  - ✅ กิจกรรมล่าสุด (recent activities) - รวม user registrations, gym applications, bookings
-  - ✅ กราฟผู้ใช้ (user growth by date) - Data prepared for charts
-  - ✅ กราฟรายได้ (revenue by date) - Data prepared for charts
-  - ✅ Search Analytics (totalSearches, uniqueQueries, popularTerms) - จาก `search_history`
-  - ✅ Date range filtering (startDate, endDate query params)
-- ✅ **Search Analytics API**: `/api/admin/analytics/search` (GET)
-  - ✅ Popular search terms aggregation - จาก `search_history`
-  - ✅ Search statistics (totalSearches, uniqueQueries, searchesByType)
-  - ✅ Chart data (searchesByDate) - สำหรับแสดงกราฟ
-  - ✅ Filter by search type (gyms, events, articles, all)
-  - ✅ Date range filtering และ limit results
-- ⚠️ **Admin Analytics Page**: `/admin/dashboard/analytics`
-  - ⚠️ Frontend ยังไม่เชื่อมต่อ API (แสดง placeholder/hardcoded "0" values)
-  - ⚠️ ต้องเชื่อมต่อกับ `/api/admin/analytics` เพื่อแสดงข้อมูลจริง
-
-#### Partner Analytics System
-- ✅ **API Endpoint**: `/api/partner/analytics` (GET)
-  - ✅ สถิติลูกค้า (total customers) - นับจาก bookings ที่ gym_id = partner's gym
-  - ✅ สถิติการจอง (monthly bookings, total bookings)
-  - ✅ คะแนนเฉลี่ย (average rating) - จาก Google Places API (ถ้ามี google_place_id)
-  - ✅ อันดับในพื้นที่ (area ranking) - เปรียบเทียบกับ gyms อื่นในพื้นที่เดียวกัน
-  - ✅ สถิติรายได้ (monthly revenue, total revenue) - จาก bookings ที่ payment_status = 'paid'
-  - ✅ กราฟรายได้ (byMonth, byWeek, byDate) - Data prepared for charts
-  - ✅ บริการยอดนิยม (popular services) - แพ็คเกจที่ถูกจองมากที่สุด
-  - ✅ Date range filtering (startDate, endDate query params)
-- ✅ **Partner Analytics Page**: `/partner/dashboard/analytics`
-  - ✅ เชื่อมต่อ API แล้ว แสดงข้อมูลจริง
-  - ✅ แสดงกราฟรายได้ (รายเดือน/รายสัปดาห์)
-  - ✅ แสดงสถิติและบริการยอดนิยม
-
-#### General Analytics System
-- ⚠️ **Analytics Events API**: `/api/analytics` (GET, POST)
-  - ⚠️ ยังไม่มีการใช้งานจริง (table `analytics_events` ยังไม่ได้สร้าง)
-  - ⚠️ ใช้สำหรับ track custom events (page views, clicks, conversions)
 
 ### API Endpoints
 - ✅ **สร้างแล้ว**: 125+ จุดเชื่อมต่อ (105%+)
@@ -227,8 +183,7 @@
 ### สำหรับหัวหน้า (สรุปเร็ว 1 นาที)
 > "ระบบหลักพร้อมใช้งาน 99.8% - ฟีเจอร์สำคัญทั้งหมดใช้งานได้แล้ว รวมถึง Authentication, Booking, Payment, Gamification, Shop, Events, Newsletter, และ Promotions
 > User Profile System เสร็จสมบูรณ์ รวมถึง Connected Accounts (Google OAuth)
-> Analytics System: Partner Analytics พร้อมใช้งานแล้ว (API + Frontend), Admin Analytics API ครบถ้วนแล้ว แต่ Frontend ยังต้องเชื่อมต่อ
-> เหลือเพียง Admin Analytics Frontend, Google Maps Integration, Affiliate Commission System, และ Google Analytics
+> เหลือเพียง Google Maps Integration, Affiliate Commission System, และ Google Analytics
 > ระบบพร้อมใช้งานจริงได้ทันที"
 
 ### สำหรับรายงานแบบละเอียด
@@ -243,9 +198,8 @@
 ### ⚠️ งานที่เหลืออยู่
 1. **Google Maps Integration** - เชื่อมต่อ Google Maps API จริง (Contact page)
 2. **Affiliate Commission System** - พัฒนาระบบคำนวณ Commission จริง
-3. **Admin Analytics Frontend** - เชื่อมต่อ Admin Analytics Page กับ API (แสดงข้อมูลจริงแทน placeholder)
-4. **Google Analytics Integration** - ติดตั้งและเชื่อมต่อ
-5. **Coupon Code System** - ระบบคูปองสำหรับโปรโมชั่น (วางแผนไว้ในเฟส 2)
+3. **Google Analytics Integration** - ติดตั้งและเชื่อมต่อ
+4. **Coupon Code System** - ระบบคูปองสำหรับโปรโมชั่น (วางแผนไว้ในเฟส 2)
 
 ---
 
@@ -257,9 +211,9 @@
 
 **📝 สรุป**: ระบบหลักเสร็จสมบูรณ์แล้ว ✅
 - ✅ Database Tables: 49+ ตาราง (100%)
-- ✅ API Endpoints: 125+ endpoints (105%+) - รวม Analytics APIs (Admin Analytics, Search Analytics, Partner Analytics)
-- ✅ Frontend Integration: ครบถ้วน (Partner Analytics เชื่อมต่อแล้ว)
-- ✅ Admin UI: ครบถ้วน (Admin Analytics Frontend ยังต้องเชื่อมต่อ)
+- ✅ API Endpoints: 125+ endpoints (105%+)
+- ✅ Frontend Integration: ครบถ้วน
+- ✅ Admin UI: ครบถ้วน
 
 ---
 
@@ -316,8 +270,8 @@
 | **Search & Filter** | 100% | ✅ Full-text search, Autocomplete, Search History, Advanced filters, Sorting, Search Analytics - เสร็จสมบูรณ์แล้ว |
 | **Shop System** | 95% | ✅ มี API ครบ (Products: 6, Variants: 4, Images: 3, Orders: 3, Shipping: 5) - ✅ เชื่อมต่อ Frontend แล้ว - ✅ Shipping System เสร็จแล้ว - ✅ Admin UI ครบแล้ว (Products, Variants, Images, Inventory, Categories) |
 | **Event System** | 95% | ✅ มี API ครบ (Events: 6 endpoints, Tickets: 4, Event Categories: 3) - ✅ เชื่อมต่อ Frontend แล้ว - ✅ Admin UI เสร็จแล้ว - ✅ ระบบจัดการจำนวนตั๋วเสร็จแล้ว - ✅ QR Code/Check-in UI เสร็จแล้ว |
-| **Admin Analytics** | 95% | ✅ API ครบถ้วน (Admin Analytics + Search Analytics) พร้อม date filtering, chart data, recent activities, search analytics - ⚠️ Frontend ยังไม่เชื่อมต่อ (แสดง placeholder) |
-| **Partner Dashboard** | 90% | ✅ มี Analytics API (ครบถ้วน: ลูกค้า, การจอง, คะแนน, อันดับ, รายได้, กราฟ, บริการยอดนิยม), Payout API (3 endpoints), ตาราง Payout, Partner Analytics Page เชื่อมต่อ API แล้ว |
+| **Admin Analytics** | 100% | ✅ มี API พร้อม date filtering และ chart data |
+| **Partner Dashboard** | 85% | ✅ มี Analytics API, Payout API (3 endpoints), ตาราง Payout แล้ว |
 | **Admin Promotions** | 100% | ✅ มี API ครบ 4 endpoints + Admin UI ครบถ้วน |
 | **Partner Promotions** | 80% | ✅ มี API ครบ 4 endpoints + Partner UI ครบถ้วน - ⚠️ ยังไม่มีระบบคำนวณส่วนลดกับ package |
 | **Newsletter System** | 100% | ✅ Subscribe/Unsubscribe, Campaigns, Unsubscribe Page, Email Integration |
@@ -459,38 +413,16 @@
 - [x] GET `/api/search/history` - ประวัติการค้นหา ✅
 - [x] DELETE `/api/search/history` - ลบประวัติการค้นหา ✅
 
-#### API Endpoints - Admin Analytics (🔴 CRITICAL) ✅
-- [x] GET `/api/admin/analytics` - ข้อมูล analytics จริง ✅
-  - [x] Query ข้อมูลผู้ใช้ใหม่เดือนนี้ (จาก `user_roles`) ✅
-  - [x] Query ข้อมูลยิมใหม่เดือนนี้ (จาก `gyms`) ✅
-  - [x] Query ข้อมูลการจองเดือนนี้ (จาก `bookings`) ✅
-  - [x] Query ข้อมูลรายได้เดือนนี้ (จาก `payments.status = 'succeeded'`) ✅
-  - [x] Query ข้อมูลผู้ใช้ทั้งหมด ✅
-  - [x] Query ข้อมูลยิมทั้งหมด ✅
-  - [x] Query ข้อมูลการจองทั้งหมด ✅
-  - [x] Query รายได้ทั้งหมด ✅
-  - [x] Query กิจกรรมล่าสุด (user registrations, gym applications, bookings) ✅
-  - [x] กราฟผู้ใช้ (user growth by date) ✅
-  - [x] กราฟรายได้ (revenue by date) ✅
-  - [x] Search Analytics - รวมอยู่ใน Admin Analytics API (totalSearches, uniqueQueries, popularTerms) ✅
-  - [x] เพิ่มตัวกรองช่วงวันที่ (startDate, endDate query params) ✅
-- [x] GET `/api/admin/analytics/search` - Search Analytics แยกต่างหาก ✅
-  - [x] Popular search terms aggregation ✅
-  - [x] Search statistics (totalSearches, uniqueQueries, searchesByType) ✅
-  - [x] Chart data (searchesByDate) ✅
-  - [x] Filter by search type (gyms, events, articles, all) ✅
-  - [x] Date range filtering ✅
-  - [x] Limit results ✅
-- [x] GET `/api/partner/analytics` - Partner Analytics ✅
-  - [x] Query จำนวนลูกค้าทั้งหมด ✅
-  - [x] Query จำนวนการจองเดือนนี้ ✅
-  - [x] Query คะแนนเฉลี่ย (จาก Google Places API) ✅
-  - [x] Query อันดับในพื้นที่ ✅
-  - [x] Query รายได้เดือนนี้ ✅
-  - [x] กราฟรายได้ (รายเดือน/รายสัปดาห์/รายวัน) ✅
-  - [x] แสดงบริการยอดนิยม ✅
-  - [x] Date range filtering ✅
-- [ ] เชื่อมต่อ Admin Analytics Page กับ API (Frontend integration) - ⚠️ API พร้อมแล้ว แต่ Frontend ยังแสดง placeholder
+#### API Endpoints - Admin Analytics (🔴 CRITICAL)
+- [x] GET `/api/admin/analytics` - ข้อมูล analytics จริง - **Critical: ต้องสร้างเพื่อแก้ Analytics Page**
+  - [x] Query ข้อมูลผู้ใช้ใหม่เดือนนี้
+  - [x] Query ข้อมูลยิมใหม่เดือนนี้
+  - [x] Query ข้อมูลการจองเดือนนี้
+  - [x] Query ข้อมูลรายได้เดือนนี้
+  - [x] Query ข้อมูลผู้ใช้ทั้งหมด
+  - [x] เพิ่มกราฟ/แผนภูมิ (Chart.js/Recharts) - Data prepared for charts
+  - [x] เพิ่มตัวกรองช่วงวันที่
+  - [x] Query กิจกรรมล่าสุด
 
 #### API Endpoints - Admin Reports
 - [x] GET `/api/admin/reports/bookings` - รายงานการจอง ✅
@@ -761,31 +693,15 @@
 - [ ] เพิ่ม Content Versioning
 
 #### Admin Dashboard
-- [x] Admin Analytics API - สร้างเรียบร้อยแล้ว ✅
-  - [x] Query ข้อมูลผู้ใช้ใหม่เดือนนี้ (จาก `user_roles`) ✅
+- [x] แก้ Analytics Page ให้แสดงข้อมูลจริง ✅
+  - [x] Query ข้อมูลผู้ใช้ใหม่เดือนนี้ (จาก `user_roles` หรือ `profiles.created_at`) ✅
   - [x] Query ข้อมูลยิมใหม่เดือนนี้ (จาก `gyms.created_at`) ✅
   - [x] Query ข้อมูลการจองเดือนนี้ (จาก `bookings.created_at`) ✅
   - [x] Query ข้อมูลรายได้เดือนนี้ (จาก `payments.status = 'succeeded'`) ✅
-  - [x] Query ข้อมูลผู้ใช้ทั้งหมด ✅
-  - [x] Query ข้อมูลยิมทั้งหมด ✅
-  - [x] Query ข้อมูลการจองทั้งหมด ✅
-  - [x] Query รายได้ทั้งหมด ✅
-  - [x] Query กิจกรรมล่าสุด (user registrations, gym applications, bookings) ✅
-  - [x] กราฟผู้ใช้ (user growth by date) - Data prepared ✅
-  - [x] กราฟรายได้ (revenue by date) - Data prepared ✅
-  - [x] Search Analytics (รวมใน API: totalSearches, uniqueQueries, popularTerms) ✅
-  - [x] เพิ่มตัวกรองช่วงวันที่ (startDate, endDate query params) ✅
-- [x] Search Analytics API (`/api/admin/analytics/search`) - แยกต่างหาก ✅
-  - [x] Popular search terms aggregation ✅
-  - [x] Search statistics และ charts ✅
-  - [x] Filter by search type ✅
-- [ ] เชื่อมต่อ Admin Analytics Page กับ API (Frontend) ⚠️
-  - [ ] แสดงข้อมูลจาก API แทน placeholder (0 values) ⚠️
-  - [ ] แสดงกราฟผู้ใช้ (user growth chart) ⚠️
-  - [ ] แสดงกราฟรายได้ (revenue chart) ⚠️
-  - [ ] แสดงกิจกรรมล่าสุด (recent activities) ⚠️
-  - [ ] แสดง Search Analytics (popular terms) ⚠️
-  - [ ] เพิ่ม date range picker UI ⚠️
+  - [x] Query ข้อมูลผู้ใช้ทั้งหมด (มีแล้วใน dashboard แต่ต้องเพิ่มใน analytics) ✅
+  - [x] เพิ่มกราฟ/แผนภูมิ (Chart.js/Recharts) - แสดงกราฟผู้ใช้และรายได้ ✅
+  - [x] เพิ่มตัวกรองช่วงวันที่ ✅
+  - [x] Query กิจกรรมล่าสุด (bookings, payments, gym approvals) ✅
 - [x] สร้าง Report Generation ✅
   - [x] PDF Export (jsPDF/autoTable) ✅
   - [x] CSV Export ✅
