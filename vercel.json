@@ -1,15 +1,11 @@
 {
   "crons": [
     {
-      "path": "/api/cron/send-booking-reminders",
+      "path": "/api/cron/unified",
       "schedule": "0 9 * * *"
     },
     {
-      "path": "/api/cron/process-email-queue",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/generate-scheduled-reports",
+      "path": "/api/cron/unified",
       "schedule": "0 * * * *"
     }
   ]
