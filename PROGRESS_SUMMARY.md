@@ -18,8 +18,8 @@
 - ✅ **Newsletter System**: เสร็จสมบูรณ์ 100% (สมัครรับ/ยกเลิก, Campaigns, Unsubscribe)
 - ✅ **Partner Promotions**: เสร็จสมบูรณ์ 100% (API + Frontend UI)
 - ✅ **Email Service Migration**: 98% เสร็จ (ใช้ Resend แล้ว)
-- ✅ **Migration Optimization**: ลดขนาด migrations ได้ 15.8 KB (6.8%)
-- ✅ **Code Cleanup**: ลบไฟล์ที่ไม่จำเป็น (ลดขนาดได้ 32 KB)
+- ✅ **Migration Optimization**: ลดขนาด migrations
+- ✅ **Code Cleanup**: ลบไฟล์ที่ไม่จำเป็น
 
 **สิ่งที่ยังเหลือ**:
 - ⚠️ Affiliate Commission System (ใช้ mock data)

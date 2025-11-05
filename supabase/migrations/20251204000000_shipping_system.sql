@@ -45,7 +45,7 @@ ALTER TABLE product_orders
 -- Create shipping history table for tracking updates
 CREATE TABLE IF NOT EXISTS shipping_history (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  product_order_id UUID NOT NULL REFERENCES product_orders(order_id) ON DELETE CASCADE,
+  product_order_id UUID NOT NULL REFERENCES product_orders(id) ON DELETE CASCADE,
   status shipping_status NOT NULL,
   location TEXT,
   description TEXT,
@@ -96,7 +96,7 @@ CREATE POLICY "Admins can view all shipping methods"
   ON shipping_methods FOR SELECT
   USING (
     EXISTS (
-      SELECT 1 FROM user_profiles
+      SELECT 1 FROM user_roles
       WHERE user_id = auth.uid() AND role = 'admin'
     )
   );
@@ -105,7 +105,7 @@ CREATE POLICY "Admins can manage shipping methods"
   ON shipping_methods FOR ALL
   USING (
     EXISTS (
-      SELECT 1 FROM user_profiles
+      SELECT 1 FROM user_roles
       WHERE user_id = auth.uid() AND role = 'admin'
     )
   );
@@ -125,7 +125,7 @@ CREATE POLICY "Admins can view all shipping history"
   ON shipping_history FOR SELECT
   USING (
     EXISTS (
-      SELECT 1 FROM user_profiles
+      SELECT 1 FROM user_roles
       WHERE user_id = auth.uid() AND role = 'admin'
     )
   );
@@ -134,7 +134,7 @@ CREATE POLICY "Admins can insert shipping history"
   ON shipping_history FOR INSERT
   WITH CHECK (
     EXISTS (
-      SELECT 1 FROM user_profiles
+      SELECT 1 FROM user_roles
       WHERE user_id = auth.uid() AND role = 'admin'
     )
   );

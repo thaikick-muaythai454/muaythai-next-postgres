@@ -126,8 +126,21 @@ export async function loginUser(page: Page, identifier: string, password: string
   // Submit the form
   await page.locator('button[type="submit"]').click();
   
-  // Wait for navigation
-  await page.waitForTimeout(4000);
+  // Wait for navigation - check if we're redirected away from login
+  try {
+    await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 10000 });
+    console.log('Login successful, redirected to:', page.url());
+  } catch (error) {
+    // If still on login page, wait a bit more
+    await page.waitForTimeout(3000);
+    const currentUrl = page.url();
+    if (currentUrl.includes('/login')) {
+      console.log('Warning: Still on login page after login attempt');
+    }
+  }
+  
+  // Additional wait for session to be established
+  await page.waitForTimeout(2000);
 }
 
 /**
@@ -154,8 +167,87 @@ export async function logoutUser(page: Page): Promise<void> {
 export async function applyForPartner(page: Page, gymData: GymApplicationData): Promise<void> {
   await page.goto('/partner/apply');
   
-  // Wait for the form to load completely
-  await page.waitForSelector('input[name="gymName"]', { timeout: 15000, state: 'visible' });
+  // Wait for navigation to complete and check if we're redirected to login
+  try {
+    await page.waitForURL((url) => {
+      return url.pathname === '/partner/apply' || url.pathname.includes('/login');
+    }, { timeout: 15000 });
+    
+    const currentUrl = page.url();
+    if (currentUrl.includes('/login')) {
+      throw new Error('Redirected to login page - authentication may have failed');
+    }
+    
+    console.log('Navigated to partner apply page:', currentUrl);
+  } catch (error) {
+    console.error('Navigation error:', error);
+    throw error;
+  }
+  
+  // Wait for page to be fully loaded - check for loading state to disappear
+  // The page shows LoadingView when isLoading is true, which contains "กำลังโหลด" text
+  try {
+    // Wait for loading text to disappear (indicating page has loaded)
+    // or form to appear (whichever comes first)
+    await Promise.race([
+      // Option 1: Wait for loading text to disappear
+      page.waitForSelector('text=กำลังโหลด', { 
+        timeout: 10000, 
+        state: 'hidden' 
+      }).catch(() => {
+        // If loading text doesn't exist, check if form is already visible
+        return page.waitForSelector('input[name="gymName"]', { 
+          timeout: 5000, 
+          state: 'visible' 
+        });
+      }),
+      // Option 2: Wait for form to appear directly
+      page.waitForSelector('input[name="gymName"]', { 
+        timeout: 10000, 
+        state: 'visible' 
+      }),
+    ]);
+    
+    console.log('Page loading completed');
+    
+    // Additional wait for client-side hydration
+    await page.waitForTimeout(2000);
+  } catch (error) {
+    console.log('Waiting for page to load... (loading indicator may not be present)');
+    // Continue anyway - form might be loading
+    await page.waitForTimeout(2000);
+  }
+  
+  // Wait for the form to load completely - increased timeout and better error handling
+  try {
+    // Wait for form container or specific form elements
+    await page.waitForSelector('input[name="gymName"]', { timeout: 30000, state: 'visible' });
+    console.log('Form loaded successfully');
+  } catch (error) {
+    // Take screenshot for debugging
+    const currentUrl = page.url();
+    const pageTitle = await page.title();
+    const pageContent = await page.textContent('body');
+    
+    console.error(`Failed to find gymName input.`);
+    console.error(`Current URL: ${currentUrl}`);
+    console.error(`Page title: ${pageTitle}`);
+    console.error(`Page contains "login": ${pageContent?.includes('login') || pageContent?.includes('เข้าสู่ระบบ')}`);
+    
+    // Check if we're on a different page
+    if (currentUrl.includes('/login')) {
+      throw new Error('Page redirected to login - user may not be authenticated. Please check login was successful.');
+    }
+    
+    // Check if page is still loading
+    const isLoadingVisible = await page.locator('[aria-busy="true"], .loading, [data-testid="loading"]').isVisible().catch(() => false);
+    if (isLoadingVisible) {
+      throw new Error('Page is still loading - form may not have rendered yet');
+    }
+    
+    throw error;
+  }
+  
   await page.waitForTimeout(1000); // Wait for any client-side hydration
   
   // Fill in basic information with locator (better auto-waiting)

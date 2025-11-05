@@ -24,16 +24,22 @@ export async function GET(request: NextRequest) {
     if (leaderboardId) {
       // Get specific leaderboard data
       data = await getLeaderboardData(leaderboardId, user.id);
+      
+      // If leaderboard not found, return 404 instead of 500
+      if (!data) {
+        return NextResponse.json(
+          { error: 'Leaderboard not found', success: false },
+          { status: 404 }
+        );
+      }
     } else {
       // Get all leaderboards
       data = await getAllLeaderboards();
-    }
-
-    if (!data) {
-      return NextResponse.json(
-        { error: 'Failed to get leaderboard data' },
-        { status: 500 }
-      );
+      
+      // Return empty array if no leaderboards (not an error)
+      if (!data) {
+        data = [];
+      }
     }
 
     return NextResponse.json({
@@ -41,10 +47,17 @@ export async function GET(request: NextRequest) {
       error: null,
       success: true,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error getting leaderboards:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    
     return NextResponse.json(
-      { error: 'Internal server error', success: false },
+      { 
+        error: 'Internal server error',
+        message: errorMessage,
+        success: false 
+      },
       { status: 500 }
     );
   }

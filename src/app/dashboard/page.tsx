@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
+import { getUserRole, ROLE_NAMES } from '@/lib/auth/client';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
 import GamificationWidget from '@/components/features/gamification/GamificationWidget';
 import Link from 'next/link';
@@ -18,6 +20,7 @@ import {
   CheckCircleIcon,
 } from '@heroicons/react/24/outline';
 import { User } from '@supabase/supabase-js';
+import type { UserRole } from '@/lib/auth/client';
 
 /**
  * Authenticated User Dashboard
@@ -48,7 +51,9 @@ interface BookingWithGym {
 
 function DashboardContent() {
   const supabase = createClient();
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [gymApplication, setGymApplication] = useState<GymApplication | null>(null);
   const [recentBookings, setRecentBookings] = useState<BookingWithGym[]>([]);
@@ -59,6 +64,25 @@ function DashboardContent() {
       setUser(user);
 
       if (user) {
+        // Fetch user role
+        try {
+          const role = await getUserRole(user.id);
+          setUserRole(role);
+          
+          // Redirect admin and partner users to their respective dashboards
+          if (role === 'admin') {
+            router.push('/admin/dashboard');
+            return;
+          }
+          if (role === 'partner') {
+            router.push('/partner/dashboard');
+            return;
+          }
+        } catch (error) {
+          console.error('Error fetching user role:', error);
+          // Default to authenticated if error
+          setUserRole('authenticated');
+        }
         // Check if user has a gym application
         const { data: gymData } = await supabase
           .from('gyms')
@@ -101,7 +125,7 @@ function DashboardContent() {
       setIsLoading(false);
     }
     loadUser();
-  }, [supabase]);
+  }, [supabase, router]);
 
   // Menu items for sidebar
   const menuItems: MenuItem[] = [
@@ -123,7 +147,7 @@ function DashboardContent() {
         menuItems={menuItems}
         headerTitle="แดชบอร์ด"
         headerSubtitle="จัดการข้อมูลและกิจกรรมของคุณ"
-        roleLabel="ผู้ใช้ทั่วไป"
+        roleLabel={userRole ? ROLE_NAMES[userRole] : "ผู้ใช้ทั่วไป"}
         roleColor="primary"
         userEmail={user?.email}
         showPartnerButton={true}
@@ -140,7 +164,7 @@ function DashboardContent() {
       menuItems={menuItems}
       headerTitle="แดชบอร์ด"
       headerSubtitle="จัดการข้อมูลและกิจกรรมของคุณ"
-      roleLabel="ผู้ใช้ทั่วไป"
+      roleLabel={userRole ? ROLE_NAMES[userRole] : "ผู้ใช้ทั่วไป"}
       roleColor="primary"
       userEmail={user?.email}
       showPartnerButton={!gymApplication}

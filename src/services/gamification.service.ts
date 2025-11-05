@@ -625,31 +625,68 @@ export async function getLeaderboardData(
       .eq('is_active', true)
       .single();
 
-    if (leaderboardError || !leaderboard) {
-      throw new Error('Leaderboard not found');
+    if (leaderboardError) {
+      console.error('Leaderboard query error:', leaderboardError);
+      // PGRST116 = no rows returned (not found)
+      if (leaderboardError.code === 'PGRST116') {
+        return null;
+      }
+      throw leaderboardError;
+    }
+
+    if (!leaderboard) {
+      return null;
     }
 
     // Get leaderboard entries
-    const { data: entries, error: entriesError } = await supabase
+    // First try with join, if fails, get entries without profile data
+    let entries;
+    let entriesError;
+    
+    const { data: entriesWithProfile, error: entriesErrorWithProfile } = await supabase
       .from('leaderboard_entries')
       .select(`
         *,
-        user:profiles(username, full_name, avatar_url)
+        profiles:user_id(username, full_name, avatar_url)
       `)
       .eq('leaderboard_id', leaderboardId)
       .order('rank', { ascending: true })
       .limit(100);
+    
+    if (entriesErrorWithProfile) {
+      // If join fails, try without profile join
+      console.warn('Failed to join profiles, trying without join:', entriesErrorWithProfile.message);
+      const { data: entriesWithoutProfile, error: entriesErrorWithoutProfile } = await supabase
+        .from('leaderboard_entries')
+        .select('*')
+        .eq('leaderboard_id', leaderboardId)
+        .order('rank', { ascending: true })
+        .limit(100);
+      
+      entries = entriesWithoutProfile;
+      entriesError = entriesErrorWithoutProfile;
+    } else {
+      entries = entriesWithProfile;
+      entriesError = null;
+    }
 
     if (entriesError) {
-      throw new Error(`Failed to get leaderboard entries: ${entriesError.message}`);
+      console.error('Leaderboard entries query error:', entriesError);
+      // If entries query fails, return leaderboard with empty entries instead of failing
+      return {
+        leaderboard,
+        entries: [],
+        user_rank: undefined,
+        user_score: undefined,
+      };
     }
 
     // Find user's rank if userId provided
     let userRank: number | undefined;
     let userScore: number | undefined;
     
-    if (userId) {
-      const userEntry = entries?.find(entry => entry.user_id === userId);
+    if (userId && entries) {
+      const userEntry = entries.find((entry: any) => entry.user_id === userId);
       if (userEntry) {
         userRank = userEntry.rank;
         userScore = userEntry.score;

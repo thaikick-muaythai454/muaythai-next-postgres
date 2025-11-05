@@ -4,9 +4,13 @@
  * Test runner for cleanup tool analysis tests
  */
 
-const { spawn } = require('child_process');
-const path = require('path');
-const fs = require('fs');
+import { spawn } from 'child_process';
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 class TestRunner {
   constructor() {
@@ -152,11 +156,15 @@ class TestRunner {
       });
     }
     
-    const successRate = (this.results.passed / this.results.total * 100).toFixed(1);
+    const successRate = this.results.total > 0 
+      ? (this.results.passed / this.results.total * 100).toFixed(1)
+      : '0.0';
     console.log(`\nSuccess rate: ${successRate}%`);
     
-    if (this.results.failed === 0) {
+    if (this.results.failed === 0 && this.results.total > 0) {
       console.log('🎉 All tests passed!');
+    } else if (this.results.total === 0) {
+      console.log('⚠️  No tests to run');
     } else {
       console.log('❌ Some tests failed. Check the output above for details.');
     }
@@ -210,8 +218,9 @@ class TestRunner {
     // Check if source files exist
     const srcDir = path.join(this.rootDir, 'src', 'analysis');
     if (!fs.existsSync(srcDir)) {
-      console.error('❌ Source directory not found: src/analysis');
-      return false;
+      console.warn('⚠️  Source directory not found: src/analysis');
+      console.warn('   Tests will fail if source code is not implemented');
+      // Don't return false here - allow tests to run and fail gracefully
     }
     
     console.log('✅ Environment validation passed');
@@ -282,8 +291,9 @@ process.on('unhandledRejection', (reason, promise) => {
   process.exit(1);
 });
 
-if (require.main === module) {
+// Run main if this is the main module
+if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-module.exports = TestRunner;
+export default TestRunner;

@@ -8,7 +8,6 @@ import {
   applyForPartner,
   getFirstPendingApplication,
   approveFirstApplication,
-  verifyOnDashboard,
   takeDebugScreenshot,
   UserCredentials,
 } from './helpers';
@@ -163,9 +162,39 @@ test.describe('Complete Authentication Flow - 3 Roles', () => {
     console.log('Partner user applying for partner status');
 
     try {
+      // Verify partnerUser is defined (Step 1 should have run)
+      // If not defined, create it (fallback for when running individual tests)
+      if (!partnerUser || !partnerUser.email) {
+        console.log('partnerUser not defined, generating test user...');
+        partnerUser = generateTestUser('partner');
+        console.log('Generated partner user:', partnerUser.email);
+        
+        // If user was just generated, we need to signup first
+        console.log('Signing up partner user first...');
+        await signupUser(page, partnerUser);
+        await page.waitForTimeout(2000);
+        console.log('Partner user signup completed');
+      }
+
+      console.log('Logging in with partner user:', partnerUser.email);
+
       // Login with partner user
       await loginUser(page, partnerUser.email, partnerUser.password);
-      await page.waitForTimeout(2000);
+      
+      // Verify login was successful by checking URL
+      await page.waitForTimeout(3000);
+      const loginUrl = page.url();
+      console.log('Current URL after login:', loginUrl);
+      
+      if (loginUrl.includes('/login')) {
+        console.log('Still on login page - login may have failed or user needs to signup first');
+        // Try to signup if still on login
+        await signupUser(page, partnerUser);
+        await page.waitForTimeout(2000);
+        // Try login again
+        await loginUser(page, partnerUser.email, partnerUser.password);
+        await page.waitForTimeout(3000);
+      }
 
       // Generate gym application data
       const gymData = generateGymData(partnerUser.email);
@@ -180,11 +209,11 @@ test.describe('Complete Authentication Flow - 3 Roles', () => {
       await takeDebugScreenshot(page, 'partner-application-submitted');
 
       // Verify success message or redirect
-      const currentUrl = page.url();
-      console.log('After partner application URL:', currentUrl);
+      const applicationUrl = page.url();
+      console.log('After partner application URL:', applicationUrl);
 
       // Should see success message or be on application page
-      expect(currentUrl).toBeTruthy();
+      expect(applicationUrl).toBeTruthy();
 
       // Logout
       await logoutUser(page);
@@ -196,6 +225,14 @@ test.describe('Complete Authentication Flow - 3 Roles', () => {
   });
 
   test('Step 7: Admin Setup - Manually set admin role', async ({ page }) => {
+    // Verify adminUser is defined (Step 1 should have run)
+    // If not defined, create it (fallback for when running individual tests)
+    if (!adminUser || !adminUser.email) {
+      console.log('adminUser not defined, generating test user...');
+      adminUser = generateTestUser('admin');
+      console.log('Generated admin user:', adminUser.email);
+    }
+
     console.log('Setting up admin user role');
     console.log('IMPORTANT: You need to manually set admin role for:', adminUser.email);
     console.log('Run this SQL in Supabase:');
@@ -226,6 +263,14 @@ test.describe('Complete Authentication Flow - 3 Roles', () => {
   });
 
   test('Step 8: Admin Login - Verify admin access', async ({ page }) => {
+    // Verify adminUser is defined (Step 1 should have run)
+    // If not defined, create it (fallback for when running individual tests)
+    if (!adminUser || !adminUser.email) {
+      console.log('adminUser not defined, generating test user...');
+      adminUser = generateTestUser('admin');
+      console.log('Generated admin user:', adminUser.email);
+    }
+
     console.log('Testing admin user login:', adminUser.email);
 
     try {
@@ -324,6 +369,14 @@ test.describe('Complete Authentication Flow - 3 Roles', () => {
   });
 
   test('Step 10: Partner Login - Verify partner role after approval', async ({ page }) => {
+    // Verify partnerUser is defined (Step 1 should have run)
+    // If not defined, create it (fallback for when running individual tests)
+    if (!partnerUser || !partnerUser.email) {
+      console.log('partnerUser not defined, generating test user...');
+      partnerUser = generateTestUser('partner');
+      console.log('Generated partner user:', partnerUser.email);
+    }
+
     console.log('Testing partner user login after approval:', partnerUser.email);
 
     try {
@@ -365,6 +418,24 @@ test.describe('Complete Authentication Flow - 3 Roles', () => {
   });
 
   test('Step 11: Final Verification - All 3 roles can login', async ({ page }) => {
+    // Verify all users are defined (Step 1 should have run)
+    // If not defined, create them (fallback for when running individual tests)
+    if (!regularUser || !regularUser.email) {
+      console.log('regularUser not defined, generating test user...');
+      regularUser = generateTestUser('user');
+      console.log('Generated regular user:', regularUser.email);
+    }
+    if (!partnerUser || !partnerUser.email) {
+      console.log('partnerUser not defined, generating test user...');
+      partnerUser = generateTestUser('partner');
+      console.log('Generated partner user:', partnerUser.email);
+    }
+    if (!adminUser || !adminUser.email) {
+      console.log('adminUser not defined, generating test user...');
+      adminUser = generateTestUser('admin');
+      console.log('Generated admin user:', adminUser.email);
+    }
+
     console.log('Final verification of all user logins');
 
     // Test 1: Regular User

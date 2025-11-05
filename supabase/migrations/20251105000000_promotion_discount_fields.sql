@@ -45,9 +45,10 @@ ALTER TABLE promotions
 -- ---
 -- PART 3: ADD INDEXES FOR PERFORMANCE
 -- ---
--- Index for querying active promotions with discount by gym and package
+-- Note: Index with gym_id will be added in a later migration when gym_id column is added
+-- Index for querying active promotions with discount by package
 CREATE INDEX IF NOT EXISTS idx_promotions_discount_active 
-  ON promotions(gym_id, package_id, is_active, discount_type) 
+  ON promotions(package_id, is_active, discount_type) 
   WHERE is_active = true AND discount_type IS NOT NULL;
 
 -- Index for querying promotions by package_id

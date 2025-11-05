@@ -97,8 +97,9 @@ CREATE INDEX IF NOT EXISTS idx_email_queue_pending ON email_queue(status, priori
   WHERE status IN ('pending', 'processing');
 
 -- Composite index for efficient queue processing
+-- Note: Cannot use NOW() in index predicate, so we index on status and next_retry_at separately
 CREATE INDEX IF NOT EXISTS idx_email_queue_processing ON email_queue(status, next_retry_at, priority DESC)
-  WHERE status IN ('pending', 'failed') AND (next_retry_at IS NULL OR next_retry_at <= NOW());
+  WHERE status IN ('pending', 'failed');
 
 -- Trigger to update updated_at timestamp
 CREATE TRIGGER update_email_queue_updated_at
