@@ -39,6 +39,13 @@ interface Promotion {
   link_url?: string | null;
   link_text?: string | null;
   gym_id?: string | null;
+  discount_type?: 'percentage' | 'fixed_amount' | null;
+  discount_value?: number | null;
+  package_id?: string | null;
+  min_purchase_amount?: number | null;
+  max_discount_amount?: number | null;
+  max_uses?: number | null;
+  current_uses?: number | null;
   created_at?: string;
   updated_at?: string;
 }
@@ -245,6 +252,7 @@ function PartnerPromotionsContent() {
             <Table aria-label="Promotions table" className="mt-4">
               <TableHeader>
                 <TableColumn>ชื่อโปรโมชั่น</TableColumn>
+                <TableColumn>ส่วนลด</TableColumn>
                 <TableColumn>สถานะ</TableColumn>
                 <TableColumn>วันที่เริ่มต้น</TableColumn>
                 <TableColumn>วันที่สิ้นสุด</TableColumn>
@@ -262,6 +270,24 @@ function PartnerPromotionsContent() {
                           <div className="text-sm text-default-500">{promotion.title_english}</div>
                         )}
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {promotion.discount_type ? (
+                        <div className="flex flex-col gap-1">
+                          <Chip color="primary" variant="flat" size="sm">
+                            {promotion.discount_type === 'percentage' 
+                              ? `${promotion.discount_value}%` 
+                              : `฿${promotion.discount_value?.toLocaleString()}`}
+                          </Chip>
+                          {promotion.max_uses && (
+                            <div className="text-xs text-default-400">
+                              ใช้แล้ว {promotion.current_uses || 0}/{promotion.max_uses}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-default-400 text-sm">ไม่มีส่วนลด</span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">

@@ -189,6 +189,13 @@ export async function POST(request: NextRequest) {
       endDate,
       linkUrl,
       linkText,
+      // Discount fields
+      discountType,
+      discountValue,
+      packageId,
+      minPurchaseAmount,
+      maxDiscountAmount,
+      maxUses,
     } = body;
     
     // Validate required fields
@@ -229,6 +236,94 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Validate discount fields
+    if (discountType !== undefined) {
+      if (discountType !== null && !['percentage', 'fixed_amount'].includes(discountType)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid discount type. Must be "percentage" or "fixed_amount"' },
+          { status: 400 }
+        );
+      }
+
+      // If discountType is set, discountValue must be set
+      if (discountType !== null && (discountValue === undefined || discountValue === null)) {
+        return NextResponse.json(
+          { success: false, error: 'Discount value is required when discount type is set' },
+          { status: 400 }
+        );
+      }
+
+      // Validate discount value
+      if (discountValue !== undefined && discountValue !== null) {
+        const numValue = Number(discountValue);
+        if (isNaN(numValue) || numValue < 0) {
+          return NextResponse.json(
+            { success: false, error: 'Discount value must be a non-negative number' },
+            { status: 400 }
+          );
+        }
+
+        // Validate percentage range
+        if (discountType === 'percentage' && (numValue < 0 || numValue > 100)) {
+          return NextResponse.json(
+            { success: false, error: 'Percentage discount must be between 0 and 100' },
+            { status: 400 }
+          );
+        }
+      }
+    }
+
+    // Validate package_id if provided
+    if (packageId !== undefined && packageId !== null) {
+      // Verify package belongs to the gym
+      const { data: packageData, error: packageError } = await supabase
+        .from('gym_packages')
+        .select('id, gym_id')
+        .eq('id', packageId)
+        .eq('gym_id', gym.id)
+        .maybeSingle();
+
+      if (packageError || !packageData) {
+        return NextResponse.json(
+          { success: false, error: 'Package not found or does not belong to your gym' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate min_purchase_amount
+    if (minPurchaseAmount !== undefined && minPurchaseAmount !== null) {
+      const numValue = Number(minPurchaseAmount);
+      if (isNaN(numValue) || numValue < 0) {
+        return NextResponse.json(
+          { success: false, error: 'Minimum purchase amount must be a non-negative number' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate max_discount_amount
+    if (maxDiscountAmount !== undefined && maxDiscountAmount !== null) {
+      const numValue = Number(maxDiscountAmount);
+      if (isNaN(numValue) || numValue < 0) {
+        return NextResponse.json(
+          { success: false, error: 'Maximum discount amount must be a non-negative number' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate max_uses
+    if (maxUses !== undefined && maxUses !== null) {
+      const numValue = Number(maxUses);
+      if (isNaN(numValue) || numValue <= 0 || !Number.isInteger(numValue)) {
+        return NextResponse.json(
+          { success: false, error: 'Maximum uses must be a positive integer' },
+          { status: 400 }
+        );
+      }
+    }
     
     // Build insert data
     const insertData: Record<string, unknown> = {
@@ -263,6 +358,27 @@ export async function POST(request: NextRequest) {
     if (linkText !== undefined) {
       insertData.link_text = linkText?.trim() || null;
     }
+
+    // Add discount fields
+    if (discountType !== undefined) {
+      insertData.discount_type = discountType || null;
+    }
+    if (discountValue !== undefined) {
+      insertData.discount_value = discountValue !== null ? Number(discountValue) : null;
+    }
+    if (packageId !== undefined) {
+      insertData.package_id = packageId || null;
+    }
+    if (minPurchaseAmount !== undefined) {
+      insertData.min_purchase_amount = minPurchaseAmount !== null ? Number(minPurchaseAmount) : null;
+    }
+    if (maxDiscountAmount !== undefined) {
+      insertData.max_discount_amount = maxDiscountAmount !== null ? Number(maxDiscountAmount) : null;
+    }
+    if (maxUses !== undefined) {
+      insertData.max_uses = maxUses !== null ? Number(maxUses) : null;
+    }
+    // current_uses defaults to 0 in database
     
     // Insert promotion
     const { data: promotion, error: insertError } = await supabase

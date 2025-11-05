@@ -15,6 +15,9 @@ export interface CreateBookingInput {
   start_date: string;
   special_requests?: string;
   payment_method?: string;
+  promotion_id?: string | null;
+  discount_amount?: number | null;
+  price_paid?: number; // If provided, use this instead of calculating from package price
 }
 
 export interface BookingFilters {
@@ -202,6 +205,38 @@ export async function createBooking(data: CreateBookingInput) {
   const end_date = calculateEndDate(data.start_date, gymPackage.duration_months);
   const bookingNumber = generateBookingNumber();
 
+  // Calculate final price (use provided price_paid or calculate from package price)
+  const finalPrice = data.price_paid !== undefined 
+    ? data.price_paid 
+    : gymPackage.price - (data.discount_amount || 0);
+
+  // If promotion_id is provided, verify it exists and increment current_uses
+  if (data.promotion_id) {
+    const { data: promotion, error: promoError } = await supabase
+      .from('promotions')
+      .select('id, max_uses, current_uses')
+      .eq('id', data.promotion_id)
+      .eq('gym_id', data.gym_id)
+      .maybeSingle();
+
+    if (promoError || !promotion) {
+      throw new Error('โปรโมชั่นไม่พบหรือไม่สามารถใช้ได้');
+    }
+
+    // Check if promotion has reached max uses
+    if (promotion.max_uses !== null && promotion.current_uses !== null) {
+      if (promotion.current_uses >= promotion.max_uses) {
+        throw new Error('โปรโมชั่นถูกใช้ครบแล้ว');
+      }
+    }
+
+    // Increment current_uses (this will be done in a transaction ideally, but for now we'll do it here)
+    await supabase
+      .from('promotions')
+      .update({ current_uses: (promotion.current_uses || 0) + 1 })
+      .eq('id', data.promotion_id);
+  }
+
   // Create booking with sanitized data
   const { data: booking, error: bookingError } = await supabase
     .from('bookings')
@@ -215,12 +250,13 @@ export async function createBooking(data: CreateBookingInput) {
       customer_phone: data.customer_phone.trim(),
       start_date: data.start_date,
       end_date,
-      price_paid: gymPackage.price,
+      price_paid: finalPrice,
       package_name: gymPackage.name,
       package_type: gymPackage.package_type,
       duration_months: gymPackage.duration_months,
       special_requests: data.special_requests?.trim() || null,
       payment_method: data.payment_method || null,
+      promotion_id: data.promotion_id || null,
       payment_status: 'pending',
       status: 'pending',
     })

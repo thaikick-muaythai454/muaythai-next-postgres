@@ -10,7 +10,6 @@ import {
   ChevronRightIcon,
   HomeIcon,
   UserIcon,
-  CalendarIcon,
   CreditCardIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
@@ -18,6 +17,7 @@ import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
 import { PaymentWrapper } from "@/components/features/payments";
 import { validateName, validateEmail, validatePhone, validateDate } from "@/lib/utils/validation";
+import { calculateDiscountPrice, filterApplicablePromotions, formatDiscountText, type Promotion } from "@/lib/utils/promotion";
 
 // Booking Steps
 const STEPS = [
@@ -30,6 +30,7 @@ interface BookingFormData {
   // Package selection
   packageType: "one_time" | "package" | "";
   selectedPackage: GymPackage | null;
+  selectedPromotion: Promotion | null;
   
   // Personal Info
   fullName: string;
@@ -56,6 +57,7 @@ export default function BookingPage({
   const [gym, setGym] = useState<Gym | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [packages, setPackages] = useState<GymPackage[]>([]);
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [currentStep, setCurrentStep] = useState(1);
@@ -74,6 +76,7 @@ export default function BookingPage({
   const [formData, setFormData] = useState<BookingFormData>({
     packageType: "",
     selectedPackage: null,
+    selectedPromotion: null,
     fullName: "",
     email: "",
     phone: "",
@@ -153,6 +156,18 @@ export default function BookingPage({
         setPackages(packagesData);
       }
 
+      // Fetch active promotions for this gym
+      try {
+        const promotionsResponse = await fetch(`/api/promotions/active?gym_id=${gymData.id}`);
+        const promotionsResult = await promotionsResponse.json();
+        if (promotionsResult.success && promotionsResult.data) {
+          setPromotions(promotionsResult.data);
+        }
+      } catch (error) {
+        console.error('Error fetching promotions:', error);
+        // Don't fail the whole page if promotions fail
+      }
+
       setIsLoading(false);
     }
 
@@ -223,6 +238,16 @@ export default function BookingPage({
 
     setIsCreatingPayment(true);
     try {
+      // Calculate final price with promotion
+      const discountResult = calculateDiscountPrice(
+        formData.selectedPackage.price,
+        formData.selectedPromotion
+      );
+
+      if (!discountResult.isValid && formData.selectedPromotion) {
+        throw new Error(discountResult.error || 'โปรโมชั่นไม่สามารถใช้ได้');
+      }
+
       // Step 1: Create payment intent
       const paymentResponse = await fetch('/api/payments/create-payment-intent', {
         method: 'POST',
@@ -230,7 +255,7 @@ export default function BookingPage({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: formData.selectedPackage.price,
+          amount: discountResult.finalPrice,
           paymentType: 'gym_booking',
           metadata: {
             gymId: gym.id,
@@ -240,6 +265,9 @@ export default function BookingPage({
             customerName: formData.fullName,
             customerPhone: formData.phone,
             startDate: formData.startDate,
+            promotionId: discountResult.promotionId,
+            originalAmount: discountResult.originalPrice,
+            discountAmount: discountResult.discountAmount,
           },
         }),
       });
@@ -286,6 +314,8 @@ export default function BookingPage({
           special_requests: formData.specialRequests,
           payment_id: paymentData.paymentIntentId, // Link to Stripe payment intent
           payment_method: 'stripe',
+          promotion_id: discountResult.promotionId,
+          discount_amount: discountResult.discountAmount,
         }),
       });
 
@@ -333,12 +363,21 @@ export default function BookingPage({
   };
 
   const selectPackage = (pkg: GymPackage) => {
+    // Reset promotion when package changes
     setFormData((prev) => ({
       ...prev,
       selectedPackage: pkg,
       packageType: pkg.package_type,
+      selectedPromotion: null, // Reset promotion when package changes
     }));
     setErrors((prev) => ({ ...prev, package: "" }));
+  };
+
+  const selectPromotion = (promotion: Promotion | null) => {
+    setFormData((prev) => ({
+      ...prev,
+      selectedPromotion: promotion,
+    }));
   };
 
   return (
@@ -552,6 +591,92 @@ export default function BookingPage({
                 {errors.package && (
                   <p className="mt-4 text-red-400 text-sm">{errors.package}</p>
                 )}
+
+                {/* Promotions Section - Show after package is selected */}
+                {formData.selectedPackage && (
+                  <div className="mt-8 pt-8 border-t border-zinc-700">
+                    <h3 className="mb-4 font-semibold text-zinc-300 text-lg">โปรโมชั่นที่ใช้ได้</h3>
+                    {(() => {
+                      const applicablePromotions = filterApplicablePromotions(
+                        promotions,
+                        formData.selectedPackage!.id
+                      );
+
+                      if (applicablePromotions.length === 0) {
+                        return (
+                          <p className="text-zinc-400 text-sm">ไม่มีโปรโมชั่นที่ใช้ได้สำหรับแพ็คเกจนี้</p>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-3">
+                          <button
+                            onClick={() => selectPromotion(null)}
+                            className={`w-full text-left bg-zinc-800 hover:bg-zinc-700 p-4 border rounded-lg transition-all ${
+                              formData.selectedPromotion === null
+                                ? "border-green-500 ring-2 ring-green-500/50"
+                                : "border-zinc-600"
+                            }`}
+                          >
+                            <div className="flex justify-between items-center">
+                              <span className="font-semibold text-white">ไม่ใช้โปรโมชั่น</span>
+                              <span className="font-bold text-red-500 text-lg">
+                                ฿{formData.selectedPackage.price.toLocaleString()}
+                              </span>
+                            </div>
+                          </button>
+
+                          {applicablePromotions.map((promo) => {
+                            const discountResult = calculateDiscountPrice(
+                              formData.selectedPackage!.price,
+                              promo
+                            );
+                            return (
+                              <button
+                                key={promo.id}
+                                onClick={() => selectPromotion(promo)}
+                                className={`w-full text-left bg-zinc-800 hover:bg-zinc-700 p-4 border rounded-lg transition-all ${
+                                  formData.selectedPromotion?.id === promo.id
+                                    ? "border-green-500 ring-2 ring-green-500/50"
+                                    : "border-zinc-600"
+                                }`}
+                              >
+                                <div className="flex justify-between items-start mb-2">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs font-semibold">
+                                        {formatDiscountText(promo)}
+                                      </span>
+                                      <span className="font-semibold text-white">{promo.title}</span>
+                                    </div>
+                                    {promo.description && (
+                                      <p className="text-zinc-400 text-xs">{promo.description}</p>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                  <div className="text-zinc-400 text-sm">
+                                    {discountResult.originalPrice !== discountResult.finalPrice && (
+                                      <span className="line-through mr-2">
+                                        ฿{discountResult.originalPrice.toLocaleString()}
+                                      </span>
+                                    )}
+                                    <span className="text-green-400 text-xs">
+                                      ประหยัด ฿{discountResult.discountAmount.toLocaleString()}
+                                    </span>
+                                  </div>
+                                  <div className="font-bold text-green-500 text-xl">
+                                    ฿{discountResult.finalPrice.toLocaleString()}
+                                  </div>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -562,24 +687,49 @@ export default function BookingPage({
               <h2 className="font-semibold text-xl">ข้อมูลผู้จอง</h2>
               
               {/* Selected Package Summary */}
-              {formData.selectedPackage && (
-                <div className="bg-zinc-700/50 p-4 rounded-lg">
-                  <p className="mb-2 font-semibold text-white">แพ็คเกจที่เลือก:</p>
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-white">{formData.selectedPackage.name}</p>
-                      {formData.selectedPackage.duration_months && (
-                        <p className="text-zinc-400 text-sm">
-                          ระยะเวลา {formData.selectedPackage.duration_months} เดือน
-                        </p>
-                      )}
-                    </div>
-                    <div className="font-bold text-red-500 text-xl">
-                      ฿{formData.selectedPackage.price.toLocaleString()}
+              {formData.selectedPackage && (() => {
+                const discountResult = calculateDiscountPrice(
+                  formData.selectedPackage.price,
+                  formData.selectedPromotion
+                );
+                return (
+                  <div className="bg-zinc-700/50 p-4 rounded-lg">
+                    <p className="mb-2 font-semibold text-white">แพ็คเกจที่เลือก:</p>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <p className="text-white">{formData.selectedPackage.name}</p>
+                          {formData.selectedPackage.duration_months && (
+                            <p className="text-zinc-400 text-sm">
+                              ระยะเวลา {formData.selectedPackage.duration_months} เดือน
+                            </p>
+                          )}
+                          {formData.selectedPromotion && (
+                            <p className="text-green-400 text-sm mt-1">
+                              {formatDiscountText(formData.selectedPromotion)} - {formData.selectedPromotion.title}
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          {discountResult.originalPrice !== discountResult.finalPrice && (
+                            <div className="line-through text-zinc-500 text-sm mb-1">
+                              ฿{discountResult.originalPrice.toLocaleString()}
+                            </div>
+                          )}
+                          <div className="font-bold text-red-500 text-xl">
+                            ฿{discountResult.finalPrice.toLocaleString()}
+                          </div>
+                          {discountResult.discountAmount > 0 && (
+                            <div className="text-green-400 text-xs mt-1">
+                              ประหยัด ฿{discountResult.discountAmount.toLocaleString()}
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               <div>
                 <label className="block mb-2 text-zinc-300 text-sm">

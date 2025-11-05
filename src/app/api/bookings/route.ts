@@ -83,6 +83,9 @@ export async function POST(request: NextRequest) {
       start_date,
       special_requests,
       payment_method,
+      promotion_id,
+      discount_amount,
+      price_paid,
     } = body;
 
     const booking = await createBooking({
@@ -95,6 +98,9 @@ export async function POST(request: NextRequest) {
       start_date,
       special_requests,
       payment_method,
+      promotion_id: promotion_id || null,
+      discount_amount: discount_amount || null,
+      price_paid: price_paid,
     });
 
     // Send booking confirmation email

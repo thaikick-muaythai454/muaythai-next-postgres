@@ -67,7 +67,7 @@ export async function PATCH(
     // ตรวจสอบว่า promotion นี้เป็นของ gym นี้หรือไม่
     const { data: existingPromotion, error: fetchError } = await supabase
       .from('promotions')
-      .select('id, gym_id')
+      .select('id, gym_id, discount_type, discount_value')
       .eq('id', id)
       .maybeSingle();
 
@@ -97,6 +97,13 @@ export async function PATCH(
       endDate,
       linkUrl,
       linkText,
+      // Discount fields
+      discountType,
+      discountValue,
+      packageId,
+      minPurchaseAmount,
+      maxDiscountAmount,
+      maxUses,
     } = body;
 
     // Build update data
@@ -174,6 +181,108 @@ export async function PATCH(
     
     if (linkText !== undefined) {
       updateData.link_text = linkText?.trim() || null;
+    }
+
+    // Validate and add discount fields
+    if (discountType !== undefined) {
+      if (discountType !== null && !['percentage', 'fixed_amount'].includes(discountType)) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid discount type. Must be "percentage" or "fixed_amount"' },
+          { status: 400 }
+        );
+      }
+      updateData.discount_type = discountType || null;
+    }
+
+    if (discountValue !== undefined) {
+      if (discountValue !== null) {
+        const numValue = Number(discountValue);
+        if (isNaN(numValue) || numValue < 0) {
+          return NextResponse.json(
+            { success: false, error: 'Discount value must be a non-negative number' },
+            { status: 400 }
+          );
+        }
+
+        // Validate percentage range if discount type is percentage
+        const currentDiscountType = discountType !== undefined ? discountType : existingPromotion.discount_type;
+        if (currentDiscountType === 'percentage' && (numValue < 0 || numValue > 100)) {
+          return NextResponse.json(
+            { success: false, error: 'Percentage discount must be between 0 and 100' },
+            { status: 400 }
+          );
+        }
+      }
+      updateData.discount_value = discountValue !== null ? Number(discountValue) : null;
+    }
+
+    // Validate consistency: if discount_type is set, discount_value must be set
+    const finalDiscountType = discountType !== undefined ? discountType : existingPromotion.discount_type;
+    const finalDiscountValue = discountValue !== undefined ? discountValue : existingPromotion.discount_value;
+    if (finalDiscountType !== null && (finalDiscountValue === null || finalDiscountValue === undefined)) {
+      return NextResponse.json(
+        { success: false, error: 'Discount value is required when discount type is set' },
+        { status: 400 }
+      );
+    }
+
+    if (packageId !== undefined) {
+      if (packageId !== null) {
+        // Verify package belongs to the gym
+        const { data: packageData, error: packageError } = await supabase
+          .from('gym_packages')
+          .select('id, gym_id')
+          .eq('id', packageId)
+          .eq('gym_id', gym.id)
+          .maybeSingle();
+
+        if (packageError || !packageData) {
+          return NextResponse.json(
+            { success: false, error: 'Package not found or does not belong to your gym' },
+            { status: 400 }
+          );
+        }
+      }
+      updateData.package_id = packageId || null;
+    }
+
+    if (minPurchaseAmount !== undefined) {
+      if (minPurchaseAmount !== null) {
+        const numValue = Number(minPurchaseAmount);
+        if (isNaN(numValue) || numValue < 0) {
+          return NextResponse.json(
+            { success: false, error: 'Minimum purchase amount must be a non-negative number' },
+            { status: 400 }
+          );
+        }
+      }
+      updateData.min_purchase_amount = minPurchaseAmount !== null ? Number(minPurchaseAmount) : null;
+    }
+
+    if (maxDiscountAmount !== undefined) {
+      if (maxDiscountAmount !== null) {
+        const numValue = Number(maxDiscountAmount);
+        if (isNaN(numValue) || numValue < 0) {
+          return NextResponse.json(
+            { success: false, error: 'Maximum discount amount must be a non-negative number' },
+            { status: 400 }
+          );
+        }
+      }
+      updateData.max_discount_amount = maxDiscountAmount !== null ? Number(maxDiscountAmount) : null;
+    }
+
+    if (maxUses !== undefined) {
+      if (maxUses !== null) {
+        const numValue = Number(maxUses);
+        if (isNaN(numValue) || numValue <= 0 || !Number.isInteger(numValue)) {
+          return NextResponse.json(
+            { success: false, error: 'Maximum uses must be a positive integer' },
+            { status: 400 }
+          );
+        }
+      }
+      updateData.max_uses = maxUses !== null ? Number(maxUses) : null;
     }
 
     if (Object.keys(updateData).length === 0) {

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from 'react';
-import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, Textarea, Switch } from '@heroui/react';
+import { useState, useEffect } from 'react';
+import { Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, Button, Input, Textarea, Switch, Select, SelectItem } from '@heroui/react';
 import { toast } from 'react-hot-toast';
 
 interface PromotionCreateModalProps {
@@ -10,8 +10,17 @@ interface PromotionCreateModalProps {
   onSuccess: () => void;
 }
 
+interface GymPackage {
+  id: string;
+  name: string;
+  package_type: 'one_time' | 'package';
+  price: number;
+}
+
 export default function PromotionCreateModal({ isOpen, onClose, onSuccess }: PromotionCreateModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [packages, setPackages] = useState<GymPackage[]>([]);
+  const [isLoadingPackages, setIsLoadingPackages] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     titleEnglish: '',
@@ -23,7 +32,36 @@ export default function PromotionCreateModal({ isOpen, onClose, onSuccess }: Pro
     endDate: '',
     linkUrl: '',
     linkText: '',
+    // Discount fields
+    discountType: '',
+    discountValue: '',
+    packageId: '',
+    minPurchaseAmount: '',
+    maxDiscountAmount: '',
+    maxUses: '',
   });
+
+  // Load packages when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      loadPackages();
+    }
+  }, [isOpen]);
+
+  async function loadPackages() {
+    try {
+      setIsLoadingPackages(true);
+      const response = await fetch('/api/partner/packages');
+      const result = await response.json();
+      if (result.success && result.data?.packages) {
+        setPackages(result.data.packages);
+      }
+    } catch (error) {
+      console.error('Error loading packages:', error);
+    } finally {
+      setIsLoadingPackages(false);
+    }
+  }
 
   const handleSubmit = async () => {
     if (!formData.title.trim()) {
@@ -46,6 +84,25 @@ export default function PromotionCreateModal({ isOpen, onClose, onSuccess }: Pro
       if (formData.endDate) payload.endDate = new Date(formData.endDate).toISOString();
       if (formData.linkUrl) payload.linkUrl = formData.linkUrl.trim();
       if (formData.linkText) payload.linkText = formData.linkText.trim();
+
+      // Add discount fields
+      if (formData.discountType) {
+        payload.discountType = formData.discountType;
+        if (formData.discountValue) {
+          payload.discountValue = Number(formData.discountValue);
+        }
+      } else {
+        payload.discountType = null;
+        payload.discountValue = null;
+      }
+      if (formData.packageId) payload.packageId = formData.packageId;
+      else payload.packageId = null;
+      if (formData.minPurchaseAmount) payload.minPurchaseAmount = Number(formData.minPurchaseAmount);
+      else payload.minPurchaseAmount = null;
+      if (formData.maxDiscountAmount) payload.maxDiscountAmount = Number(formData.maxDiscountAmount);
+      else payload.maxDiscountAmount = null;
+      if (formData.maxUses) payload.maxUses = Number(formData.maxUses);
+      else payload.maxUses = null;
 
       const response = await fetch('/api/partner/promotions', {
         method: 'POST',
@@ -82,6 +139,12 @@ export default function PromotionCreateModal({ isOpen, onClose, onSuccess }: Pro
       endDate: '',
       linkUrl: '',
       linkText: '',
+      discountType: '',
+      discountValue: '',
+      packageId: '',
+      minPurchaseAmount: '',
+      maxDiscountAmount: '',
+      maxUses: '',
     });
     onClose();
   };
@@ -177,6 +240,97 @@ export default function PromotionCreateModal({ isOpen, onClose, onSuccess }: Pro
                 onChange={(e) => setFormData((prev) => ({ ...prev, linkText: e.target.value }))}
                 placeholder="Optional - เช่น: ดูรายละเอียด"
               />
+            </div>
+
+            {/* Discount Section */}
+            <div className="border-t border-divider pt-4 mt-4">
+              <h3 className="text-lg font-semibold mb-4">ตั้งค่าส่วนลด (Optional)</h3>
+              
+              <div className="space-y-4">
+                <Select
+                  label="ประเภทส่วนลด"
+                  placeholder="เลือกประเภทส่วนลด (ถ้าต้องการ)"
+                  selectedKeys={formData.discountType ? [formData.discountType] : []}
+                  onSelectionChange={(keys) => {
+                    const selected = Array.from(keys)[0] as string;
+                    setFormData((prev) => ({ 
+                      ...prev, 
+                      discountType: selected || '',
+                      discountValue: '', // Reset value when type changes
+                    }));
+                  }}
+                >
+                  <SelectItem key="percentage">เปอร์เซ็นต์ (%)</SelectItem>
+                  <SelectItem key="fixed_amount">จำนวนเงินคงที่ (฿)</SelectItem>
+                </Select>
+
+                {formData.discountType && (
+                  <>
+                    <Input
+                      type="number"
+                      label={formData.discountType === 'percentage' ? 'เปอร์เซ็นต์ส่วนลด' : 'จำนวนเงินส่วนลด'}
+                      value={formData.discountValue}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, discountValue: e.target.value }))}
+                      placeholder={formData.discountType === 'percentage' ? 'เช่น: 10 (หมายถึง 10%)' : 'เช่น: 500 (หมายถึง ฿500)'}
+                      min={0}
+                      max={formData.discountType === 'percentage' ? 100 : undefined}
+                      description={formData.discountType === 'percentage' ? 'ค่าระหว่าง 0-100' : 'จำนวนเงินส่วนลด'}
+                      isRequired={!!formData.discountType}
+                    />
+
+                    <Select
+                      label="แพ็คเกจที่ใช้ได้"
+                      placeholder="เลือกแพ็คเกจ (ถ้าไม่เลือก = ใช้ได้ทุกแพ็คเกจ)"
+                      selectedKeys={formData.packageId ? [formData.packageId] : []}
+                      onSelectionChange={(keys) => {
+                        const selected = Array.from(keys)[0] as string;
+                        setFormData((prev) => ({ ...prev, packageId: selected || '' }));
+                      }}
+                      isLoading={isLoadingPackages}
+                      description="ถ้าไม่เลือก = ใช้ได้ทุกแพ็คเกจ"
+                    >
+                      {packages.map((pkg) => (
+                        <SelectItem key={pkg.id}>
+                          {pkg.name} ({pkg.package_type === 'one_time' ? 'รายครั้ง' : 'แพ็คเกจ'}) - ฿{pkg.price.toLocaleString()}
+                        </SelectItem>
+                      ))}
+                    </Select>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input
+                        type="number"
+                        label="ยอดซื้อขั้นต่ำ (฿)"
+                        value={formData.minPurchaseAmount}
+                        onChange={(e) => setFormData((prev) => ({ ...prev, minPurchaseAmount: e.target.value }))}
+                        placeholder="Optional - เช่น: 1000"
+                        min={0}
+                        description="ยอดซื้อขั้นต่ำที่ต้องใช้ส่วนลด"
+                      />
+                      {formData.discountType === 'percentage' && (
+                        <Input
+                          type="number"
+                          label="ส่วนลดสูงสุด (฿)"
+                          value={formData.maxDiscountAmount}
+                          onChange={(e) => setFormData((prev) => ({ ...prev, maxDiscountAmount: e.target.value }))}
+                          placeholder="Optional - เช่น: 500"
+                          min={0}
+                          description="ส่วนลดสูงสุดสำหรับส่วนลดแบบเปอร์เซ็นต์"
+                        />
+                      )}
+                    </div>
+
+                    <Input
+                      type="number"
+                      label="จำนวนครั้งที่ใช้ได้สูงสุด"
+                      value={formData.maxUses}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, maxUses: e.target.value }))}
+                      placeholder="Optional - เช่น: 100 (ถ้าไม่กรอก = ไม่จำกัด)"
+                      min={1}
+                      description="จำนวนครั้งที่โปรโมชั่นนี้สามารถใช้ได้ (ถ้าไม่กรอก = ไม่จำกัด)"
+                    />
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </ModalBody>
