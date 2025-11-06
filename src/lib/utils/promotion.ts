@@ -8,9 +8,11 @@ export interface Promotion {
   title?: string;
   title_english?: string | null;
   description?: string | null;
+  coupon_code?: string | null;
   discount_type: 'percentage' | 'fixed_amount' | null;
   discount_value: number | null;
   package_id: string | null;
+  gym_id?: string | null;
   min_purchase_amount: number | null;
   max_discount_amount: number | null;
   max_uses: number | null;
@@ -18,6 +20,10 @@ export interface Promotion {
   is_active: boolean;
   start_date?: string | null;
   end_date?: string | null;
+  first_time_user_only?: boolean;
+  applicable_product_ids?: string[] | null;
+  applicable_gym_ids?: string[] | null;
+  free_shipping?: boolean;
 }
 
 export interface DiscountResult {

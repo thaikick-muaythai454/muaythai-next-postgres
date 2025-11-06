@@ -152,7 +152,7 @@ async function handlePaymentSuccess(
       // Update order status
       const { data: order } = await supabase
         .from('orders')
-        .select('id')
+        .select('id, metadata')
         .eq('payment_id', payment.id)
         .maybeSingle();
 
@@ -164,6 +164,20 @@ async function handlePaymentSuccess(
             updated_at: new Date().toISOString(),
           })
           .eq('id', order.id);
+
+        // Increment promotion usage if coupon was used
+        const orderMetadata = order.metadata as Record<string, unknown> | null;
+        const promotionId = orderMetadata?.promotion_id as string | undefined;
+        if (promotionId) {
+          try {
+            const { incrementPromotionUsage } = await import('@/services/promotion.service');
+            await incrementPromotionUsage(promotionId);
+            console.log(`✅ Incremented promotion usage for promotion ${promotionId}`);
+          } catch (promoError) {
+            // Don't fail payment processing if promotion increment fails
+            console.warn('Failed to increment promotion usage:', promoError);
+          }
+        }
 
         // Update affiliate conversions for product purchases
         try {

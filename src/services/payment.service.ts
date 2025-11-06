@@ -212,6 +212,23 @@ export async function createPaymentIntent(
     throw new Error(`Failed to create payment record: ${paymentResult.error.message}`);
   }
 
+  // Extract coupon information from metadata if present
+  const couponCode = data.metadata.couponCode;
+  const originalAmount = data.metadata.originalAmount ? parseFloat(data.metadata.originalAmount) : data.amount;
+  const discountAmount = data.metadata.discountAmount ? parseFloat(data.metadata.discountAmount) : 0;
+  const promotionId = data.metadata.promotionId || data.metadata.couponCode; // promotionId from coupon validation
+
+  // Add coupon information to metadata
+  const orderMetadata = {
+    ...paymentMetadata,
+    ...(couponCode && {
+      coupon_code: couponCode,
+      promotion_id: promotionId,
+      original_amount: originalAmount,
+      discount_amount: discountAmount,
+    }),
+  };
+
   // Create order record with payment ID
   const { data: order, error: orderError } = await supabase
     .from('orders')
@@ -224,7 +241,7 @@ export async function createPaymentIntent(
       status: 'pending',
       customer_name: data.metadata.userName || '',
       customer_email: data.user_email.trim().toLowerCase(),
-      metadata: paymentMetadata,
+      metadata: orderMetadata,
     })
     .select()
     .single();

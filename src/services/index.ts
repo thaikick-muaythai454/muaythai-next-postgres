@@ -34,6 +34,16 @@ export {
   respondToDispute
 } from './payment.service';
 
+export {
+  validateCoupon,
+  isFirstTimeUser,
+  incrementPromotionUsage,
+  getPromotionByCouponCode,
+  type Promotion,
+  type ValidateCouponInput,
+  type ValidateCouponResult,
+} from './promotion.service';
+
 export { 
   signUp, 
   signIn, 

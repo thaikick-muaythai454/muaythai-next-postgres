@@ -895,16 +895,16 @@
 - 📝 แนะนำให้ทำใน **Phase 2** เมื่อมี traffic และต้องการ advanced analytics
 
 #### Promotions System
-- [ ] สร้าง Coupon Code System
-- [ ] เพิ่ม Discount Logic
-  - [ ] Percentage discount
-  - [ ] Fixed amount discount
-  - [ ] Free shipping
-- [ ] เพิ่มเงื่อนไขโปรโมชั่น
-  - [ ] Minimum purchase
-  - [ ] First-time user
-  - [ ] Specific products/gyms
-- [ ] API Apply Coupon at Checkout
+- [x] สร้าง Coupon Code System ✅
+- [x] เพิ่ม Discount Logic ✅
+  - [x] Percentage discount ✅
+  - [x] Fixed amount discount ✅
+  - [x] Free shipping ✅
+- [x] เพิ่มเงื่อนไขโปรโมชั่น ✅
+  - [x] Minimum purchase ✅
+  - [x] First-time user ✅
+  - [x] Specific products/gyms ✅
+- [x] API Apply Coupon at Checkout ✅
 
 ---
 
