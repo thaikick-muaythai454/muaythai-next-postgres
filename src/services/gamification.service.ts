@@ -11,6 +11,7 @@ import type {
   Challenge,
   UserChallenge,
   Leaderboard,
+  LeaderboardEntry,
   GamificationStats,
   LeaderboardData,
   BadgeProgress,
@@ -207,6 +208,16 @@ export async function awardPoints(request: AwardPointsRequest): Promise<PointsAw
         console.warn('Failed to send level up notification:', notificationError);
       }
     }
+
+    // Update leaderboards (async, don't wait for completion)
+    // Fire and forget - update leaderboards in background
+    (async () => {
+      try {
+        await supabase.rpc('update_all_leaderboards');
+      } catch (error: unknown) {
+        console.warn('Failed to update leaderboards:', error);
+      }
+    })();
 
     return {
       points_awarded: request.points,
@@ -550,6 +561,47 @@ export async function updateChallengeProgress(request: UpdateChallengeProgressRe
       throw new Error(`Failed to update challenge progress: ${error.message}`);
     }
 
+    // Check if challenge is completed after progress update
+    const { data: completionResult, error: checkError } = await supabase.rpc('check_and_complete_challenge', {
+      target_user_challenge_id: request.user_challenge_id,
+    });
+
+    if (checkError) {
+      console.warn('Failed to check challenge completion:', checkError);
+    } else if (completionResult) {
+      // Challenge was completed, send notification
+      const { data: userChallenge } = await supabase
+        .from('user_challenges')
+        .select(`
+          *,
+          challenge:challenges(*)
+        `)
+        .eq('id', request.user_challenge_id)
+        .single();
+
+      if (userChallenge && userChallenge.challenge) {
+        const challenge = userChallenge.challenge as Challenge;
+        try {
+          await supabase
+            .from('notifications')
+            .insert({
+              user_id: userChallenge.user_id,
+              type: 'challenge_complete',
+              title: 'สำเร็จแล้ว! 🎉',
+              message: `ยินดีด้วย! คุณทำ Challenge "${challenge.title}" สำเร็จแล้ว`,
+              link_url: '/dashboard/gamification',
+              metadata: {
+                challenge_id: challenge.id,
+                challenge_title: challenge.title,
+                points_earned: challenge.points_reward,
+              },
+            });
+        } catch (notificationError) {
+          console.warn('Failed to send challenge completion notification:', notificationError);
+        }
+      }
+    }
+
     return true;
   } catch (error) {
     return false;
@@ -686,7 +738,7 @@ export async function getLeaderboardData(
     let userScore: number | undefined;
     
     if (userId && entries) {
-      const userEntry = entries.find((entry: any) => entry.user_id === userId);
+      const userEntry = entries.find((entry: LeaderboardEntry) => entry.user_id === userId);
       if (userEntry) {
         userRank = userEntry.rank;
         userScore = userEntry.score;
@@ -724,6 +776,107 @@ export async function getAllLeaderboards(): Promise<Leaderboard[]> {
     return data || [];
   } catch (error) {
     return [];
+  }
+}
+
+/**
+ * Get leaderboard data with pagination
+ */
+export async function getLeaderboardDataPaginated(
+  leaderboardId: string,
+  userId?: string,
+  limit: number = 50,
+  offset: number = 0
+): Promise<LeaderboardData | null> {
+  const supabase = await createClient();
+
+  try {
+    // Get leaderboard info
+    const { data: leaderboard, error: leaderboardError } = await supabase
+      .from('leaderboards')
+      .select('*')
+      .eq('id', leaderboardId)
+      .eq('is_active', true)
+      .single();
+
+    if (leaderboardError) {
+      console.error('Leaderboard query error:', leaderboardError);
+      if (leaderboardError.code === 'PGRST116') {
+        return null;
+      }
+      throw leaderboardError;
+    }
+
+    if (!leaderboard) {
+      return null;
+    }
+
+    // Get leaderboard entries with pagination
+    let entries;
+    let entriesError;
+    
+    const { data: entriesWithProfile, error: entriesErrorWithProfile } = await supabase
+      .from('leaderboard_entries')
+      .select(`
+        *,
+        profiles:user_id(username, full_name, avatar_url)
+      `)
+      .eq('leaderboard_id', leaderboardId)
+      .order('rank', { ascending: true })
+      .range(offset, offset + limit - 1);
+    
+    if (entriesErrorWithProfile) {
+      console.warn('Failed to join profiles, trying without join:', entriesErrorWithProfile.message);
+      const { data: entriesWithoutProfile, error: entriesErrorWithoutProfile } = await supabase
+        .from('leaderboard_entries')
+        .select('*')
+        .eq('leaderboard_id', leaderboardId)
+        .order('rank', { ascending: true })
+        .range(offset, offset + limit - 1);
+      
+      entries = entriesWithoutProfile;
+      entriesError = entriesErrorWithoutProfile;
+    } else {
+      entries = entriesWithProfile;
+      entriesError = null;
+    }
+
+    if (entriesError) {
+      console.error('Leaderboard entries query error:', entriesError);
+      return {
+        leaderboard,
+        entries: [],
+        user_rank: undefined,
+        user_score: undefined,
+      };
+    }
+
+    // Find user's rank if userId provided
+    let userRank: number | undefined;
+    let userScore: number | undefined;
+    
+    if (userId) {
+      const { data: userEntry } = await supabase
+        .from('leaderboard_entries')
+        .select('rank, score')
+        .eq('leaderboard_id', leaderboardId)
+        .eq('user_id', userId)
+        .single();
+      
+      if (userEntry) {
+        userRank = userEntry.rank;
+        userScore = userEntry.score;
+      }
+    }
+
+    return {
+      leaderboard,
+      entries: entries || [],
+      user_rank: userRank,
+      user_score: userScore,
+    };
+  } catch (error) {
+    return null;
   }
 }
 
@@ -781,7 +934,9 @@ export async function getGamificationDashboard(userId: string): Promise<Gamifica
 
 /**
  * Calculate level progress percentage
+ * @deprecated Not currently used, but kept for potential future use
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function calculateLevelProgress(userPoints: UserPoints): number {
   return Math.min(
     ((userPoints.total_points - ((userPoints.current_level - 1) ** 2 * 100)) / 

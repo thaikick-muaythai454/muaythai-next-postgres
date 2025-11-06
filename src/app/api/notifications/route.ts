@@ -102,6 +102,7 @@ export async function POST(request: NextRequest) {
       'badge_earned',
       'level_up',
       'points_awarded',
+      'challenge_complete',
       'promotion',
       'system',
       'partner_message',

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { getCommissionRate, calculateCommissionAmount } from '@/lib/constants/affiliate';
+import { awardPoints } from '@/services/gamification.service';
 
 const DEFAULT_STATS = {
   totalReferrals: 0,
@@ -113,35 +114,8 @@ export async function GET() {
   }
 }
 
-// Legacy: Keep referral points for gamification (optional)
+// Referral points for gamification
 const REFERRAL_POINTS = 200;
-
-const updateUserPoints = async (supabase: any, userId: string, points: number) => {
-  const { data: currentPoints } = await supabase
-    .from('user_points')
-    .select('total_points')
-    .eq('user_id', userId)
-    .single();
-
-  if (currentPoints) {
-    await supabase
-      .from('user_points')
-      .update({
-        total_points: currentPoints.total_points + points,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', userId);
-  } else {
-    await supabase
-      .from('user_points')
-      .insert({
-        user_id: userId,
-        total_points: points,
-        current_level: 1,
-        points_to_next_level: 100
-      });
-  }
-};
 
 /**
  * POST /api/affiliate
@@ -221,24 +195,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Optional: Still award points for gamification (separate from affiliate system)
+    // Award points for gamification when referring a friend
+    // This uses the proper gamification service which handles badges, notifications, and leaderboards
     try {
-      const { error: pointsError } = await supabase
-        .from('points_history')
-        .insert({
-          user_id: user.id,
-          points: REFERRAL_POINTS,
-          action_type: 'referral',
-          action_description: `แนะนำเพื่อนเข้าร่วมแพลตฟอร์ม`,
-          reference_id: referredUserId,
-          reference_type: 'referral'
-        });
-
-      if (!pointsError) {
-        await updateUserPoints(supabase, user.id, REFERRAL_POINTS);
-      }
-      // Don't fail if points update fails - affiliate conversion is more important
+      await awardPoints({
+        user_id: user.id,
+        points: REFERRAL_POINTS,
+        action_type: 'referral',
+        action_description: `แนะนำเพื่อนเข้าร่วมแพลตฟอร์ม`,
+        reference_id: referredUserId,
+        reference_type: 'referral',
+      });
     } catch (pointsErr) {
+      // Don't fail if points update fails - affiliate conversion is more important
       console.warn('Failed to award referral points (non-critical):', pointsErr);
     }
 

@@ -913,19 +913,19 @@
 #### Gamification Logic
 - [x] เพิ่มลอจิกมอบแต้มอัตโนมัติ ✅
   - [x] เมื่อจองสำเร็จ ✅ (ทำแล้วใน `/api/bookings/route.ts`)
-  - [ ] เมื่อแนะนำเพื่อน - **ต้องเพิ่มใน affiliate system**
+  - [x] เมื่อแนะนำเพื่อน ✅ (ทำแล้วใน `/api/affiliate/route.ts` - ใช้ `awardPoints` จาก gamification service)
   - [x] เมื่อเข้าชั้นเรียนสม่ำเสมอ (Streak) ✅ (ทำแล้วใน `updateUserStreak`)
 - [x] เพิ่มระบบมอบ Badge อัตโนมัติ ✅ (มี `check_and_award_badges` function แล้ว)
-- [ ] **ส่ง Notification เมื่อได้ Badge** - **Critical: ต้องเพิ่มใน `awardPoints` function** (`src/services/gamification.service.ts`)
-  - [ ] ตรวจสอบ `newBadges` array จาก `check_and_award_badges` (มีอยู่แล้วในบรรทัด 147-149)
-  - [ ] ส่ง notification สำหรับแต่ละ badge ที่ได้รับ (type: 'badge_earned', title: 'ได้รับเหรียญใหม่!')
-- [ ] **ส่ง Notification เมื่อ Level Up** - **Critical: ต้องตรวจสอบ level เปลี่ยนใน `awardPoints` function**
-  - [ ] เก็บ `old_level` ก่อน award points (query `user_points.current_level` ก่อนเรียก `award_points`)
-  - [ ] เปรียบเทียบ `old_level` กับ `new_level` จาก `userPoints` (หลัง award points)
-  - [ ] ถ้า level เปลี่ยน ส่ง notification (type: 'level_up', title: 'เลื่อนระดับ!')
-- [ ] สร้างการคำนวณ Leaderboard
-- [ ] เพิ่มระบบตรวจสอบความสำเร็จของ Challenge
-- [ ] แก้ไข Leaderboard "View All" ให้ใช้งานได้
+- [x] **ส่ง Notification เมื่อได้ Badge** ✅ (ทำแล้วใน `awardPoints` function บรรทัด 166-187)
+  - [x] ตรวจสอบ `newBadges` array จาก `check_and_award_badges` ✅
+  - [x] ส่ง notification สำหรับแต่ละ badge ที่ได้รับ (type: 'badge_earned', title: 'ได้รับเหรียญใหม่!') ✅
+- [x] **ส่ง Notification เมื่อ Level Up** ✅ (ทำแล้วใน `awardPoints` function บรรทัด 189-209)
+  - [x] เก็บ `old_level` ก่อน award points (query `user_points.current_level` ก่อนเรียก `award_points`) ✅
+  - [x] เปรียบเทียบ `old_level` กับ `new_level` จาก `userPoints` (หลัง award points) ✅
+  - [x] ถ้า level เปลี่ยน ส่ง notification (type: 'level_up', title: 'เลื่อนระดับ!') ✅
+- [x] สร้างการคำนวณ Leaderboard ✅ (เพิ่ม `update_leaderboard_entries` และ `update_all_leaderboards` functions ใน migration)
+- [x] เพิ่มระบบตรวจสอบความสำเร็จของ Challenge ✅ (เพิ่ม `check_and_complete_challenge` function และเรียกใช้ใน `updateChallengeProgress`)
+- [x] แก้ไข Leaderboard "View All" ให้ใช้งานได้ ✅ (สร้างหน้า `/dashboard/leaderboard/[id]` และเชื่อมต่อปุ่มใน `LeaderboardWidget`)
 
 #### Affiliate System
 - [x] สร้างตาราง `affiliate_conversions` ✅

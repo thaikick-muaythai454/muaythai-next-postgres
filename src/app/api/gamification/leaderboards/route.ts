@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
-import { getLeaderboardData, getAllLeaderboards } from '@/services/gamification.service';
+import { getLeaderboardData, getAllLeaderboards, getLeaderboardDataPaginated } from '@/services/gamification.service';
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,12 +18,23 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const leaderboardId = searchParams.get('id');
+    const limitParam = searchParams.get('limit');
+    const offsetParam = searchParams.get('offset');
 
     let data;
 
     if (leaderboardId) {
-      // Get specific leaderboard data
-      data = await getLeaderboardData(leaderboardId, user.id);
+      // Check if pagination is requested
+      if (limitParam || offsetParam) {
+        const limit = limitParam ? parseInt(limitParam, 10) : 50;
+        const offset = offsetParam ? parseInt(offsetParam, 10) : 0;
+        
+        // Get paginated leaderboard data
+        data = await getLeaderboardDataPaginated(leaderboardId, user.id, limit, offset);
+      } else {
+        // Get specific leaderboard data (default, limited to 100)
+        data = await getLeaderboardData(leaderboardId, user.id);
+      }
       
       // If leaderboard not found, return 404 instead of 500
       if (!data) {
