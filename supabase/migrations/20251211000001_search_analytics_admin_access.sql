@@ -4,6 +4,9 @@
 -- ---
 -- PART 1: ADMIN RLS POLICY FOR SEARCH HISTORY
 -- ---
+-- Drop policy if it exists (idempotent)
+DROP POLICY IF EXISTS "Admin can view all search history" ON search_history;
+
 -- Policy: Admin can view all search history for analytics
 CREATE POLICY "Admin can view all search history"
   ON search_history

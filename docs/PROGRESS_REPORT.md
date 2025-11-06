@@ -225,12 +225,99 @@
    - Commission rate config table (แทน constants)
    - Session storage optimization
 2. ~~**Google Analytics Integration**~~ - ✅ **เสร็จสมบูรณ์แล้ว (100%)**
-3. **E2E Test Failure - Auth Flow** - แก้ไข Internal Server Error
+3. ~~**E2E Test Failure - Auth Flow**~~ - ✅ **แก้ไขแล้ว** (Import path + Error handling)
 4. **Gamification - Leaderboard "View All"** - สร้างหน้า Leaderboard แบบเต็ม
 5. **Gamification - Award Points เมื่อแนะนำเพื่อน** - เชื่อมต่อกับ Affiliate System
 6. **Admin - Bulk Operations** - สร้าง UI และ API
 7. **Admin - Content Moderation Tools** - สร้าง moderation dashboard
 8. **Coupon Code System** - Phase 2 (วางแผนไว้)
+
+### 🎨 UX Improvements (ดูรายละเอียดใน [UX_IMPROVEMENTS_NEEDED.md](./UX_IMPROVEMENTS_NEEDED.md))
+
+#### 🔴 Critical (แก้ทันที - Week 1-2)
+1. **Mobile Table Responsiveness** (0% → 100%)
+   - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
+   - ⏳ แปลง Tables เป็น Card View บน mobile
+   - Files: `admin/dashboard/gyms/page.tsx`, `partner/dashboard/page.tsx`, `dashboard/page.tsx`
+
+2. **Replace Browser confirm()** (0% → 100%)
+   - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
+   - ⏳ แทนที่ confirm() ด้วย ConfirmationModal
+   - Files: `partner/dashboard/page.tsx:287-331`
+
+3. **Add Aria-Labels** (0% → 100%)
+   - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
+   - ⏳ เพิ่ม aria-label ให้ทุก icon button
+   - Impact: Accessibility (Screen readers)
+
+4. **Skeleton Loaders** (0% → 100%)
+   - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
+   - ⏳ แทนที่ Spinners ด้วย Skeleton components
+   - ⏳ สร้าง loading.tsx สำหรับทุก route
+
+5. **Form Validation on Blur** (0% → 100%)
+   - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
+   - ⏳ Validate fields on blur แทนการ validate on submit
+   - Files: `signup/page.tsx`, `login/page.tsx`, `partner/apply/page.tsx`
+
+6. **Error Boundaries** (0% → 100%)
+   - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
+   - ⏳ สร้าง error.tsx สำหรับทุก route
+   - Impact: Prevent full page crashes
+
+#### 🟠 High Priority (Week 3-4)
+7. **Search Debouncing** (0% → 100%)
+   - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
+   - ⏳ เพิ่ม debounce (300ms) ให้ search inputs
+   - ⏳ สร้าง useDebouncedValue hook
+
+8. **Table Pagination** (0% → 100%)
+   - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
+   - ⏳ เพิ่ม Pagination component
+   - ⏳ Implement server-side pagination
+
+9. **Modal ESC Key Handler** (0% → 100%)
+   - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
+   - ⏳ เพิ่ม closeOnEscape={true} ให้ทุก modal
+
+10. **Touch Targets 44px** (0% → 100%)
+    - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
+    - ⏳ เพิ่ม min-width/height 44px ให้ icon buttons
+
+#### 🟡 Medium Priority (Week 5-6)
+11. **Dashboard Customization** (0% → 100%)
+    - ให้ user ซ่อน/แสดง widgets
+    - Drag-drop เรียงลำดับ widgets
+
+12. **Saved Search Filters** (0% → 100%)
+    - บันทึก filter combinations
+    - Quick filter presets
+
+13. **Toast Notification Center** (0% → 100%)
+    - History ของ notifications
+    - Action buttons ใน toasts
+
+14. **Image Cropping** (0% → 100%)
+    - Crop/rotate/resize images
+    - Preview before upload
+
+15. **Form Auto-save** (0% → 100%)
+    - Auto-save to localStorage
+    - Recover on browser crash
+
+#### ⚪ Low Priority (Backlog)
+16. Social Login (Google, Facebook, Apple)
+17. Dark Mode Toggle
+18. Biometric Authentication
+19. Haptic Feedback (Mobile)
+20. Keyboard Shortcuts
+
+#### ✅ UX Improvements Completed
+- ✅ **File Upload Size Limits Display** (100%)
+  - ข้อกำหนดไฟล์แสดงชัดเจนใน info box สีฟ้า
+  - Visual indicators สำหรับไฟล์ใหญ่ (สีเหลือง/แดง)
+  - แสดงขนาดเป็น KB/MB ตามความเหมาะสม
+  - Files: `partner/apply/components/GymDetailsForm.tsx`
 
 ---
 
@@ -776,23 +863,30 @@
 - [x] สร้าง Event Tracking System ✅ (เสร็จสมบูรณ์แล้ว)
   - [x] Page views ✅
   - [x] Conversion tracking ✅
-  - [ ] Click tracking (optional - ไม่ได้ทำ - สามารถใช้ GA Enhanced Measurement แทนได้)
-- [ ] เพิ่ม User Behavior Tracking (optional - Future work - Phase 2)
-  - [ ] Heatmaps (Hotjar/Crazy Egg)
-  - [ ] Session recordings
-  - [ ] User journey analysis
-- [ ] สร้าง Conversion Funnels (optional - Future work - Phase 2)
-  - [ ] Funnel visualization
-  - [ ] Drop-off analysis
-  - [ ] A/B testing integration
-- [ ] เพิ่ม Performance Monitoring (Sentry) (optional - Future work - Phase 2)
-  - [ ] Error tracking
-  - [ ] Performance monitoring
-  - [ ] Release tracking
-- [ ] สร้าง Error Tracking Dashboard (optional - Future work - Phase 2)
-  - [ ] Error aggregation
-  - [ ] Error trends
-  - [ ] Alert system
+  - [x] Click tracking ✅ (Phase 2 - Enhanced click tracking with custom events)
+- [x] เพิ่ม User Behavior Tracking ✅ (Phase 2 - เสร็จสมบูรณ์)
+  - [x] Infrastructure for Heatmaps (Hotjar/Crazy Egg) ✅
+  - [x] Session recordings support ✅
+  - [x] User journey analysis ✅
+  - [x] Scroll depth tracking ✅
+  - [x] Time on page tracking ✅
+- [x] สร้าง Conversion Funnels ✅ (Phase 2 - เสร็จสมบูรณ์)
+  - [x] Funnel tracking utilities ✅
+  - [x] Drop-off analysis ✅
+  - [x] Funnel analytics API ✅
+  - [x] Database schema for funnels ✅
+- [x] เพิ่ม Performance Monitoring (Sentry) ✅ (Phase 2 - เสร็จสมบูรณ์)
+  - [x] Sentry integration (client, server, edge) ✅
+  - [x] Error tracking ✅
+  - [x] Performance monitoring ✅
+  - [x] Release tracking ✅
+  - [x] Error Boundary integration ✅
+- [x] สร้าง Error Tracking Dashboard ✅ (Phase 2 - เสร็จสมบูรณ์)
+  - [x] Error aggregation ✅
+  - [x] Error trends ✅
+  - [x] Error tracking API ✅
+  - [x] Admin dashboard UI ✅
+  - [x] Database schema for error tracking ✅
 
 **หมายเหตุ**: 
 - ✅ Google Analytics Integration เสร็จสมบูรณ์ 100% - พร้อมใช้งานจริง

@@ -1,10 +1,11 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const isDevelopment = process.env.NODE_ENV === "development";
 
 function getContentSecurityPolicy(isDev: boolean): string {
   const connectSrc =
-    "connect-src 'self' *.supabase.co *.stripe.com https://vercel.live" +
+    "connect-src 'self' *.supabase.co *.stripe.com https://vercel.live *.sentry.io *.ingest.sentry.io" +
     (isDev ? " http://127.0.0.1:8000 http://127.0.0.1:54321 http://localhost:*" : "") +
     ";";
 
@@ -83,6 +84,35 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  // Note: Webpack cache serialization warnings about "big strings" are harmless
+  // and common in Next.js builds. They're performance suggestions from webpack's
+  // cache system and don't affect functionality. Safe to ignore.
 };
 
-export default nextConfig;
+// Wrap with Sentry configuration if DSN is provided
+const configWithSentry = process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_DSN
+  ? withSentryConfig(nextConfig, {
+      // For all available options, see:
+      // https://github.com/getsentry/sentry-webpack-plugin#options
+      
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      
+      // Only upload source maps in production
+      silent: !isDevelopment,
+      
+      // Automatically instrument API routes
+      widenClientFileUpload: true,
+      
+      // Routes browser requests to Sentry through a Next.js rewrite to circumvent ad-blockers
+      tunnelRoute: "/monitoring",
+      
+      // Automatically tree-shake Sentry logger statements to reduce bundle size
+      disableLogger: true,
+      
+      // Enables automatic instrumentation of Vercel Cron Monitors
+      automaticVercelMonitors: true,
+    })
+  : nextConfig;
+
+export default configWithSentry;

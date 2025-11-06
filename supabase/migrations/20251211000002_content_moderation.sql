@@ -108,24 +108,28 @@ ALTER TABLE content_flags ENABLE ROW LEVEL SECURITY;
 ALTER TABLE content_moderation_log ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Anyone can create flags (report content)
+DROP POLICY IF EXISTS "Anyone can create content flags" ON content_flags;
 CREATE POLICY "Anyone can create content flags"
   ON content_flags FOR INSERT
   TO authenticated, anon
   WITH CHECK (true);
 
 -- Policy: Users can view their own flags
+DROP POLICY IF EXISTS "Users can view own flags" ON content_flags;
 CREATE POLICY "Users can view own flags"
   ON content_flags FOR SELECT
   TO authenticated
   USING (reported_by = auth.uid());
 
 -- Policy: Admins can view all flags
+DROP POLICY IF EXISTS "Admins can view all flags" ON content_flags;
 CREATE POLICY "Admins can view all flags"
   ON content_flags FOR SELECT
   TO authenticated
   USING (is_admin());
 
 -- Policy: Admins can manage all flags
+DROP POLICY IF EXISTS "Admins can manage all flags" ON content_flags;
 CREATE POLICY "Admins can manage all flags"
   ON content_flags FOR ALL
   TO authenticated
@@ -133,12 +137,14 @@ CREATE POLICY "Admins can manage all flags"
   WITH CHECK (is_admin());
 
 -- Policy: Admins can view moderation logs
+DROP POLICY IF EXISTS "Admins can view moderation logs" ON content_moderation_log;
 CREATE POLICY "Admins can view moderation logs"
   ON content_moderation_log FOR SELECT
   TO authenticated
   USING (is_admin());
 
 -- Policy: Admins can create moderation logs
+DROP POLICY IF EXISTS "Admins can create moderation logs" ON content_moderation_log;
 CREATE POLICY "Admins can create moderation logs"
   ON content_moderation_log FOR INSERT
   TO authenticated
