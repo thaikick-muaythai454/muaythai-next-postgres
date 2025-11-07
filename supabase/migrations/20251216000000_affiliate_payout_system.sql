@@ -115,9 +115,9 @@ CREATE POLICY "Admins can manage commission rates"
   ON affiliate_commission_rates FOR ALL
   USING (
     EXISTS (
-      SELECT 1 FROM profiles
-      WHERE profiles.user_id = auth.uid()
-      AND profiles.role = 'admin'
+      SELECT 1 FROM user_roles
+      WHERE user_roles.user_id = auth.uid()
+      AND user_roles.role = 'admin'
     )
   );
 
@@ -144,9 +144,9 @@ CREATE POLICY "Admins can manage all payouts"
   ON affiliate_payouts FOR ALL
   USING (
     EXISTS (
-      SELECT 1 FROM profiles
-      WHERE profiles.user_id = auth.uid()
-      AND profiles.role = 'admin'
+      SELECT 1 FROM user_roles
+      WHERE user_roles.user_id = auth.uid()
+      AND user_roles.role = 'admin'
     )
   );
 

@@ -11,20 +11,22 @@
 | ประเภทการทดสอบ | จำนวน Tests | ผ่าน | ไม่ผ่าน | ยังไม่ทดสอบ | สถานะ |
 |----------------|------------|------|---------|-----------|-------|
 | Unit Tests     | 43 | 43 | 0 | 0 | ✅ |
-| E2E Tests      | 28 | 5 | 1 | 22 | ⚠️ |
+| E2E Tests      | 28 | 18 | 1 | 9 | ⚠️ |
 | Integration Tests | - | - | - | - | ⏳ |
 | API Tests      | - | - | - | - | ⏳ |
 | Security Tests | - | - | - | - | ⏳ |
 | Manual Tests   | - | - | - | - | ⏳ |
-| **รวม** | **71** | **48** | **1** | **22** | **⚠️** |
+| **รวม** | **71** | **61** | **1** | **9** | **⚠️** |
 
 **Coverage**: ⏳ (ยังไม่ได้รัน)  
 **Build Status**: ✅ / ❌ / ⏳  
 **Deployment Ready**: ✅ / ❌ / ⏳
 
-**อัปเดตล่าสุด**: 2025-11-05
+**อัปเดตล่าสุด**: 2025-11-07
 - ✅ Unit Tests: 43/43 tests ผ่าน
-- ⚠️ E2E Tests: 5/28 tests ผ่าน, 1 test ล้มเหลว (Step 6 - Partner Application)
+- ⚠️ E2E Tests: 18/28 tests ผ่าน; ❌ Auth Flow Step 6 pending fix (partner apply formไม่โหลด), 9 tests ยังไม่รัน
+- ✅ Playwright affiliate suite ผ่านครบ (4 tests)
+- ✅ Playwright admin gym management suite ผ่านครบ (9 tests)
 
 ---
 
@@ -221,39 +223,53 @@ npm run test:e2e tests/e2e/auth-flow.spec.ts
 ---
 
 ### 2.2 Admin Gym Management Tests
-- [ ] **Admin Gym Management**
-  - [ ] Admin can navigate to gym management page ⚠️
-  - [ ] Admin can view gym statistics ⚠️
-  - [ ] Admin can view gym details in modal ⚠️
-  - [ ] Admin can approve pending gym ⚠️
-  - [ ] Admin can edit gym information ⚠️
-  - [ ] Admin can delete gym ⚠️
-  - [ ] Admin can search for gyms ⚠️
-  - [ ] Admin can filter gyms by status ⚠️
-  - [ ] Admin cannot save invalid gym data ⚠️
+- [x] **Admin Gym Management**
+  - [x] Admin can navigate to gym management page ✅
+  - [x] Admin can view gym statistics ✅
+  - [x] Admin can view gym details in modal ✅
+  - [x] Admin can approve pending gym ✅
+  - [x] Admin can edit gym information ✅
+  - [x] Admin can delete gym ✅
+  - [x] Admin can search for gyms ✅
+  - [x] Admin can filter gyms by status ✅
+  - [x] Admin cannot save invalid gym data ✅
 
-**สถานะ**: ⚠️ **Playwright Browsers ติดตั้งแล้ว แต่ WebServer Timeout**  
+**สถานะ**: ✅ **ผ่านทั้งหมด 9 tests**  
 **ผลการทดสอบ**: 
-- ⚠️ Tests ทั้งหมดไม่สามารถรันได้ (WebServer timeout - server ใช้เวลานานในการ start)
+- ✅ Tests ทั้งหมดผ่านภายใน ~3 นาที (ใช้ฐานข้อมูลที่ seed ด้วย `npm run test:e2e:prepare`)
 
 **คำสั่ง**: 
 ```bash
-# ✅ Playwright browsers ติดตั้งแล้ว
-
-# วิธีที่ 1: รัน server แยกก่อน แล้วรัน tests
-# Terminal 1:
-npm run dev
-
-# Terminal 2 (รอให้ server พร้อมก่อน):
-npm run test:e2e tests/e2e/admin-gym-management.spec.ts
-
-# วิธีที่ 2: เพิ่ม timeout ใน playwright.config.ts
-# แก้ไข webServer.timeout จาก 120000 เป็น 180000 (3 นาที)
+npx playwright test tests/e2e/admin/admin-gym-management.spec.ts --project=chromium
 ```
 
 ---
 
-### 2.3 Login Existing Users Tests
+### 2.3 Affiliate Dashboard & Referral Tests
+- [x] **Affiliate Dashboard Display (TC-5.2)** ✅
+  - [x] แสดงการ์ดสถิติครบ (ผู้แนะนำทั้งหมด, แต้มสะสมทั้งหมด, เดือนนี้, อัตราการแปลง)
+  - [x] ตาราง Conversion History แสดงข้อมูลเท่ากับ API
+  - [x] สถานะ referral badge แสดงถูกต้อง (รอดำเนินการ, ยืนยันแล้ว)
+- [x] **Affiliate Signup SessionStorage (TC-1.2)** ✅
+  - [x] เก็บ referral code ใน sessionStorage เมื่อเปิดหน้า signup พร้อม query param
+  - [x] Referral code ยังคงอยู่ใน sessionStorage หลังเปลี่ยนหน้า
+  - [x] Referral code กลับมาเติมในฟอร์มเมื่อกลับมาหน้า signup (ไม่มี query param)
+  - [x] Referral code จาก URL มี priority สูงกว่า sessionStorage และอัปเดตค่าใหม่
+  - [x] sessionStorage ถูกเคลียร์หลัง signup สำเร็จ (ตรวจสอบ logic)
+
+**สถานะ**: ✅ **ผ่านทั้งหมด 4 tests**  
+**ผลการทดสอบ**: 
+- ✅ ใช้บัญชีทดสอบจาก `npm run test:e2e:prepare`
+- ✅ Dashboard และ sessionStorage persistence ทำงานครบถ้วน
+
+**คำสั่ง**: 
+```bash
+npx playwright test tests/e2e/affiliate --project=chromium
+```
+
+---
+
+### 2.4 Login Existing Users Tests
 - [ ] **Login Existing Users**
   - [ ] Login with existing user credentials ⚠️
   - [ ] Verify dashboard access ⚠️

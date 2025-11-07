@@ -119,6 +119,16 @@ for file in $FILES; do
                 LINE_NUM=$(echo "$line" | cut -d: -f1)
                 LINE_CONTENT=$(echo "$line" | cut -d: -f2-)
                 
+                # Skip environment variable lookups (e.g., password: requireEnv('VAR'))
+                if echo "$LINE_CONTENT" | grep -qE "requireEnv\\("; then
+                    continue
+                fi
+
+                # Skip values that reference other password variables (e.g., definition.password)
+                if echo "$LINE_CONTENT" | grep -qE ":[[:space:]]*[A-Za-z0-9_.]+\\.password"; then
+                    continue
+                fi
+
                 # Skip if it's clearly an error message (contains Thai characters or common error keywords)
                 # Thai error messages like "รหัสผ่านไม่ตรงตามเงื่อนไข" are not secrets
                 if echo "$LINE_CONTENT" | grep -qE "[ก-๙]" && \

@@ -22,13 +22,19 @@ CREATE POLICY "admins_can_view_all_roles"
   TO authenticated
   USING (is_admin());
 
--- Preserve service role access for administrative tasks
-CREATE POLICY IF NOT EXISTS "service_role_manage_user_roles"
-  ON user_roles
-  FOR ALL
-  TO service_role
-  USING (true)
-  WITH CHECK (true);
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename = 'user_roles'
+      AND policyname = 'service_role_manage_user_roles'
+  ) THEN
+    EXECUTE 'CREATE POLICY "service_role_manage_user_roles" ON user_roles FOR ALL TO service_role USING (true) WITH CHECK (true)';
+  END IF;
+END;
+$$;
 
 -- Notes:
 -- - Policies now delegate admin check to is_admin(), which runs as SECURITY DEFINER

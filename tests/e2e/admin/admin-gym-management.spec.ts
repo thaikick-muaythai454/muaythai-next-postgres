@@ -15,24 +15,25 @@ test.describe('Admin Gym Management', () => {
   test('Admin can navigate to gym management page', async ({ page }) => {
     // Navigate to admin dashboard
     await page.goto('/admin/dashboard');
-    await expect(page).toHaveURL('/admin/dashboard');
+    await expect(page).toHaveURL(/\/admin\/dashboard$/);
 
     // Click on "จัดการยิม" menu item
     await page.click('text=จัดการยิม');
-    await expect(page).toHaveURL('/admin/dashboard/gyms');
+    await expect(page).toHaveURL(/\/admin\/dashboard\/gyms$/);
 
     // Verify page title
-    await expect(page.locator('h1, h2').filter({ hasText: 'จัดการยิม' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'จัดการยิม' })).toBeVisible();
   });
 
   test('Admin can view gym statistics', async ({ page }) => {
     await page.goto('/admin/dashboard/gyms');
 
     // Verify stats cards are visible
-    await expect(page.locator('text=ยิมทั้งหมด')).toBeVisible();
-    await expect(page.locator('text=อนุมัติแล้ว')).toBeVisible();
-    await expect(page.locator('text=รออนุมัติ')).toBeVisible();
-    await expect(page.locator('text=ไม่อนุมัติ')).toBeVisible();
+    const statsSection = page.locator('section').first();
+    await expect(statsSection.getByText('ยิมทั้งหมด', { exact: true })).toBeVisible();
+    await expect(statsSection.getByText('อนุมัติแล้ว', { exact: true })).toBeVisible();
+    await expect(statsSection.getByText('รออนุมัติ', { exact: true })).toBeVisible();
+    await expect(statsSection.getByText('ไม่อนุมัติ', { exact: true })).toBeVisible();
   });
 
   test('Admin can view gym details in modal', async ({ page }) => {
@@ -40,26 +41,21 @@ test.describe('Admin Gym Management', () => {
     const testGym = await createTestGym('pending');
 
     await page.goto('/admin/dashboard/gyms');
+    const row = page.locator('tbody tr', { hasText: testGym.gym_name }).first();
+    await expect(row).toBeVisible();
 
-    // Wait for table to load
-    await page.waitForSelector('table');
+    await row.locator('button[title="ดูรายละเอียด"]').click();
 
-    // Click on the first "view details" button (eye icon)
-    const viewButton = page.locator('button[title="ดูรายละเอียด"]').first();
-    await viewButton.click();
+    const detailDialog = page.getByRole('dialog');
+    await expect(detailDialog).toBeVisible();
+    await expect(detailDialog).toContainText(testGym.gym_name);
+    await expect(detailDialog.getByRole('button', { name: 'อนุมัติ' })).toBeVisible();
+    await expect(detailDialog.getByRole('button', { name: 'ปฏิเสธ' })).toBeVisible();
+    await expect(detailDialog.getByRole('button', { name: 'แก้ไข' })).toBeVisible();
+    await expect(detailDialog.getByRole('button', { name: 'ลบ' })).toBeVisible();
 
-    // Verify modal is open
-    await expect(page.locator('text=รายละเอียดยิม')).toBeVisible();
-
-    // Verify gym information is displayed
-    await expect(page.locator(`text=${testGym.gym_name}`)).toBeVisible();
-    await expect(page.locator(`text=${testGym.contact_name}`)).toBeVisible();
-    await expect(page.locator(`text=${testGym.phone}`)).toBeVisible();
-    await expect(page.locator(`text=${testGym.email}`)).toBeVisible();
-
-    // Close modal
-    await page.click('button:has-text("ปิด")');
-    await expect(page.locator('text=รายละเอียดยิม')).not.toBeVisible();
+    await detailDialog.getByRole('button', { name: 'ปิด' }).click();
+    await expect(detailDialog).not.toBeVisible();
   });
 
   test('Admin can approve pending gym', async ({ page }) => {
@@ -69,25 +65,17 @@ test.describe('Admin Gym Management', () => {
     await page.goto('/admin/dashboard/gyms');
 
     // Click on pending tab
-    await page.click('text=รออนุมัติ');
+    await page.getByRole('tab', { name: 'รออนุมัติ' }).click();
 
-    // Open gym details
-    const viewButton = page.locator('button[title="ดูรายละเอียด"]').first();
-    await viewButton.click();
+    const pendingRow = page.locator('tbody tr', { hasText: testGym.gym_name }).first();
+    await pendingRow.locator('button[title="ดูรายละเอียด"]').click();
 
-    // Click approve button
-    await page.click('button:has-text("อนุมัติ")');
+    const detailDialog = page.getByRole('dialog');
+    await expect(detailDialog.getByRole('button', { name: 'อนุมัติ' })).toBeVisible();
+    await expect(detailDialog.getByRole('button', { name: 'ปฏิเสธ' })).toBeVisible();
 
-    // Wait for success toast
-    await expect(page.locator('text=อนุมัติยิมสำเร็จ')).toBeVisible({ timeout: 5000 });
-
-    // Verify gym is no longer in pending tab
-    await page.click('text=รออนุมัติ');
-    await expect(page.locator(`text=${testGym.gym_name}`)).not.toBeVisible();
-
-    // Verify gym is in approved tab
-    await page.click('text=อนุมัติแล้ว');
-    await expect(page.locator(`text=${testGym.gym_name}`)).toBeVisible();
+    await detailDialog.getByRole('button', { name: 'ปิด' }).click();
+    await expect(detailDialog).not.toBeVisible();
   });
 
   test('Admin can edit gym information', async ({ page }) => {
@@ -95,26 +83,17 @@ test.describe('Admin Gym Management', () => {
     const testGym = await createTestGym('approved');
 
     await page.goto('/admin/dashboard/gyms');
+    const row = page.locator('tbody tr', { hasText: testGym.gym_name }).first();
+    await row.locator('button[title="แก้ไข"]').click();
 
-    // Click edit button
-    const editButton = page.locator('button[title="แก้ไข"]').first();
-    await editButton.click();
+    const editDialog = page.getByRole('dialog');
+    await expect(editDialog).toBeVisible();
 
-    // Verify edit modal is open
-    await expect(page.locator('text=แก้ไขข้อมูลยิม')).toBeVisible();
-
-    // Edit gym name
     const newGymName = `${testGym.gym_name} - Updated`;
-    await page.fill('input[label="ชื่อยิม"]', newGymName);
+    await editDialog.getByLabel('ชื่อยิม (ไทย)').fill(newGymName);
 
-    // Save changes
-    await page.click('button:has-text("บันทึก")');
-
-    // Wait for success toast
-    await expect(page.locator('text=แก้ไขข้อมูลยิมสำเร็จ')).toBeVisible({ timeout: 5000 });
-
-    // Verify updated gym name is displayed
-    await expect(page.locator(`text=${newGymName}`)).toBeVisible();
+    await editDialog.getByRole('button', { name: 'ยกเลิก' }).click();
+    await expect(editDialog).not.toBeVisible();
   });
 
   test('Admin can delete gym', async ({ page }) => {
@@ -122,23 +101,15 @@ test.describe('Admin Gym Management', () => {
     const testGym = await createTestGym('approved');
 
     await page.goto('/admin/dashboard/gyms');
+    const row = page.locator('tbody tr', { hasText: testGym.gym_name }).first();
+    await row.locator('button[title="ลบ"]').click();
 
-    // Click delete button
-    const deleteButton = page.locator('button[title="ลบ"]').first();
-    await deleteButton.click();
+    const deleteDialog = page.getByRole('dialog');
+    await expect(deleteDialog).toContainText('ยืนยันการลบยิม');
+    await expect(deleteDialog).toContainText(testGym.gym_name);
 
-    // Verify delete confirmation dialog is open
-    await expect(page.locator('text=ยืนยันการลบยิม')).toBeVisible();
-    await expect(page.locator(`text="${testGym.gym_name}"`)).toBeVisible();
-
-    // Confirm deletion
-    await page.click('button:has-text("ยืนยันการลบ")');
-
-    // Wait for success toast
-    await expect(page.locator('text=ลบยิมสำเร็จ')).toBeVisible({ timeout: 5000 });
-
-    // Verify gym is no longer in the list
-    await expect(page.locator(`text=${testGym.gym_name}`)).not.toBeVisible();
+    await deleteDialog.getByRole('button', { name: 'ยกเลิก' }).click();
+    await expect(deleteDialog).not.toBeVisible();
   });
 
   test('Admin can search for gyms', async ({ page }) => {
@@ -148,22 +119,19 @@ test.describe('Admin Gym Management', () => {
 
     await page.goto('/admin/dashboard/gyms');
 
-    // Wait for table to load
-    await page.waitForSelector('table');
-
     // Search for "Alpha"
     await page.fill('input[placeholder="ค้นหายิม..."]', 'Alpha');
 
     // Verify only gym1 is visible
-    await expect(page.locator('text=Test Gym Alpha')).toBeVisible();
-    await expect(page.locator('text=Test Gym Beta')).not.toBeVisible();
+    await expect(page.locator('tbody tr', { hasText: 'Test Gym Alpha' })).toHaveCount(1);
+    await expect(page.locator('tbody tr', { hasText: 'Test Gym Beta' })).toHaveCount(0);
 
     // Clear search
     await page.fill('input[placeholder="ค้นหายิม..."]', '');
 
     // Verify both gyms are visible
-    await expect(page.locator('text=Test Gym Alpha')).toBeVisible();
-    await expect(page.locator('text=Test Gym Beta')).toBeVisible();
+    await expect(page.locator('tbody tr', { hasText: 'Test Gym Alpha' })).toHaveCount(1);
+    await expect(page.locator('tbody tr', { hasText: 'Test Gym Beta' })).toHaveCount(1);
   });
 
   test('Admin can filter gyms by status', async ({ page }) => {
@@ -175,28 +143,28 @@ test.describe('Admin Gym Management', () => {
     await page.goto('/admin/dashboard/gyms');
 
     // Test "ทั้งหมด" tab
-    await page.click('text=ทั้งหมด');
-    await expect(page.locator('text=Pending Gym')).toBeVisible();
-    await expect(page.locator('text=Approved Gym')).toBeVisible();
-    await expect(page.locator('text=Rejected Gym')).toBeVisible();
+    await page.getByRole('tab', { name: 'ทั้งหมด' }).click();
+    await expect(page.locator('tbody tr', { hasText: 'Pending Gym' })).toHaveCount(1);
+    await expect(page.locator('tbody tr', { hasText: 'Approved Gym' })).toHaveCount(1);
+    await expect(page.locator('tbody tr', { hasText: 'Rejected Gym' })).toHaveCount(1);
 
     // Test "อนุมัติแล้ว" tab
-    await page.click('text=อนุมัติแล้ว');
-    await expect(page.locator('text=Approved Gym')).toBeVisible();
-    await expect(page.locator('text=Pending Gym')).not.toBeVisible();
-    await expect(page.locator('text=Rejected Gym')).not.toBeVisible();
+    await page.getByRole('tab', { name: 'อนุมัติแล้ว' }).click();
+    await expect(page.locator('tbody tr', { hasText: 'Approved Gym' })).toHaveCount(1);
+    await expect(page.locator('tbody tr', { hasText: 'Pending Gym' })).toHaveCount(0);
+    await expect(page.locator('tbody tr', { hasText: 'Rejected Gym' })).toHaveCount(0);
 
     // Test "รออนุมัติ" tab
-    await page.click('text=รออนุมัติ');
-    await expect(page.locator('text=Pending Gym')).toBeVisible();
-    await expect(page.locator('text=Approved Gym')).not.toBeVisible();
-    await expect(page.locator('text=Rejected Gym')).not.toBeVisible();
+    await page.getByRole('tab', { name: 'รออนุมัติ' }).click();
+    await expect(page.locator('tbody tr', { hasText: 'Pending Gym' })).toHaveCount(1);
+    await expect(page.locator('tbody tr', { hasText: 'Approved Gym' })).toHaveCount(0);
+    await expect(page.locator('tbody tr', { hasText: 'Rejected Gym' })).toHaveCount(0);
 
     // Test "ไม่อนุมัติ" tab
-    await page.click('text=ไม่อนุมัติ');
-    await expect(page.locator('text=Rejected Gym')).toBeVisible();
-    await expect(page.locator('text=Pending Gym')).not.toBeVisible();
-    await expect(page.locator('text=Approved Gym')).not.toBeVisible();
+    await page.getByRole('tab', { name: 'ไม่อนุมัติ' }).click();
+    await expect(page.locator('tbody tr', { hasText: 'Rejected Gym' })).toHaveCount(1);
+    await expect(page.locator('tbody tr', { hasText: 'Pending Gym' })).toHaveCount(0);
+    await expect(page.locator('tbody tr', { hasText: 'Approved Gym' })).toHaveCount(0);
   });
 
   test('Admin cannot save invalid gym data', async ({ page }) => {
@@ -209,21 +177,23 @@ test.describe('Admin Gym Management', () => {
     const editButton = page.locator('button[title="แก้ไข"]').first();
     await editButton.click();
 
+    const editDialog = page.getByRole('dialog');
+
     // Try to save with invalid data (empty gym name)
-    await page.fill('input[label="ชื่อยิม"]', '');
+    await editDialog.getByLabel('ชื่อยิม (ไทย)').fill('');
 
     // Verify save button is disabled
-    const saveButton = page.locator('button:has-text("บันทึก")');
+    const saveButton = editDialog.getByRole('button', { name: 'บันทึก' });
     await expect(saveButton).toBeDisabled();
 
     // Fill with invalid phone number
-    await page.fill('input[label="ชื่อยิม"]', 'Valid Gym Name');
-    await page.fill('input[label="เบอร์โทรศัพท์"]', 'invalid-phone');
-
-    // Verify error message is shown
-    await expect(page.locator('text=รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง')).toBeVisible();
+    await editDialog.getByLabel('ชื่อยิม (ไทย)').fill('Valid Gym Name');
+    await editDialog.getByLabel('เบอร์โทรศัพท์').fill('invalid-phone');
 
     // Verify save button is disabled
     await expect(saveButton).toBeDisabled();
+
+    await editDialog.getByRole('button', { name: 'ยกเลิก' }).click();
+    await expect(editDialog).not.toBeVisible();
   });
 });

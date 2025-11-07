@@ -37,27 +37,37 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey, {
   }
 });
 
+function requireEnv(name, fallback) {
+  const value = process.env[name] ?? fallback;
+
+  if (!value) {
+    throw new Error(`Missing required environment variable ${name}`);
+  }
+
+  return value;
+}
+
 // Test users configuration
 const TEST_USERS = [
   {
-    email: 'test_user@muaythai.com',
-    password: 'Test@1234567890',
+    email: requireEnv('E2E_TEST_USER_EMAIL', 'test_user@muaythai.com'),
+    password: requireEnv('E2E_TEST_USER_PASSWORD'),
     full_name: 'Test Regular User',
     username: 'testuser',
     phone: '+66812345678',
     role: 'authenticated'
   },
   {
-    email: 'test_partner@muaythai.com',
-    password: 'Test@1234567890',
+    email: requireEnv('E2E_TEST_PARTNER_EMAIL', 'test_partner@muaythai.com'),
+    password: requireEnv('E2E_TEST_PARTNER_PASSWORD'),
     full_name: 'Test Partner User',
     username: 'testpartner',
     phone: '+66823456789',
     role: 'partner'
   },
   {
-    email: 'test_admin@muaythai.com',
-    password: 'Test@1234567890',
+    email: requireEnv('E2E_TEST_ADMIN_EMAIL', 'test_admin@muaythai.com'),
+    password: requireEnv('E2E_TEST_ADMIN_PASSWORD'),
     full_name: 'Test Admin User',
     username: 'testadmin',
     phone: '+66834567890',

@@ -1,9 +1,6 @@
 import { test, expect } from '@playwright/test';
-import {
-  loginUser,
-  logoutUser,
-  takeDebugScreenshot,
-} from '../helpers';
+import { loginUser, logoutUser, takeDebugScreenshot } from '../helpers';
+import { TEST_USERS } from '../test-users';
 
 /**
  * E2E Test: Login with Existing Users (3 Roles)
@@ -22,23 +19,6 @@ import {
  * - Partner User login & partner dashboard access  
  * - Admin User login & admin dashboard access
  */
-
-// ⚠️ UPDATE THESE WITH YOUR TEST USER EMAILS
-// Copy from the console output of auth-flow.spec.ts
-const TEST_USERS = {
-  regular: {
-    email: 'test_user_1760785430506_r5d8zk@test.com',  // ← UPDATE THIS
-    password: 'Test@1234567890',
-  },
-  partner: {
-    email: 'test_partner_1760785430506_jzk62a@test.com',  // ← UPDATE THIS
-    password: 'Test@1234567890',
-  },
-  admin: {
-    email: 'test_admin_1760785430506_cxo53j@test.com',  // ← UPDATE THIS
-    password: 'Test@1234567890',
-  },
-};
 
 test.describe('Login with Existing Users - 3 Roles', () => {
   test.describe.configure({ mode: 'serial' });

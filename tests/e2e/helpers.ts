@@ -1,6 +1,7 @@
 import { Page, expect } from '@playwright/test';
 import dotenv from 'dotenv';
 import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
+import { TEST_USERS } from './test-users';
 
 dotenv.config({ path: '.env.local' });
 
@@ -29,6 +30,7 @@ export interface GymApplicationData {
 }
 
 export interface TestGymData {
+  id?: string;
   gym_name: string;
   contact_name: string;
   phone: string;
@@ -43,6 +45,17 @@ export interface TestGymData {
 }
 
 let supabaseAdmin: SupabaseClient | null = null;
+const createdGymIds: string[] = [];
+
+function getDefaultPassword(): string {
+  const value = process.env.E2E_DEFAULT_PASSWORD;
+
+  if (!value) {
+    throw new Error('Missing required environment variable E2E_DEFAULT_PASSWORD');
+  }
+
+  return value;
+}
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -111,6 +124,35 @@ async function confirmUserEmail(email: string): Promise<void> {
   console.warn(`Supabase user not found for email ${email}`);
 }
 
+async function getUserByEmail(email: string): Promise<User | null> {
+  if (!supabaseAdmin) {
+    return null;
+  }
+
+  let page = 1;
+  const perPage = 200;
+
+  while (page <= 10) {
+    const { data, error } = await supabaseAdmin.auth.admin.listUsers({ page, perPage });
+    if (error) {
+      throw new Error(`Unable to list Supabase users: ${error.message}`);
+    }
+
+    const match = data.users.find((user) => user.email === email) ?? null;
+    if (match) {
+      return match;
+    }
+
+    if (data.users.length < perPage) {
+      break;
+    }
+
+    page += 1;
+  }
+
+  return null;
+}
+
 /**
  * Generate unique test user data with timestamp
  */
@@ -122,7 +164,7 @@ export function generateTestUser(role: 'user' | 'partner' | 'admin'): UserCreden
     username: `test_${role}_${timestamp}_${randomId}`,
     fullName: `Test ${role.charAt(0).toUpperCase() + role.slice(1)} ${timestamp}`,
     email: `test_${role}_${timestamp}_${randomId}@test.com`,
-    password: 'Test@1234567890',
+    password: getDefaultPassword(),
   };
 }
 
@@ -226,8 +268,14 @@ export async function loginUser(page: Page, identifier: string, password: string
     }
   }
 
-  // Additional wait for session to be established
-  await page.waitForTimeout(2000);
+  // Additional waits for session persistence and client hydration
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(1500);
+
+  const postLoginUrl = page.url();
+  if (postLoginUrl.includes('/login')) {
+    throw new Error('Login appears to have failed: still on /login after retries.');
+  }
 }
 
 /**
@@ -534,16 +582,13 @@ export async function elementExists(page: Page, selector: string): Promise<boole
  * Login as admin user
  */
 export async function loginAsAdmin(page: Page): Promise<void> {
-  // Use predefined admin credentials or create one
-  // For testing, assume admin account exists
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@muaythai.com';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123456';
-  
-  await loginUser(page, adminEmail, adminPassword);
-  
-  // Verify we're on admin dashboard
-  await page.waitForTimeout(2000);
-  expect(page.url()).toContain('/admin/dashboard');
+  const adminCredentials = TEST_USERS.admin;
+
+  await loginUser(page, adminCredentials.email, adminCredentials.password);
+
+  // Navigate to admin dashboard and confirm access
+  await page.goto('/admin/dashboard');
+  await expect(page).toHaveURL(/\/admin\/dashboard/);
 }
 
 /**
@@ -559,38 +604,64 @@ export async function createTestGym(
     location: string;
   }>
 ): Promise<TestGymData> {
+  if (!supabaseAdmin) {
+    throw new Error('Supabase admin client not configured for createTestGym');
+  }
+
   const timestamp = Date.now();
   const randomId = Math.random().toString(36).substring(7);
-  
-  const gymData = {
-    gym_name: overrides?.gym_name || `Test Gym ${timestamp}`,
-    contact_name: overrides?.contact_name || `Contact ${randomId}`,
-    phone: overrides?.phone || '0812345678',
-    email: overrides?.email || `testgym_${timestamp}@test.com`,
+
+  const ownerEmail = overrides?.email ?? TEST_USERS.partner.email;
+  const ownerUser = await getUserByEmail(ownerEmail);
+
+  if (!ownerUser) {
+    throw new Error(`Test partner user not found for email ${ownerEmail}. Run npm run test:e2e:prepare first.`);
+  }
+
+  const gymPayload = {
+    user_id: ownerUser.id,
+    gym_name: overrides?.gym_name ?? `Test Gym ${timestamp}`,
+    contact_name: overrides?.contact_name ?? `Contact ${randomId}`,
+    phone: overrides?.phone ?? '0812345678',
+    email: overrides?.email ?? ownerEmail,
     website: 'https://testgym.com',
-    location: overrides?.location || '123 Test Street, Bangkok, Thailand 10100',
-    gym_details: 'Test gym for automated testing',
+    location: overrides?.location ?? '123 Test Street, Bangkok, Thailand 10100',
+    gym_details: 'Test gym for automated testing purposes',
     services: ['มวยไทย', 'ฟิตเนส'],
     images: [],
-    status: status,
-    user_id: '00000000-0000-0000-0000-000000000000', // Placeholder user ID
+    status,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
   };
-  
-  // In a real scenario, you would insert this into the database
-  // For now, we'll return the data structure
-  // You may need to implement actual database insertion via API or direct DB access
-  
-  return gymData;
+
+  const { data, error } = await supabaseAdmin
+    .from('gyms')
+    .insert(gymPayload)
+    .select('*')
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to create test gym: ${error.message}`);
+  }
+
+  createdGymIds.push(data.id);
+
+  return data as TestGymData;
 }
 
 /**
  * Cleanup test data
  */
 export async function cleanupTestData(): Promise<void> {
-  // In a real scenario, you would clean up test gyms from database
-  // This could be done via API calls or direct database access
-  // For now, this is a placeholder
-  
-  // Example: Delete all gyms with "Test Gym" in the name
-  // await fetch('/api/test/cleanup', { method: 'POST' });
+  if (!supabaseAdmin || createdGymIds.length === 0) {
+    return;
+  }
+
+  try {
+    await supabaseAdmin.from('gyms').delete().in('id', createdGymIds);
+  } catch (error) {
+    console.warn('Failed to cleanup test gyms:', error instanceof Error ? error.message : error);
+  } finally {
+    createdGymIds.length = 0;
+  }
 }

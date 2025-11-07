@@ -31,6 +31,16 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+function getDefaultPassword(): string {
+  const value = process.env.E2E_DEFAULT_PASSWORD;
+
+  if (!value) {
+    throw new Error('Missing required environment variable E2E_DEFAULT_PASSWORD');
+  }
+
+  return value;
+}
+
 /**
  * E2E Test: Affiliate Dashboard Display (TC-5.2)
  * 
@@ -138,18 +148,20 @@ test.describe('Affiliate Dashboard Display (TC-5.2)', () => {
 
     // Create test users
     const timestamp = Date.now();
+    const defaultPassword = getDefaultPassword();
+
     referrerUser = {
       username: `test_referrer_${timestamp}`,
       fullName: `Test Referrer ${timestamp}`,
       email: `test_referrer_${timestamp}@test.com`,
-      password: 'Test@1234567890',
+      password: defaultPassword,
     };
 
     referredUser1 = {
       username: `test_referred_${timestamp}`,
       fullName: `Test Referred ${timestamp}`,
       email: `test_referred_${timestamp}@test.com`,
-      password: 'Test@1234567890',
+      password: defaultPassword,
     };
 
     console.log('Creating test users...');

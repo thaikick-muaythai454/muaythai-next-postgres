@@ -4,6 +4,29 @@
 
 E2E tests สำหรับทดสอบ user flows แบบเต็มรูปแบบใน browser จริง โดยใช้ **Playwright**
 
+## 🔐 Required Environment Variables
+
+ก่อนรัน E2E tests หรือสคริปต์ seed ผู้ใช้ ให้กำหนดค่าต่อไปนี้ใน `.env.local` (หรือ export ใน shell):
+
+```
+E2E_DEFAULT_PASSWORD=<secure-password-used-for-generated-users>
+E2E_REGULAR_PASSWORD=<password-for-existing-regular-user>
+E2E_PARTNER_PASSWORD=<password-for-existing-partner-user>
+E2E_ADMIN_PASSWORD=<password-for-existing-admin-user>
+
+# ไม่บังคับ แต่แนะนำให้ตั้งค่าเพื่อง่ายต่อการสลับอีเมล
+E2E_REGULAR_EMAIL=e2e_regular_user@muaythai.test
+E2E_PARTNER_EMAIL=e2e_partner_user@muaythai.test
+E2E_ADMIN_EMAIL=e2e_admin_user@muaythai.test
+
+# สคริปต์สร้าง users ใน scripts/node/create-test-users.js
+E2E_TEST_USER_PASSWORD=<password-for-created-regular-user>
+E2E_TEST_PARTNER_PASSWORD=<password-for-created-partner-user>
+E2E_TEST_ADMIN_PASSWORD=<password-for-created-admin-user>
+```
+
+> ℹ️ หากไม่ตั้งค่ารหัสผ่านเหล่านี้ สคริปต์และ tests จะหยุดทำงานพร้อมข้อความ error เพื่อป้องกันการ hard-code ความลับลงใน repository
+
 ## 📁 Structure
 
 ```
