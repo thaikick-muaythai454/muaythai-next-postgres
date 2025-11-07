@@ -1,4 +1,8 @@
 import { Page, expect } from '@playwright/test';
+import dotenv from 'dotenv';
+import { createClient, type SupabaseClient, type User } from '@supabase/supabase-js';
+
+dotenv.config({ path: '.env.local' });
 
 /**
  * Test Helpers for E2E Testing
@@ -36,6 +40,75 @@ export interface TestGymData {
   images: string[];
   status: 'pending' | 'approved' | 'rejected';
   user_id: string;
+}
+
+let supabaseAdmin: SupabaseClient | null = null;
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (supabaseUrl && supabaseServiceKey) {
+  supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+    },
+  });
+} else {
+  console.warn('⚠️  Supabase admin client not configured. Set NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY for automated test helpers.');
+}
+
+async function confirmUserEmail(email: string): Promise<void> {
+  if (!supabaseAdmin) return;
+
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const perPage = 200;
+    let user: User | null = null;
+
+    for (let page = 1; page <= 5; page++) {
+      const { data, error } = await supabaseAdmin!.auth.admin.listUsers({
+        page,
+        perPage,
+      });
+
+      if (error) {
+        console.warn('Unable to list Supabase users:', error.message);
+        return;
+      }
+
+      user = data.users.find((candidate) => candidate.email === email) ?? null;
+
+      if (user) {
+        break;
+      }
+
+      if (data.users.length < perPage) {
+        break;
+      }
+    }
+
+    if (!user) {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      continue;
+    }
+
+    if (user.email_confirmed_at) {
+      return;
+    }
+
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+      email_confirm: true,
+    });
+
+    if (!updateError) {
+      return;
+    }
+
+    console.warn('Failed to confirm Supabase user email:', updateError.message);
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+  }
+
+  console.warn(`Supabase user not found for email ${email}`);
 }
 
 /**
@@ -105,6 +178,8 @@ export async function signupUser(page: Page, credentials: UserCredentials): Prom
   // Note: In real scenario, you might need to verify email
   // For testing, we assume email verification is disabled or handled differently
   await page.waitForTimeout(3000);
+
+  await confirmUserEmail(credentials.email);
 }
 
 /**
@@ -127,19 +202,30 @@ export async function loginUser(page: Page, identifier: string, password: string
   // Submit the form
   await page.locator('button[type="submit"]').click();
   
-  // Wait for navigation - check if we're redirected away from login
-  try {
-    await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 10000 });
-    console.log('Login successful, redirected to:', page.url());
-  } catch (error) {
-    // If still on login page, wait a bit more
-    await page.waitForTimeout(3000);
-    const currentUrl = page.url();
-    if (currentUrl.includes('/login')) {
-      console.log('Warning: Still on login page after login attempt');
+  // Wait for navigation or retry a couple of times if authentication is still propagating
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 7000 });
+      console.log('Login successful, redirected to:', page.url());
+      break;
+    } catch (error) {
+      if (attempt === 2) {
+        console.log('Warning: Still on login page after multiple attempts');
+        throw error;
+      }
+
+      console.log('Login attempt still pending, retrying...');
+      await page.waitForTimeout(4000);
+
+      // Re-submit credentials just in case
+      await page.locator('input[name="identifier"]').fill(identifier);
+      await page.waitForTimeout(200);
+      await page.locator('input[name="password"]').fill(password);
+      await page.waitForTimeout(200);
+      await page.locator('button[type="submit"]').click();
     }
   }
-  
+
   // Additional wait for session to be established
   await page.waitForTimeout(2000);
 }
@@ -450,8 +536,8 @@ export async function elementExists(page: Page, selector: string): Promise<boole
 export async function loginAsAdmin(page: Page): Promise<void> {
   // Use predefined admin credentials or create one
   // For testing, assume admin account exists
-  const adminEmail = process.env.ADMIN_EMAIL || 'admin@test.com';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'Admin@1234567890';
+  const adminEmail = process.env.ADMIN_EMAIL || 'admin@muaythai.com';
+  const adminPassword = process.env.ADMIN_PASSWORD || 'admin123456';
   
   await loginUser(page, adminEmail, adminPassword);
   

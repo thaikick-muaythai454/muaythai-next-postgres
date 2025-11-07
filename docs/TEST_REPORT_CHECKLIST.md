@@ -146,8 +146,9 @@
     - [x] ตรวจสอบว่า URL มี 'dashboard' ✅
     - [x] Logout สำเร็จ ✅
   - [ ] Step 6: Partner Application - Submit gym application ❌
+    - [x] เตรียม partner account (`partner@muaythai.com` / `partner123456`) – ใช้ `node scripts/node/create-user.js --test-users` (จะข้ามถ้ามีบัญชีอยู่แล้ว)
     - [ ] Login ด้วย partner user credentials
-    - [ ] ส่ง gym application form
+    - [x] ส่ง gym application form
     - [ ] ตรวจสอบว่า application ส่งสำเร็จ
     - **Status**: ❌ **ล้มเหลว** - TimeoutError: ไม่สามารถหา `input[name="gymName"]` ได้ภายใน 15 วินาที
     - **Error Details**:

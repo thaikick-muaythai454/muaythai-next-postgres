@@ -1,42 +1,23 @@
 DO $$
 DECLARE
-  v_dummy_user_id CONSTANT UUID := '00000000-0000-0000-0000-000000000001';
-  v_partner1_user_id UUID;
+  v_partner_owner_id UUID;
 BEGIN
-  -- Get partner1 user_id (สมชาย มวยไทย)
-  SELECT id INTO v_partner1_user_id FROM auth.users WHERE email = 'partner1@muaythai.com';
-  
-  -- Ensure dummy system user exists for gym ownership
-  INSERT INTO auth.users (
-    id,
-    email,
-    email_confirmed_at,
-    encrypted_password,
-    created_at,
-    updated_at,
-    raw_app_meta_data,
-    raw_user_meta_data,
-    is_super_admin,
-    role
-  ) VALUES (
-    v_dummy_user_id,
-    'system@muaythai.com',
-    NOW(),
-    '$2a$10$dummy.hash.for.system.user.only',
-    NOW(),
-    NOW(),
-    '{"provider":"email","providers":["email"]}',
-    '{}',
-    FALSE,
-    'authenticated'
-  ) ON CONFLICT (id) DO NOTHING;
+  -- Prefer dedicated partner user for seed data
+  SELECT id INTO v_partner_owner_id FROM auth.users WHERE email = 'partner@muaythai.com';
 
-  -- Use a record type for clean gym data insertion
-  WITH gyms_data AS (
-    SELECT *
-    FROM (VALUES
-      (
-        v_dummy_user_id,
+  IF v_partner_owner_id IS NULL THEN
+    SELECT id INTO v_partner_owner_id FROM auth.users WHERE email = 'partner1@muaythai.com';
+  END IF;
+
+  IF v_partner_owner_id IS NULL THEN
+    RAISE NOTICE 'Skipping gym seed data because no partner user exists (expected partner@muaythai.com or partner1@muaythai.com).';
+  ELSE
+    -- Use a record type for clean gym data insertion
+    WITH gyms_data AS (
+      SELECT *
+      FROM (VALUES
+        (
+          v_partner_owner_id,
         'สนามมวยลุมพินี',
         'Lumpinee Boxing Stadium',
         'Lumpinee Management',
@@ -54,7 +35,7 @@ BEGIN
         'approved'
       ),
       (
-        v_dummy_user_id,
+        v_partner_owner_id,
         'ค่ายมวยแฟร์เท็กซ์',
         'Fairtex Training Center',
         'Fairtex Management',
@@ -72,7 +53,7 @@ BEGIN
         'approved'
       ),
       (
-        COALESCE(v_partner1_user_id, v_dummy_user_id),  -- Use partner1 if exists, otherwise dummy
+        v_partner_owner_id,
         'ไทเกอร์ มวยไทย',
         'Tiger Muay Thai',
         'สมชาย มวยไทย',  -- Owner: Somchai (partner1)
@@ -90,7 +71,7 @@ BEGIN
         'approved'
       ),
       (
-        v_dummy_user_id,
+        v_partner_owner_id,
         'สถาบันเพชรยินดี',
         'Petchyindee Academy',
         'Petchyindee Management',
@@ -125,48 +106,49 @@ BEGIN
       slug,
       status
     )
-  )
-  INSERT INTO gyms (
-    user_id,
-    gym_name,
-    gym_name_english,
-    contact_name,
-    phone,
-    email,
-    location,
-    address,
-    gym_details,
-    latitude,
-    longitude,
-    map_url,
-    socials,
-    gym_type,
-    slug,
-    status,
-    created_at,
-    updated_at
-  )
-  SELECT
-    user_id,
-    gym_name,
-    gym_name_english,
-    contact_name,
-    phone,
-    email,
-    location,
-    address,
-    gym_details,
-    latitude,
-    longitude,
-    map_url,
-    socials,
-    gym_type,
-    slug,
-    status,
-    NOW(),
-    NOW()
-  FROM gyms_data
-  ON CONFLICT (slug) DO NOTHING;
+    )
+    INSERT INTO gyms (
+      user_id,
+      gym_name,
+      gym_name_english,
+      contact_name,
+      phone,
+      email,
+      location,
+      address,
+      gym_details,
+      latitude,
+      longitude,
+      map_url,
+      socials,
+      gym_type,
+      slug,
+      status,
+      created_at,
+      updated_at
+    )
+    SELECT
+      user_id,
+      gym_name,
+      gym_name_english,
+      contact_name,
+      phone,
+      email,
+      location,
+      address,
+      gym_details,
+      latitude,
+      longitude,
+      map_url,
+      socials,
+      gym_type,
+      slug,
+      status,
+      NOW(),
+      NOW()
+    FROM gyms_data
+    ON CONFLICT (slug) DO NOTHING;
+  END IF;
 
 END $$;
 

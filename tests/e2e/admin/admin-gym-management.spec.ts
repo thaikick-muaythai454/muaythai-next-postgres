@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { loginAsAdmin, createTestGym, cleanupTestData } from './helpers';
+import { loginAsAdmin, createTestGym, cleanupTestData } from '../helpers';
 
 test.describe('Admin Gym Management', () => {
   test.beforeEach(async ({ page }) => {

@@ -1,6 +1,6 @@
 # 📋 สรุปความคืบหน้า Muay Thai Next.js Application
 
-**อัปเดตล่าสุด**: 2025-11-06
+**อัปเดตล่าสุด**: 2025-11-07
 
 ---
 ## 🎯 สรุปสถานะ (Quick Summary)
@@ -23,12 +23,15 @@
 - ✅ **Code Cleanup**: ลบไฟล์ที่ไม่จำเป็น (ลดขนาดได้ 32 KB)
 
 **สิ่งที่ยังเหลือ**:
-- ⚠️ Affiliate Commission System (95% - Commission rate config table และ Payout System เสร็จแล้ว เหลือเพียง session storage optimization - Optional)
-- ⚠️ E2E Test Failure - Auth Flow (บางส่วนแก้ไขแล้ว - Import path + Error handling แก้แล้ว, ยังต้องสร้าง Supabase Storage bucket `gym-images`)
-- ⚠️ Gamification - Award Points เมื่อแนะนำเพื่อน (ยังไม่เชื่อมต่อกับ Affiliate System)
+
+- ⚠️ E2E Test Failure - Auth Flow (สร้าง Supabase bucket `gym-images`, rerun Playwright)
+- ⚠️ Gamification - Award Points เมื่อแนะนำเพื่อน (เชื่อมต่อกับ Affiliate System)
 - ⚠️ Admin - Bulk Operations (ยังไม่เริ่ม)
 - ⚠️ Admin - Content Moderation Tools (ยังไม่เริ่ม)
-- ⚠️ Coupon Code System (วางแผนไว้ใน Phase 2)
+- ⚠️ Referral Session Storage Optimization (Optional)
+- 💤 Coupon Code System (Phase 2)
+
+> รายละเอียดแผน Agile (Sprint/Product Backlog) ย้ายไปที่ `docs/PROGRESS_REPORT.md`
 
 ---
 
@@ -225,7 +228,12 @@
 
 ## 📅 อัปเดตล่าสุด
 
-### 2025-11-06 (วันนี้)
+### 2025-11-07 (วันนี้)
+ℹ️ ไม่มีการเปลี่ยนแปลงจากเมื่อวาน ระบบหลักยังพร้อมใช้งาน 99.9%
+- 🟢 โฟกัสยังอยู่ที่การส่งมอบ Production และการตรวจสอบขั้นสุดท้าย
+- ⚠️ งานค้าง: Supabase bucket `gym-images`, Award points สำหรับ referral, Admin bulk ops & moderation tools, Coupon system (Phase 2)
+
+### 2025-11-06
 ✅ **Affiliate Commission System** - อัปเดตเป็น 95% (Commission rate config table และ Payout System เสร็จแล้ว)
   - ✅ Commission rate config table (affiliate_commission_rates)
   - ✅ Admin API สำหรับจัดการ commission rates

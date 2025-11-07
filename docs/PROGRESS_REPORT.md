@@ -1,7 +1,27 @@
 # 📊 รายงานความคืบหน้าโครงการ THAIKICK Platform
 
-**วันที่รายงาน**: 2025-11-06
+**วันที่รายงาน**: 2025-11-07
 **สถานะโครงการ**: 🟢 กำลังดำเนินการ
+ℹ️ ไม่มีการเปลี่ยนแปลงจากรายงานวันที่ 2025-11-06 – ระบบหลักยังพร้อมใช้งาน 99.9% และงานค้างได้แก่ Supabase bucket `gym-images`, award points จาก referral, Admin bulk ops/moderation tools และ Coupon system (Phase 2)
+
+---
+
+## 🧭 Agile Planning Snapshot
+
+**Sprint**: 2025-11-04 → 2025-11-15  
+**Sprint Goal**: ปิดงาน Critical ก่อน Go-Live (E2E Auth Flow ผ่าน, Referral awarding พร้อมใช้งาน)
+
+| Story ID | User Story | Status | Definition of Done |
+|----------|------------|--------|--------------------|
+| S-101 | ในฐานะ QA ฉันต้องการ Supabase bucket `gym-images` เพื่อให้ E2E Auth Flow ครบทุกขั้นตอน | 🟡 In Progress | Bucket ถูกสร้าง, policy พร้อม, Playwright auth spec ผ่านใน CI |
+| S-102 | ในฐานะผู้แนะนำเพื่อน ฉันอยากได้แต้ม Gamification เมื่อเพื่อนสมัคร เพื่อรับรางวัลอัตโนมัติ | 🟠 Todo | Affiliate conversion trigger เรียก `awardPoints`, points แสดงใน dashboard, regression tests ผ่าน |
+
+**Upcoming Backlog (Groomed / Ready)**
+
+- S-201 Admin Bulk Operations: อนุมัติ/ปฏิเสธหลายรายการพร้อมกันจากแดชบอร์ด
+- S-202 Admin Content Moderation Tools: จัดการ content flags เพื่อควบคุมคุณภาพเนื้อหา
+- S-203 Referral Session Storage Optimization (Optional)
+- S-301 Coupon Code System (Phase 2)
 
 ---
 
@@ -133,18 +153,19 @@
 
 ---
 
-## 🔄 ฟีเจอร์ที่ยังไม่เสร็จสมบูรณ์
+## 🔄 ฟีเจอร์ที่ยังไม่เสร็จสมบูรณ์ (Agile Tracking)
 
-### ⚠️ ระบบที่ยังเหลืออยู่
-1. ~~**Affiliate Commission System**~~ - ✅ **เสร็จสมบูรณ์แล้ว (95%)** - Commission rate config table, Admin API, Payout System เสร็จแล้ว
-2. ~~**Google Analytics Integration**~~ - ✅ **เสร็จสมบูรณ์แล้ว (100%)**
-3. **E2E Test Failure - Auth Flow** - ⚠️ **บางส่วนแก้ไขแล้ว** (Import path + Error handling แก้แล้ว) - ยังต้องสร้าง Supabase Storage bucket (`gym-images`)
-4. ~~**Gamification - Leaderboard "View All"**~~ - ✅ **เสร็จสมบูรณ์แล้ว (100%)** - สร้างหน้า `/dashboard/leaderboard/[id]` แล้ว
-5. **Gamification - Award Points เมื่อแนะนำเพื่อน** - ยังไม่เชื่อมต่อกับ Affiliate System
-6. ~~**Multi-language Support (I18N)**~~ - ✅ **เสร็จสมบูรณ์แล้ว (100%)** - รองรับ 3 ภาษา (ไทย, อังกฤษ, ญี่ปุ่น)
-7. **Admin - Bulk Operations** - ยังไม่เริ่ม
-8. **Admin - Content Moderation Tools** - ยังไม่เริ่ม
-9. **Coupon Code System** - วางแผนไว้ใน Phase 2
+### 📦 Sprint Backlog (2025-11-04 → 2025-11-15)
+- **[S-101] E2E Auth Flow Ready** – สร้าง Supabase bucket `gym-images`, ตั้งค่า security policy, rerun Playwright ให้ผ่าน ✅ Criteria: spec เขียวใน CI
+- **[S-102] Referral Points Awarding** – เชื่อม Affiliate conversion กับบริการ Gamification เพื่อมอบแต้มทันที ✅ Criteria: แต้มแสดงใน dashboard, regression tests ผ่าน
+
+### 🗂️ Product Backlog (Ready / Groomed)
+- **[S-201] Admin Bulk Operations** – Dashboard ทำ bulk approve/reject/activate เพื่อช่วยงานเจ้าหน้าที่
+- **[S-202] Admin Content Moderation Tools** – Moderator เห็น queue และดำเนินการกับ flagged content
+- **[S-203] Referral Session Storage Optimization** – เก็บ referral code แบบ session storage ลด dependency บน query string (Optional)
+
+### 💤 Future (Phase 2 / Icebox)
+- **[S-301] Coupon Code System** – เพิ่มคูปองและส่วนลดใน checkout flow
 
 ---
 
@@ -237,17 +258,10 @@
 
 ## 📋 งานที่ยังต้องทำ
 
-### ⚠️ งานที่เหลืออยู่ (ดูรายละเอียดใน [PLAN.md](./PLAN.md))
-1. ~~**Affiliate Commission System**~~ - ✅ **เสร็จสมบูรณ์แล้ว (95%)** - Commission rate config table, Admin API, Payout System เสร็จแล้ว
-   - Commission rate config table (แทน constants)
-   - Session storage optimization (Optional)
-2. ~~**Google Analytics Integration**~~ - ✅ **เสร็จสมบูรณ์แล้ว (100%)**
-3. **E2E Test Failure - Auth Flow** - ⚠️ **บางส่วนแก้ไขแล้ว** (Import path + Error handling แก้แล้ว) - ยังต้องสร้าง Supabase Storage bucket (`gym-images`) ตาม [E2E_TEST_ERROR_FIX.md](./E2E_TEST_ERROR_FIX.md)
-4. ~~**Gamification - Leaderboard "View All"**~~ - ✅ **เสร็จสมบูรณ์แล้ว (100%)** - สร้างหน้า `/dashboard/leaderboard/[id]` แล้ว
-5. **Gamification - Award Points เมื่อแนะนำเพื่อน** - เชื่อมต่อกับ Affiliate System
-6. **Admin - Bulk Operations** - สร้าง UI และ API
-7. **Admin - Content Moderation Tools** - สร้าง moderation dashboard
-8. **Coupon Code System** - Phase 2 (วางแผนไว้)
+### ⚠️ งานที่เหลืออยู่ (Agile Buckets) – ดูรายละเอียดใน [PLAN.md](./PLAN.md)
+- **Sprint Backlog**: [S-101] E2E Auth Flow Ready, [S-102] Referral Points Awarding
+- **Product Backlog**: [S-201] Admin Bulk Operations, [S-202] Admin Content Moderation Tools, [S-203] Referral Session Storage Optimization (Optional)
+- **Icebox / Phase 2**: [S-301] Coupon Code System
 
 ### 🎨 UX Improvements (ดูรายละเอียดใน [UX_IMPROVEMENTS_NEEDED.md](./UX_IMPROVEMENTS_NEEDED.md))
 

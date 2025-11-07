@@ -3,7 +3,7 @@ import {
   loginUser,
   logoutUser,
   takeDebugScreenshot,
-} from './helpers';
+} from '../helpers';
 
 /**
  * E2E Test: Login with Existing Users (3 Roles)
