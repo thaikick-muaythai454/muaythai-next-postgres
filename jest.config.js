@@ -35,6 +35,11 @@ export default {
         allowSyntheticDefaultImports: true,
       },
     }],
+    '^.+\\.(js|jsx|mjs)$': ['babel-jest', {
+      presets: [
+        ['@babel/preset-env', { targets: { node: 'current' } }]
+      ],
+    }],
   },
   
   // Module file extensions
@@ -67,5 +72,9 @@ export default {
   
   // Extensions to treat as ESM
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
+
+  transformIgnorePatterns: [
+    '/node_modules/(?!@supabase/supabase-js/)',
+  ],
 };
 

@@ -242,7 +242,12 @@ const CustomSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
     ].filter(Boolean).join(' ');
 
     return (
-      <div className="w-full">
+      <div
+        className={cn(
+          "w-full transition-shadow duration-200",
+          isFocused && "shadow-lg shadow-red-500/20"
+        )}
+      >
         {/* Label */}
         {label && (
           <label
@@ -266,6 +271,7 @@ const CustomSelect = React.forwardRef<HTMLSelectElement, SelectProps>(
                 size
               }),
               `duration-${theme.animations.duration.normal.replace('ms', '')}`,
+              isFocused && "border-red-400 shadow-inner",
               className
             )}
             value={value as string | number | readonly string[] | undefined}

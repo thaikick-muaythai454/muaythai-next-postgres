@@ -41,11 +41,37 @@ export const isStripeConfigured = () => !!getStripeSecretKey();
 export const CURRENCY = 'thb'; // Thai Baht
 export const CURRENCY_SYMBOL = '฿';
 
+const CURRENCY_MULTIPLIERS: Record<string, number> = {
+  BIF: 1,
+  CLP: 1,
+  DJF: 1,
+  GNF: 1,
+  JPY: 1,
+  KMF: 1,
+  KRW: 1,
+  MGA: 1,
+  PYG: 1,
+  RWF: 1,
+  VND: 1,
+  VUV: 1,
+  XAF: 1,
+  XOF: 1,
+  XPF: 1,
+  BHD: 1000,
+  IQD: 1000,
+  JOD: 1000,
+  KWD: 1000,
+  LYD: 1000,
+  OMR: 1000,
+  TND: 1000,
+};
+
 // Helper function to format amount for Stripe (convert to smallest currency unit)
 export function formatAmountForStripe(amount: number, currency: string = CURRENCY): number {
-  // Stripe expects amounts in smallest currency unit (satang for THB)
-  // 1 THB = 100 satang
-  return Math.round(amount * 100);
+  const normalizedCurrency = currency.toUpperCase();
+  const multiplier = CURRENCY_MULTIPLIERS[normalizedCurrency] ?? 100;
+
+  return Math.round(amount * multiplier);
 }
 
 // Helper function to format amount for display

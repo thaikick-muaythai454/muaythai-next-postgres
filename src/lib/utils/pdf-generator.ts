@@ -215,7 +215,7 @@ export function generateReceiptPDF(data: ReceiptData): jsPDF {
     margin: { left: margin, right: margin },
   });
 
-  yPosition = (doc as any).lastAutoTable.finalY + 10;
+  yPosition = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
 
   // Payment summary
   doc.setFontSize(11);
@@ -389,7 +389,7 @@ export function generateInvoicePDF(data: InvoiceData): jsPDF {
     },
   });
 
-  yPosition = (doc as any).lastAutoTable.finalY + 10;
+  yPosition = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
 
   // Totals
   const totalsX = pageWidth - margin;

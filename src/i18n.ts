@@ -1,5 +1,5 @@
 import { getRequestConfig } from 'next-intl/server';
-import { notFound } from 'next/navigation';
+// import { notFound } from 'next/navigation';
 
 // Supported locales: Thai, English, Japanese
 export const locales = ['th', 'en', 'jp'] as const;

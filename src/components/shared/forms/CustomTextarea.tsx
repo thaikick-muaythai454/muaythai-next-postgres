@@ -247,7 +247,12 @@ const CustomTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
     ].filter(Boolean).join(' ');
 
     return (
-      <div className="w-full">
+      <div
+        className={cn(
+          "w-full transition-shadow duration-200",
+          isFocused && "shadow-lg shadow-red-500/20"
+        )}
+      >
         {/* Label */}
         {label && (
           <label
@@ -264,12 +269,13 @@ const CustomTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
           id={textareaId}
           name={name}
           className={cn(
-            textareaVariants({ 
-              variant: currentVariant, 
+            textareaVariants({
+              variant: currentVariant,
               size,
-              resize
+              resize,
             }),
-            `duration-${theme.animations.duration.normal.replace('ms', '')}`,
+            "duration-200",
+            isFocused && "border-red-400 shadow-inner",
             className
           )}
           placeholder={placeholder}

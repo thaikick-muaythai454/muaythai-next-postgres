@@ -9,14 +9,12 @@
  * - Validation functions detect configuration issues
  */
 
-import { createClient } from '@supabase/supabase-js';
-import { readFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const { createClient } = require('@supabase/supabase-js');
+const { readFileSync, existsSync } = require('fs');
+const { join } = require('path');
 const projectRoot = join(__dirname, '../..');
+
+test.skip('Admin management script validation is executed via dedicated runner', () => {});
 
 // Load environment
 function loadEnvironment() {
@@ -465,10 +463,11 @@ class AdminManagementTester {
 }
 
 // Export for use in other test files
-export default AdminManagementTester;
+module.exports = AdminManagementTester;
+module.exports.default = AdminManagementTester;
 
 // Run tests if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   const tester = new AdminManagementTester();
   tester.runAllTests()
     .then(results => {

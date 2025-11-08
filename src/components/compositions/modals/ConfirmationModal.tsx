@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useMemo } from 'react';
-import { ExclamationTriangleIcon, CheckCircleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/design-system/primitives/Button';
 import { Modal } from './Modal';
 import { ConfirmationModalProps } from './types';
@@ -34,17 +34,6 @@ const ConfirmationModalComponent = memo(function ConfirmationModal({
         return <ExclamationTriangleIcon className="w-12 h-12 text-yellow-500" />;
       default:
         return <InformationCircleIcon className="w-12 h-12 text-blue-500" />;
-    }
-  }, [confirmVariant]);
-
-  const headerColor = useMemo(() => {
-    switch (confirmVariant) {
-      case 'danger':
-        return 'from-red-900/20 to-red-800/20 border-red-600';
-      case 'warning':
-        return 'from-yellow-900/20 to-yellow-800/20 border-yellow-600';
-      default:
-        return 'from-blue-900/20 to-blue-800/20 border-blue-600';
     }
   }, [confirmVariant]);
 

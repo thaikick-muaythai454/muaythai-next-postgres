@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
 import { Card, CardBody, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button, Tabs, Tab } from '@heroui/react';
 import {
-  HomeIcon,
   UserIcon,
   CalendarIcon,
   HeartIcon,
@@ -37,22 +36,7 @@ function TransactionsContent() {
   const [selectedTab, setSelectedTab] = useState('all');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
-  useEffect(() => {
-    async function loadUser() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      
-      if (user) {
-        // Load bookings as transactions
-        await loadTransactions(user.id);
-      }
-      
-      setIsLoading(false);
-    }
-    loadUser();
-  }, [supabase]);
-  
-  const loadTransactions = async (userId: string) => {
+  const loadTransactions = useCallback(async (userId: string) => {
     try {
       const { data: bookingsData } = await supabase
         .from('bookings')
@@ -92,7 +76,22 @@ function TransactionsContent() {
     } catch (error) {
       console.error('Error loading transactions:', error);
     }
-  };
+  }, [supabase]);
+
+  useEffect(() => {
+    async function loadUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      
+      if (user) {
+        // Load bookings as transactions
+        await loadTransactions(user.id);
+      }
+      
+      setIsLoading(false);
+    }
+    loadUser();
+  }, [supabase, loadTransactions]);
 
   const menuItems: MenuItem[] = [
     { label: 'การจองของฉัน', href: '/dashboard/bookings', icon: CalendarIcon },
@@ -173,18 +172,6 @@ function TransactionsContent() {
     if (selectedTab === 'all') return true;
     return transaction.type === selectedTab;
   });
-
-  const totalIncome = transactions
-    .filter(t => t.amount > 0 && t.status === 'completed')
-    .reduce((sum, t) => sum + t.amount, 0);
-
-  const totalExpense = Math.abs(
-    transactions
-      .filter(t => t.amount < 0 && t.status === 'completed')
-      .reduce((sum, t) => sum + t.amount, 0)
-  );
-
-  const balance = totalIncome - totalExpense;
 
   if (isLoading) {
     return (

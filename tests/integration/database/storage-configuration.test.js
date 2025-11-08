@@ -9,14 +9,12 @@
  * - Rollback procedures are available
  */
 
-import { createClient } from '@supabase/supabase-js';
-import { readFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const { createClient } = require('@supabase/supabase-js');
+const { readFileSync, existsSync } = require('fs');
+const { join } = require('path');
 const projectRoot = join(__dirname, '../..');
+
+test.skip('Storage configuration script validation is executed via dedicated runner', () => {});
 
 // Load environment
 function loadEnvironment() {
@@ -470,10 +468,11 @@ class StorageConfigurationTester {
 }
 
 // Export for use in other test files
-export default StorageConfigurationTester;
+module.exports = StorageConfigurationTester;
+module.exports.default = StorageConfigurationTester;
 
 // Run tests if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   const tester = new StorageConfigurationTester();
   tester.runAllTests()
     .then(results => {

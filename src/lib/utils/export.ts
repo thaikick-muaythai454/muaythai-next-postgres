@@ -10,7 +10,7 @@ import autoTable from 'jspdf-autotable';
  * Export data to CSV format
  */
 export function exportToCSV(
-  data: Record<string, any>[],
+  data: Record<string, unknown>[],
   filename: string,
   headers?: string[]
 ): void {
@@ -79,7 +79,7 @@ function escapeCSVValue(value: string): string {
  * Export data to PDF format
  */
 export function exportToPDF(
-  data: Record<string, any>[],
+  data: Record<string, unknown>[],
   filename: string,
   title: string,
   headers?: string[],
@@ -160,11 +160,11 @@ export function exportToPDF(
  * Format data for export (clean up nested objects, arrays, etc.)
  */
 export function formatDataForExport(
-  data: Record<string, any>[],
+  data: Record<string, unknown>[],
   columnMapping?: Record<string, string>
-): Array<Record<string, any>> {
+): Array<Record<string, unknown>> {
   return data.map((row) => {
-    const formatted: Record<string, any> = {};
+    const formatted: Record<string, unknown> = {};
     
     Object.keys(row).forEach((key) => {
       const displayKey = columnMapping?.[key] || key;
@@ -178,10 +178,10 @@ export function formatDataForExport(
       // Handle objects (extract useful info)
       if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
         // For gyms/users objects, get name
-        if (value.gym_name || value.full_name || value.email) {
-          value = value.gym_name || value.full_name || value.email;
+        if ((value as Record<string, unknown>).gym_name || (value as Record<string, unknown>).full_name || (value as Record<string, unknown>).email) {
+          value = (value as Record<string, unknown>).gym_name || (value as Record<string, unknown>).full_name || (value as Record<string, unknown>).email;
         } else {
-          value = JSON.stringify(value).substring(0, 100);
+          value = JSON.stringify(value as Record<string, unknown>).substring(0, 100);
         }
       }
 

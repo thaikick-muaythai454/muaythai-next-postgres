@@ -64,6 +64,13 @@ export async function sendContactEmail(data: ContactEmailData) {
 
   try {
     const { name, email, message } = data;
+    const plainTextContent = [
+      `ชื่อ: ${name}`,
+      `อีเมล: ${email}`,
+      "",
+      "ข้อความ:",
+      message,
+    ].join("\n");
 
     // Send email
     const result = await resend.emails.send({
@@ -72,6 +79,7 @@ export async function sendContactEmail(data: ContactEmailData) {
       replyTo: email,
       subject: `ข้อความติดต่อจาก ${name}`,
       html: generateContactEmailHtml(data),
+      text: plainTextContent,
     });
 
     if (result.error) {
@@ -676,7 +684,7 @@ export interface AdminAlertData {
   alertType: string;
   title: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   actionUrl?: string;
   priority?: 'low' | 'medium' | 'high' | 'critical';
 }

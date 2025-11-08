@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Card, CardBody, Button, ScrollShadow, Divider, Chip } from '@heroui/react';
+import { Button, ScrollShadow, Chip } from '@heroui/react';
 import {
   XMarkIcon,
   CheckIcon,
@@ -10,17 +10,6 @@ import {
 import { Link } from '@/navigation';
 import { toast } from 'react-hot-toast';
 import { useRealtimeNotifications } from '@/lib/hooks/useRealtimeNotifications';
-
-interface Notification {
-  id: string;
-  type: string;
-  title: string;
-  message: string;
-  link_url: string | null;
-  is_read: boolean;
-  metadata: any;
-  created_at: string;
-}
 
 interface NotificationListProps {
   onClose?: () => void;
@@ -231,6 +220,21 @@ export function NotificationList({
                       <p className="text-sm text-default-600 mt-1">
                         {notification.message}
                       </p>
+                      {notification.metadata &&
+                        Object.keys(notification.metadata).length > 0 && (
+                          <div className="mt-2 space-y-1 text-xs text-default-500">
+                            {Object.entries(notification.metadata).map(([key, value]) => (
+                              <div key={key} className="flex items-center gap-2">
+                                <span className="font-medium capitalize">{key}:</span>
+                                <span className="truncate">
+                                  {typeof value === 'object'
+                                    ? JSON.stringify(value)
+                                    : String(value)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       <p className="text-xs text-default-400 mt-2">
                         {formatDate(notification.created_at)}
                       </p>

@@ -87,9 +87,15 @@ export function FavoriteButton({
           throw new Error(result.error || 'Failed to add favorite');
         }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error toggling favorite:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาด');
+      const message =
+        error instanceof Error
+          ? error.message
+          : typeof error === 'string'
+          ? error
+          : 'เกิดข้อผิดพลาด';
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

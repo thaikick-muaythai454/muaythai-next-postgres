@@ -7,6 +7,8 @@
  * Fallback constants are provided for backward compatibility and initial setup.
  */
 
+import type { SupabaseClient } from '@supabase/supabase-js';
+
 // Fallback rates (used if database is unavailable or during initial migration)
 export const AFFILIATE_COMMISSION_RATES_FALLBACK = {
   signup: 0, // No commission for signup (or 5% if you want to reward signups)
@@ -50,7 +52,7 @@ export function calculateCommissionAmount(
  */
 export async function getCommissionRate(
   conversionType: ConversionType,
-  supabaseClient?: any
+  supabaseClient?: SupabaseClient
 ): Promise<number> {
   // Check cache first
   const now = Date.now();
@@ -61,7 +63,7 @@ export async function getCommissionRate(
   try {
     // Import dynamically to avoid circular dependencies
     const { createClient } = await import('@/lib/database/supabase/server');
-    const supabase = supabaseClient || await createClient();
+    const supabase = (supabaseClient ?? await createClient()) as SupabaseClient;
 
     const { data, error } = await supabase
       .from('affiliate_commission_rates')

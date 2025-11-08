@@ -4,6 +4,7 @@
  * Provides standardized error handling for API routes
  */
 
+import { SupabaseClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 
 /**
@@ -236,7 +237,7 @@ export function validateRequestBody<T>(
 /**
  * Check authentication
  */
-export async function requireAuth(supabase: any) {
+export async function requireAuth(supabase: SupabaseClient) {
   const { data: { user }, error } = await supabase.auth.getUser();
   
   if (error || !user) {
@@ -249,7 +250,7 @@ export async function requireAuth(supabase: any) {
 /**
  * Check admin role
  */
-export async function requireAdmin(supabase: any, userId: string) {
+export async function requireAdmin(supabase: SupabaseClient, userId: string) {
   const { data: profile } = await supabase
     .from('user_profiles')
     .select('role')
@@ -266,7 +267,7 @@ export async function requireAdmin(supabase: any, userId: string) {
 /**
  * Check partner role
  */
-export async function requirePartner(supabase: any, userId: string) {
+export async function requirePartner(supabase: SupabaseClient, userId: string) {
   const { data: profile } = await supabase
     .from('user_profiles')
     .select('role')

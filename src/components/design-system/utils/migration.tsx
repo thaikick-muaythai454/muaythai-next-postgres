@@ -1,4 +1,4 @@
-/**
+      /**
  * Migration Utilities
  * 
  * Helper functions and utilities to assist with migrating from old component
@@ -127,7 +127,7 @@ export function migrateInputProps(
     name: (otherProps as { name?: string }).name || 'input', // Required in new system - default fallback
     label: '', // Required in new system - will need to be provided
     leftIcon: icon,
-    onChange: onChange ? (value: unknown, event?: React.ChangeEvent<HTMLElement>) => {
+    onChange: onChange ? (value: unknown) => {
       if (typeof value === 'string') {
         onChange(value);
       }
@@ -317,6 +317,24 @@ export function validateMigratedProps<T>(
       break;
   }
   
+  if (schema) {
+    Object.entries(schema).forEach(([key, requirement]) => {
+      const requirementShape = requirement as Record<string, unknown>;
+
+      if (requirementShape.required) {
+        const value = (props as Record<string, unknown>)[key];
+        const isEmpty =
+          value === undefined ||
+          value === null ||
+          (typeof value === "string" && value.trim().length === 0);
+
+        if (isEmpty) {
+          errors.push(`${componentName}: Missing required property "${key}"`);
+        }
+      }
+    });
+  }
+
   return {
     isValid: errors.length === 0,
     errors,
@@ -396,7 +414,7 @@ export const devMigrationUtils = process.env.NODE_ENV === 'development' ? {
   /**
    * Scan component tree for legacy patterns
    */
-  scanForLegacyPatterns: (element: React.ReactElement): string[] => {
+  scanForLegacyPatterns: (_element: React.ReactElement): string[] => {
     const warnings: string[] = [];
     
     // This would need to be implemented with React DevTools or similar

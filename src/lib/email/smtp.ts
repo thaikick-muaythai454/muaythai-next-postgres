@@ -533,7 +533,7 @@ export interface AdminAlertData {
   alertType: string;
   title: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   actionUrl?: string;
   priority?: 'low' | 'medium' | 'high' | 'critical';
 }

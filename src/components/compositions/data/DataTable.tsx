@@ -3,9 +3,9 @@
 import { useState, memo, useMemo, useCallback } from 'react';
 import { ChevronUpIcon, ChevronDownIcon } from '@heroicons/react/24/outline';
 import { Loading } from '@/components/design-system/primitives/Loading';
-import { Button } from '@/components/design-system/primitives/Button';
+// import { Button } from '@/components/design-system/primitives/Button';
 import { EmptyState } from './EmptyState';
-import { DataTableProps, TableColumn } from './types';
+import { DataTableProps } from './types';
 
 function DataTableImpl<T = Record<string, unknown>>({
   columns,

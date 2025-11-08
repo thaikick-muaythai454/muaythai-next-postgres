@@ -9,15 +9,13 @@
  * - Environment detection works correctly
  */
 
-import { spawn } from 'child_process';
-import { createClient } from '@supabase/supabase-js';
-import { readFileSync, existsSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const { spawn } = require('child_process');
+const { createClient } = require('@supabase/supabase-js');
+const { readFileSync, existsSync } = require('fs');
+const { join } = require('path');
 const projectRoot = join(__dirname, '../..');
+
+test.skip('Database utilities script validation is executed via dedicated runner', () => {});
 
 // Load environment
 function loadEnvironment() {
@@ -511,10 +509,11 @@ class DatabaseUtilitiesTester {
 }
 
 // Export for use in other test files
-export default DatabaseUtilitiesTester;
+module.exports = DatabaseUtilitiesTester;
+module.exports.default = DatabaseUtilitiesTester;
 
 // Run tests if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+if (require.main === module) {
   const tester = new DatabaseUtilitiesTester();
   tester.runAllTests()
     .then(results => {

@@ -1,16 +1,15 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
 import { Link } from '@/navigation';
 import Image from 'next/image';
-import { Card, CardHeader, CardBody, Button, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Textarea, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from '@heroui/react';
+import { Card, CardHeader, CardBody, Button, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from '@heroui/react';
 import {
   BuildingStorefrontIcon,
   ChartBarIcon,
-  UsersIcon,
   CalendarIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
@@ -94,44 +93,21 @@ function PartnerDashboardContent() {
   const [featureInput, setFeatureInput] = useState('');
   const [packageErrors, setPackageErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+  const loadPackages = useCallback(async () => {
+    try {
+      const response = await fetch('/api/partner/packages');
+      const result = await response.json();
 
-      if (user) {
-        const { data: gymData } = await supabase
-          .from('gyms')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-
-        setGym(gymData);
-        if (gymData) {
-          setEditFormData({
-            gym_name: gymData.gym_name || '',
-            contact_name: gymData.contact_name || '',
-            phone: gymData.phone || '',
-            email: gymData.email || '',
-            location: gymData.location || '',
-            gym_details: gymData.gym_details || '',
-          });
-          
-          // Load packages
-          loadPackages();
-          
-          // Load bookings and transactions for this gym
-          await loadBookings(gymData.id);
-        }
+      if (result.success) {
+        setPackages(result.data.packages);
       }
-
-      setIsLoading(false);
+    } catch (error) {
+      // Error loading packages
     }
-    loadData();
-  }, [supabase]);
+  }, []);
   
   // Load bookings for partner's gym
-  const loadBookings = async (gymId: string) => {
+  const loadBookings = useCallback(async (gymId: string) => {
     try {
       const { data: bookingsData } = await supabase
         .from('bookings')
@@ -160,20 +136,43 @@ function PartnerDashboardContent() {
     } catch (error) {
       console.error('Error loading bookings:', error);
     }
-  };
+  }, [supabase]);
 
-  const loadPackages = async () => {
-    try {
-      const response = await fetch('/api/partner/packages');
-      const result = await response.json();
+  useEffect(() => {
+    async function loadData() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      
+      if (user) {
+        const { data: gymData } = await supabase
+          .from('gyms')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-      if (result.success) {
-        setPackages(result.data.packages);
+        setGym(gymData);
+        if (gymData) {
+          setEditFormData({
+            gym_name: gymData.gym_name || '',
+            contact_name: gymData.contact_name || '',
+            phone: gymData.phone || '',
+            email: gymData.email || '',
+            location: gymData.location || '',
+            gym_details: gymData.gym_details || '',
+          });
+          
+          // Load packages
+          await loadPackages();
+          
+          // Load bookings and transactions for this gym
+          await loadBookings(gymData.id);
+        }
       }
-    } catch (error) {
-      // Error loading packages
+
+      setIsLoading(false);
     }
-  };
+    loadData();
+  }, [supabase, loadPackages, loadBookings]);
 
   const resetForm = () => {
     setFormData({
@@ -1097,6 +1096,7 @@ function PartnerDashboardContent() {
                 onChange={(value) => setFormData(prev => ({ ...prev, package_type: String(value) as 'one_time' | 'package', duration_months: null }))}
                 required
                 disabled={!!editingPackage}
+                error={packageErrors.package_type}
               >
                 <option value="" disabled>เลือกประเภท</option>
                 <option value="one_time">รายครั้ง</option>
@@ -1112,6 +1112,7 @@ function PartnerDashboardContent() {
                   value={formData.duration_months?.toString() || ''}
                   onChange={(value) => setFormData(prev => ({ ...prev, duration_months: parseInt(String(value)) }))}
                   required
+                  error={packageErrors.duration_months}
                 >
                   <option value="" disabled>เลือกระยะเวลา</option>
                   <option value="1">1 เดือน</option>
@@ -1129,6 +1130,7 @@ function PartnerDashboardContent() {
                 value={formData.name}
                 onChange={(value) => setFormData(prev => ({ ...prev, name: String(value) }))}
                 required
+                error={packageErrors.name}
               />
 
               {/* Name English */}
@@ -1151,6 +1153,7 @@ function PartnerDashboardContent() {
                 value={formData.price}
                 onChange={(value) => setFormData(prev => ({ ...prev, price: String(value) }))}
                 required
+                error={packageErrors.price}
               />
 
               {/* Description */}

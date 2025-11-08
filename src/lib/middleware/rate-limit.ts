@@ -252,7 +252,7 @@ export async function rateLimit(
  * });
  * ```
  */
-export function withRateLimit<T extends (...args: any[]) => Promise<NextResponse>>(
+export function withRateLimit<T extends (...args: unknown[]) => Promise<NextResponse>>(
   handler: T,
   customConfig?: RateLimitConfig
 ): T {
@@ -264,7 +264,8 @@ export function withRateLimit<T extends (...args: any[]) => Promise<NextResponse
     try {
       // This is a best-effort attempt to get user ID
       // The actual implementation may vary based on your auth setup
-      const authHeader = request.headers.get('authorization');
+      const authHeader = request.headers.get('authorization') as string;
+      userId = authHeader.split(' ')[1];
       // You might need to decode JWT or call Supabase here
       // For now, we'll rely on IP-based rate limiting
     } catch {

@@ -63,17 +63,27 @@ export function UserBehaviorTracker({
   useEffect(() => {
     // Initialize Hotjar if enabled
     if (enableHotjar && hotjarId && typeof window !== 'undefined') {
-      (function(h: any, o: any, t: string, j: string, a?: any, r?: any) {
-        h.hj = h.hj || function(...args: unknown[]) {
-          (h.hj.q = h.hj.q || []).push(args);
+      const hotjarWindow = window as typeof window & {
+        hj?: ((...args: unknown[]) => void) & { q?: unknown[][] };
+        _hjSettings?: { hjid: number; hjsv: number };
+      };
+
+      hotjarWindow.hj =
+        hotjarWindow.hj ||
+        function (...args: unknown[]) {
+          (hotjarWindow.hj!.q = hotjarWindow.hj!.q || []).push(args);
         };
-        h._hjSettings = { hjid: parseInt(hotjarId), hjsv: 6 };
-        a = o.getElementsByTagName('head')[0];
-        r = o.createElement('script');
-        r.async = 1;
-        r.src = t + h._hjSettings.hjid + j + h._hjSettings.hjsv;
-        a.appendChild(r);
-      })(window, document, 'https://static.hotjar.com/c/hotjar-', '.js?sv=');
+
+      hotjarWindow._hjSettings = {
+        hjid: parseInt(hotjarId, 10),
+        hjsv: 6,
+      };
+
+      const head = document.getElementsByTagName('head')[0];
+      const script = document.createElement('script');
+      script.async = true;
+      script.src = `https://static.hotjar.com/c/hotjar-${hotjarWindow._hjSettings.hjid}.js?sv=${hotjarWindow._hjSettings.hjsv}`;
+      head.appendChild(script);
     }
 
     // Initialize Crazy Egg if enabled

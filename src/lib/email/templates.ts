@@ -574,7 +574,7 @@ export function generateAdminAlertHtml(data: {
   alertType: string;
   title: string;
   message: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
   actionUrl?: string;
   priority?: 'low' | 'medium' | 'high' | 'critical';
 }): string {
@@ -603,14 +603,23 @@ export function generateAdminAlertHtml(data: {
 
   const detailsHtml = details
     ? Object.entries(details)
-        .map(
-          ([key, value]) => `
+        .map(([key, value]) => {
+          let displayValue: string;
+          if (value === null || value === undefined) {
+            displayValue = '';
+          } else if (typeof value === 'object') {
+            displayValue = JSON.stringify(value);
+          } else {
+            displayValue = String(value);
+          }
+
+          return `
         <tr>
           <td style="padding: 8px 0; color: #6b7280; width: 40%;">${key}:</td>
-          <td style="padding: 8px 0; color: #1f2937;">${typeof value === 'object' ? JSON.stringify(value) : String(value)}</td>
+          <td style="padding: 8px 0; color: #1f2937;">${displayValue}</td>
         </tr>
-      `
-        )
+      `;
+        })
         .join('')
     : '';
 

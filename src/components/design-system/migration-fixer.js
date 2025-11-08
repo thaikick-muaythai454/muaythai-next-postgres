@@ -103,7 +103,7 @@ function scanDirectory(dirPath, extensions = ['.tsx', '.ts', '.js', '.jsx']) {
   return files;
 }
 
-function applyMigrationPatterns(content, filePath) {
+function applyMigrationPatterns(content) {
   let modifiedContent = content;
   let changesCount = 0;
   const appliedFixes = [];
@@ -142,13 +142,13 @@ function fixFile(filePath) {
       result.appliedFixes.forEach(fix => {
         log(`  - ${fix}`, 'info');
       });
-      return true;
+      return result.changesCount;
     }
 
-    return false;
+    return 0;
   } catch (error) {
     log(`Error fixing ${filePath}: ${error.message}`, 'error');
-    return false;
+    return 0;
   }
 }
 
@@ -176,8 +176,10 @@ function runMigrationFixer() {
   let totalChanges = 0;
 
   allFiles.forEach(filePath => {
-    if (fixFile(filePath)) {
+    const changes = fixFile(filePath);
+    if (changes > 0) {
       fixedFiles++;
+      totalChanges += changes;
     }
   });
 
@@ -185,6 +187,7 @@ function runMigrationFixer() {
   log('📊 Migration Fixer Summary', 'info');
   console.log(`✅ Files processed: ${allFiles.length}`);
   console.log(`🔧 Files fixed: ${fixedFiles}`);
+  console.log(`🛠️  Total changes applied: ${totalChanges}`);
 
   if (fixedFiles > 0) {
     log('🎉 Migration fixes applied successfully!', 'success');
