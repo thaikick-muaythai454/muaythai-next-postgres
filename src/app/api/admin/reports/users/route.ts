@@ -128,8 +128,16 @@ const getUsersReportHandler = withAdminAuth(async (
       );
     }
     
-    // Get additional statistics for each user
-    const userRoleRecords = (usersWithRoles ?? []) as UserRoleWithProfile[];
+    type RawUserRoleRecord = UserRoleWithProfile & { profiles?: UserProfileSummary[] | null };
+    const rawUserRoleRecords = (usersWithRoles ?? []) as RawUserRoleRecord[];
+
+    const userRoleRecords: UserRoleWithProfile[] = rawUserRoleRecords.map((record) => ({
+      user_id: record.user_id,
+      role: record.role,
+      created_at: record.created_at,
+      updated_at: record.updated_at,
+      profiles: record.profiles?.[0] ?? null,
+    }));
 
     const usersWithStats: UserWithStats[] = await Promise.all(
       userRoleRecords.map(async (userRole) => {
