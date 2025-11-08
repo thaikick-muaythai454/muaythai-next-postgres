@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
@@ -9,7 +9,6 @@ import { adminMenuItems } from '@/components/features/admin/adminMenuItems';
 import { Card, CardBody, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Button, Input, useDisclosure } from '@heroui/react';
 import {
   MagnifyingGlassIcon,
-  EyeIcon,
   PencilIcon,
   TrashIcon,
   PlusIcon,
@@ -56,9 +55,24 @@ function AdminCategoriesContent() {
     loadCategories();
   }, [supabase]);
 
+  const filterCategories = useCallback(() => {
+    let filtered = [...categories];
+
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(cat =>
+        cat.nameThai?.toLowerCase().includes(query) ||
+        cat.nameEnglish?.toLowerCase().includes(query) ||
+        cat.slug?.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredCategories(filtered);
+  }, [categories, searchQuery]);
+
   useEffect(() => {
     filterCategories();
-  }, [categories, searchQuery]);
+  }, [filterCategories]);
 
   async function loadCategories() {
     try {
@@ -77,21 +91,6 @@ function AdminCategoriesContent() {
     } finally {
       setIsLoading(false);
     }
-  }
-
-  function filterCategories() {
-    let filtered = [...categories];
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(cat =>
-        cat.nameThai?.toLowerCase().includes(query) ||
-        cat.nameEnglish?.toLowerCase().includes(query) ||
-        cat.slug?.toLowerCase().includes(query)
-      );
-    }
-
-    setFilteredCategories(filtered);
   }
 
   async function handleDelete(categoryId: string) {

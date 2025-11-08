@@ -6,7 +6,7 @@ import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem, FavoriteButton } from '@/components/shared';
 import { Link } from '@/navigation';
 import Image from 'next/image';
-import { Card, CardBody, CardHeader, CardFooter, Button, Chip } from '@heroui/react';
+import { Card, CardBody, CardHeader, CardFooter, Button } from '@heroui/react';
 import {
   UserIcon,
   CalendarIcon,
@@ -77,8 +77,8 @@ function FavoritesContent() {
       } else {
         throw new Error(result.error || 'Failed to load favorites');
       }
-    } catch (error: any) {
-      console.error('Error loading favorites:', error);
+    } catch (error: unknown) {
+      console.error('Error loading favorites:', error as Error);
       toast.error('ไม่สามารถโหลดรายการโปรดได้');
     } finally {
       setIsLoadingFavorites(false);
@@ -109,7 +109,7 @@ function FavoritesContent() {
       } else {
         throw new Error(result.error || 'Failed to remove favorite');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error removing favorite:', error);
       toast.error('เกิดข้อผิดพลาดในการลบรายการโปรด');
     }

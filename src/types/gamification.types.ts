@@ -149,6 +149,7 @@ export interface GamificationStats {
 export interface LeaderboardData {
   leaderboard: Leaderboard;
   entries: LeaderboardEntry[];
+  total_entries?: number;
   user_rank?: number;
   user_score?: number;
 }

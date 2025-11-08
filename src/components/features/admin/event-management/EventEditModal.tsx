@@ -3,7 +3,7 @@ import { Input, Textarea, Switch, Select, SelectItem } from "@heroui/react";
 import AdminFormModal from "../shared/AdminFormModal";
 import { Event } from "@/types";
 
-interface EventUpdateData {
+export interface EventUpdateData {
   slug: string;
   name: string;
   name_english?: string;

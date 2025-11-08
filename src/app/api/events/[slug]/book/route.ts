@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { generateQRCodeString } from '@/lib/utils/qrcode';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Helper function to check if a string is a UUID
@@ -422,7 +423,7 @@ export async function POST(
 }
 
 // Helper function to generate order number
-async function generateOrderNumber(supabase: any): Promise<string> {
+async function generateOrderNumber(supabase: SupabaseClient): Promise<string> {
   const { data } = await supabase
     .rpc('generate_order_number');
   
@@ -437,7 +438,7 @@ async function generateOrderNumber(supabase: any): Promise<string> {
 }
 
 // Helper function to generate booking reference
-async function generateBookingReference(supabase: any): Promise<string> {
+async function generateBookingReference(supabase: SupabaseClient): Promise<string> {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
   let reference = '';
   

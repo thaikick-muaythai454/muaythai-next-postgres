@@ -26,7 +26,7 @@ export async function PUT(
     const body = await request.json();
     const { is_read } = body;
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (is_read !== undefined) {
       updateData.is_read = is_read;
     }

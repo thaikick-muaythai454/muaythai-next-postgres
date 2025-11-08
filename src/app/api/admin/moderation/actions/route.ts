@@ -39,7 +39,7 @@ export const POST = withAdminAuth<Record<string, never>>(async (
     }
 
     // Get content snapshot before action (for audit)
-    let contentSnapshot: any = null;
+    let contentSnapshot: Record<string, unknown> | null = null;
     try {
       const tableMap: Record<string, string> = {
         article: 'articles',
@@ -63,7 +63,7 @@ export const POST = withAdminAuth<Record<string, never>>(async (
     }
 
     // Perform action based on type
-    let updateData: any = {};
+    let updateData: Record<string, unknown> = {};
 
     switch (action) {
       case 'approve':

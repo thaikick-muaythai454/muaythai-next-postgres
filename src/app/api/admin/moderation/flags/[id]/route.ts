@@ -50,7 +50,7 @@ export const PATCH = withAdminAuth<{ id: string }>(async (
     }
 
     // Update flag
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       status,
       reviewed_by: user.id,
       reviewed_at: new Date().toISOString(),

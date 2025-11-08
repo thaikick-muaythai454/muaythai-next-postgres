@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout } from '@/components/shared';
@@ -72,11 +72,7 @@ function AdminAuditLogsContent() {
     loadUser();
   }, [supabase]);
 
-  useEffect(() => {
-    loadAuditLogs();
-  }, [pagination.offset, filters, searchUserId]);
-
-  const loadAuditLogs = async () => {
+  const loadAuditLogs = useCallback(async () => {
     setIsLoading(true);
     try {
       const params = new URLSearchParams({
@@ -121,7 +117,11 @@ function AdminAuditLogsContent() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [filters, pagination.limit, pagination.offset, searchUserId]);
+
+  useEffect(() => {
+    loadAuditLogs();
+  }, [loadAuditLogs]);
 
   const handleFilterChange = (key: string, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value }));

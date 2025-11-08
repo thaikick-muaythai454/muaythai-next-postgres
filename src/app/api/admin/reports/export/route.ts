@@ -10,6 +10,8 @@ import { createClient } from '@/lib/database/supabase/server';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+type ExportRow = Record<string, unknown>;
+
 // Allowed tables for export (security: prevent table enumeration)
 const ALLOWED_TABLES = [
   'profiles',
@@ -257,36 +259,35 @@ export async function POST(request: NextRequest) {
  * Format data for export
  */
 function formatDataForExport(
-  data: any[],
+  data: ExportRow[],
   columns?: string[],
   columnHeaders?: string[]
-): any[] {
-  if (!columns || columns.length === 0) {
-    // Use all columns from first row
-    columns = Object.keys(data[0] || {});
-  }
+): ExportRow[] {
+  const columnKeys = columns && columns.length > 0
+    ? columns
+    : Object.keys((data[0] ?? {}) as ExportRow);
 
   return data.map((row) => {
-    const formatted: any = {};
+    const formatted: ExportRow = {};
     
-    columns.forEach((col, index) => {
-      let value = row[col];
+    columnKeys.forEach((col, index) => {
+      let value: unknown = row[col];
       
-      // Handle arrays
       if (Array.isArray(value)) {
         value = value.join(', ');
       }
       
-      // Handle objects (extract useful info)
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        if (value.gym_name || value.full_name || value.email || value.name) {
-          value = value.gym_name || value.full_name || value.email || value.name;
-        } else {
-          value = JSON.stringify(value).substring(0, 100);
-        }
+      if (value && typeof value === 'object' && !Array.isArray(value)) {
+        const recordValue = value as Record<string, unknown>;
+        const primary =
+          recordValue.gym_name ??
+          recordValue.full_name ??
+          recordValue.email ??
+          recordValue.name;
+
+        value = primary ?? JSON.stringify(recordValue).substring(0, 100);
       }
 
-      // Format dates
       if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}/)) {
         try {
           const date = new Date(value);
@@ -300,7 +301,6 @@ function formatDataForExport(
         }
       }
 
-      // Use column header if available, otherwise use column name
       const headerKey = columnHeaders?.[index] || col;
       formatted[headerKey] = value ?? '';
     });
@@ -312,7 +312,7 @@ function formatDataForExport(
 /**
  * Export as CSV
  */
-function exportAsCSV(data: any[], filename: string, headers: string[]): NextResponse {
+function exportAsCSV(data: ExportRow[], filename: string, headers: string[]): NextResponse {
   if (data.length === 0) {
     return NextResponse.json(
       { success: false, error: 'No data to export' },
@@ -350,7 +350,7 @@ function exportAsCSV(data: any[], filename: string, headers: string[]): NextResp
  * Export as PDF
  */
 function exportAsPDF(
-  data: any[],
+  data: ExportRow[],
   title: string,
   filename: string,
   columns: string[],

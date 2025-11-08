@@ -8,6 +8,7 @@
 
 import { NextRequest } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
+import type { RealtimeChannel } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest) {
 
       // Set up database subscription using Supabase Realtime (if available)
       // Note: Supabase Realtime requires proper configuration in Supabase dashboard
-      let channel: any = null;
+      let channel: RealtimeChannel | null = null;
       
       try {
         // Try to create a channel for real-time notifications

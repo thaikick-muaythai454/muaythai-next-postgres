@@ -62,6 +62,74 @@ function verifyCronSecret(request: NextRequest): boolean {
   return false;
 }
 
+type EmailSendResult = { success: boolean; id?: string; error?: string };
+
+const toMetadataRecord = (value: unknown): Record<string, unknown> => {
+  if (value && typeof value === 'object' && !Array.isArray(value)) {
+    return value as Record<string, unknown>;
+  }
+  return {};
+};
+
+const getStringMeta = (
+  metadata: Record<string, unknown>,
+  key: string,
+  fallback?: string
+): string | undefined => {
+  const value = metadata[key];
+  if (typeof value === 'string') {
+    return value;
+  }
+  return fallback;
+};
+
+const getNumberMeta = (
+  metadata: Record<string, unknown>,
+  key: string,
+  fallback?: number
+): number | undefined => {
+  const value = metadata[key];
+  if (typeof value === 'number') {
+    return value;
+  }
+  if (typeof value === 'string') {
+    const parsed = Number.parseFloat(value);
+    if (Number.isFinite(parsed)) {
+      return parsed;
+    }
+  }
+  return fallback;
+};
+
+const normalizeResult = (result: unknown): EmailSendResult => {
+  if (!result || typeof result !== 'object') {
+    return { success: false, error: 'No result' };
+  }
+
+  const record = result as Record<string, unknown>;
+  const success = typeof record.success === 'boolean' ? record.success : false;
+  const id = typeof record.id === 'string' ? record.id : undefined;
+  const errorValue = record.error;
+
+  let error: string | undefined;
+  if (typeof errorValue === 'string') {
+    error = errorValue;
+  } else if (
+    errorValue &&
+    typeof errorValue === 'object' &&
+    'message' in errorValue &&
+    typeof (errorValue as Record<string, unknown>).message === 'string'
+  ) {
+    error = (errorValue as Record<string, unknown>).message as string;
+  }
+
+  if (!success && !error) {
+    error = 'Unknown error';
+  }
+
+  return { success, id, error };
+};
+
 /**
  * Process Email Queue
  * Should run every 5 minutes (but for Vercel Hobby Plan, we'll run it once per day)
@@ -91,50 +159,63 @@ async function processEmailQueue(): Promise<{ success: boolean; processed: numbe
         const useSmtp = emailItem.provider === 'smtp' && smtpModule.isSmtpConfigured();
         const useResend = !useSmtp && (emailItem.provider === 'resend' || !emailItem.provider || resendModule.isEmailServiceConfigured());
 
-        let sendResult: { success: boolean; id?: string; error?: string } = { success: false };
-        
-        const normalizeResult = (result: any): { success: boolean; id?: string; error?: string } => {
-          if (!result) return { success: false, error: 'No result' };
-          return {
-            success: result.success || false,
-            id: result.id || undefined,
-            error: result.error ? (typeof result.error === 'string' ? result.error : result.error.message || 'Unknown error') : undefined,
-          };
-        };
+        let sendResult: EmailSendResult = { success: false };
 
         // Process email based on type (simplified - only handle common types)
         switch (emailItem.email_type) {
           case 'booking_confirmation': {
-            const bookingData = emailItem.metadata as any;
+            const bookingData = toMetadataRecord(emailItem.metadata);
+            const customerName =
+              getStringMeta(bookingData, 'customerName') || emailItem.to_email.split('@')[0];
+            const bookingNumber = getStringMeta(bookingData, 'bookingNumber') || 'N/A';
+            const gymName = getStringMeta(bookingData, 'gymName') || 'N/A';
+            const packageName = getStringMeta(bookingData, 'packageName') || 'N/A';
+            const packageTypeValue = getStringMeta(bookingData, 'packageType');
+            const packageType: 'one_time' | 'package' =
+              packageTypeValue === 'package' ? 'package' : 'one_time';
+            const startDate =
+              getStringMeta(bookingData, 'startDate') || new Date().toISOString();
+            const endDateValue = bookingData.endDate;
+            const endDate =
+              typeof endDateValue === 'string'
+                ? endDateValue
+                : endDateValue === null
+                  ? null
+                  : undefined;
+            const pricePaid = getNumberMeta(bookingData, 'pricePaid', 0) ?? 0;
+            const customerPhone = getStringMeta(bookingData, 'customerPhone');
+            const specialRequests = getStringMeta(bookingData, 'specialRequests');
+            const bookingUrl = getStringMeta(bookingData, 'bookingUrl');
+
             if (useSmtp && smtpModule.isSmtpConfigured()) {
               sendResult = normalizeResult(await smtpModule.sendBookingConfirmationEmail({
                 to: emailItem.to_email,
-                customerName: bookingData.customerName || emailItem.to_email.split('@')[0],
-                bookingNumber: bookingData.bookingNumber || 'N/A',
-                gymName: bookingData.gymName || 'N/A',
-                packageName: bookingData.packageName || 'N/A',
-                packageType: bookingData.packageType || 'one_time',
-                startDate: bookingData.startDate || new Date().toISOString(),
-                endDate: bookingData.endDate,
-                pricePaid: bookingData.pricePaid || 0,
-                customerPhone: bookingData.customerPhone,
-                specialRequests: bookingData.specialRequests,
-                bookingUrl: bookingData.bookingUrl,
+                customerName,
+                bookingNumber,
+                gymName,
+                packageName,
+                packageType,
+                startDate,
+                endDate,
+                pricePaid,
+                customerPhone,
+                specialRequests,
+                bookingUrl,
               }));
             } else if (useResend) {
               sendResult = normalizeResult(await resendModule.sendBookingConfirmationEmail({
                 to: emailItem.to_email,
-                customerName: bookingData.customerName || emailItem.to_email.split('@')[0],
-                bookingNumber: bookingData.bookingNumber || 'N/A',
-                gymName: bookingData.gymName || 'N/A',
-                packageName: bookingData.packageName || 'N/A',
-                packageType: bookingData.packageType || 'one_time',
-                startDate: bookingData.startDate || new Date().toISOString(),
-                endDate: bookingData.endDate,
-                pricePaid: bookingData.pricePaid || 0,
-                customerPhone: bookingData.customerPhone,
-                specialRequests: bookingData.specialRequests,
-                bookingUrl: bookingData.bookingUrl,
+                customerName,
+                bookingNumber,
+                gymName,
+                packageName,
+                packageType,
+                startDate,
+                endDate,
+                pricePaid,
+                customerPhone,
+                specialRequests,
+                bookingUrl,
               }));
             }
             break;

@@ -8,6 +8,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { withAdminAuth } from '@/lib/api/withAdminAuth';
 
+interface ProductImageInput {
+  url: string;
+  altText?: string;
+  isPrimary?: boolean;
+  displayOrder?: number;
+}
+
 /**
  * GET /api/products/[id]/images
  * Get all images for a product
@@ -80,6 +87,55 @@ export const POST = withAdminAuth(async (
       );
     }
 
+    const imageInputs: ProductImageInput[] = [];
+
+    for (let index = 0; index < images.length; index++) {
+      const image = images[index];
+      if (!image || typeof image !== 'object') {
+        return NextResponse.json(
+          { success: false, error: `Invalid image at index ${index}` },
+          { status: 400 }
+        );
+      }
+
+      const record = image as Record<string, unknown>;
+      const urlValue = record.url;
+      if (typeof urlValue !== 'string' || urlValue.trim().length === 0) {
+        return NextResponse.json(
+          { success: false, error: `Invalid image URL at index ${index}` },
+          { status: 400 }
+        );
+      }
+
+      const sanitized: ProductImageInput = {
+        url: urlValue,
+      };
+
+      const altTextValue = record.altText;
+      if (typeof altTextValue === 'string') {
+        sanitized.altText = altTextValue;
+      }
+
+      const isPrimaryValue = record.isPrimary;
+      if (typeof isPrimaryValue === 'boolean') {
+        sanitized.isPrimary = isPrimaryValue;
+      } else if (isPrimaryValue !== undefined) {
+        sanitized.isPrimary = Boolean(isPrimaryValue);
+      }
+
+      const displayOrderValue = record.displayOrder;
+      if (typeof displayOrderValue === 'number') {
+        sanitized.displayOrder = displayOrderValue;
+      } else if (typeof displayOrderValue === 'string') {
+        const parsed = Number.parseInt(displayOrderValue, 10);
+        if (Number.isFinite(parsed)) {
+          sanitized.displayOrder = parsed;
+        }
+      }
+
+      imageInputs.push(sanitized);
+    }
+
     // Check if product exists
     const { data: product, error: productError } = await supabase
       .from('products')
@@ -95,7 +151,7 @@ export const POST = withAdminAuth(async (
     }
 
     // If setting any as primary, unset other primaries
-    const hasPrimary = images.some((img: any) => img.isPrimary);
+    const hasPrimary = imageInputs.some((img) => img.isPrimary);
     if (hasPrimary) {
       await supabase
         .from('product_images')
@@ -104,7 +160,7 @@ export const POST = withAdminAuth(async (
     }
 
     // Prepare image records
-    const imageRecords = images.map((img: any, index: number) => ({
+    const imageRecords = imageInputs.map((img, index) => ({
       product_id: id,
       image_url: img.url,
       alt_text: img.altText || `${product.name_english || 'Product'} - Image ${index + 1}`,

@@ -2,10 +2,27 @@ import { useState } from "react";
 import { Input, Textarea, Switch, Select, SelectItem } from "@heroui/react";
 import AdminFormModal from "../shared/AdminFormModal";
 
+export interface EventCreateData {
+  slug: string;
+  name: string;
+  name_english?: string;
+  description?: string;
+  details?: string;
+  event_date: string;
+  end_date?: string;
+  location: string;
+  address?: string;
+  price_start?: number;
+  max_attendees?: number;
+  status: string;
+  is_featured: boolean;
+  is_published: boolean;
+}
+
 interface EventCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (data: any) => Promise<boolean>;
+  onCreate: (data: EventCreateData) => Promise<boolean>;
   isProcessing: boolean;
 }
 
@@ -57,7 +74,7 @@ export default function EventCreateModal({
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
-    const eventData = {
+    const eventData: EventCreateData = {
       slug: formData.slug.trim(),
       name: formData.name.trim(),
       name_english: formData.name_english.trim() || undefined,

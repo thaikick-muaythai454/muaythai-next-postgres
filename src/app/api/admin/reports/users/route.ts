@@ -13,6 +13,52 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { withAdminAuth } from '@/lib/api/withAdminAuth';
 
+interface UserProfileSummary {
+  user_id: string;
+  username: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  phone: string | null;
+  bio: string | null;
+  created_at: string;
+}
+
+interface UserRoleWithProfile {
+  user_id: string;
+  role: string | null;
+  created_at: string;
+  updated_at: string;
+  profiles?: UserProfileSummary | null;
+}
+
+interface UserStats {
+  bookingCount: number;
+  totalSpending: number;
+  totalPoints: number;
+  currentLevel: number;
+}
+
+interface UserWithStats extends UserRoleWithProfile {
+  stats: UserStats;
+}
+
+interface PaymentSummary {
+  amount: number | string | null;
+}
+
+const parseAmount = (value: PaymentSummary['amount']): number => {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+};
+
 const getUsersReportHandler = withAdminAuth(async (
   request: NextRequest,
   _context,
@@ -83,8 +129,10 @@ const getUsersReportHandler = withAdminAuth(async (
     }
     
     // Get additional statistics for each user
-    const usersWithStats = await Promise.all(
-      (usersWithRoles || []).map(async (userRole: any) => {
+    const userRoleRecords = (usersWithRoles ?? []) as UserRoleWithProfile[];
+
+    const usersWithStats: UserWithStats[] = await Promise.all(
+      userRoleRecords.map(async (userRole) => {
         const userId = userRole.user_id;
         
         // Get user's booking count
@@ -100,9 +148,10 @@ const getUsersReportHandler = withAdminAuth(async (
           .eq('user_id', userId)
           .eq('status', 'succeeded');
         
-        const totalSpending = payments?.reduce((sum, payment: any) => {
-          return sum + (parseFloat(payment.amount?.toString() || '0') || 0);
-        }, 0) || 0;
+        const paymentSummaries = (payments ?? []) as PaymentSummary[];
+        const totalSpending = paymentSummaries.reduce((sum, payment) => {
+          return sum + parseAmount(payment.amount);
+        }, 0);
         
         // Get user's points
         const { data: userPoints } = await supabase
@@ -124,69 +173,65 @@ const getUsersReportHandler = withAdminAuth(async (
     );
     
     // Calculate summary statistics
-    const totalUsers = usersWithRoles?.length || 0;
+    const totalUsers = userRoleRecords.length;
     
     // Group by role
-    const byRole = usersWithRoles?.reduce((acc: Record<string, number>, userRole: any) => {
+    const byRole = userRoleRecords.reduce<Record<string, number>>((acc, userRole) => {
       const role = userRole.role || 'unknown';
       acc[role] = (acc[role] || 0) + 1;
       return acc;
-    }, {}) || {};
+    }, {});
     
     // Calculate total spending across all users
-    const totalSpending = usersWithStats.reduce((sum, user: any) => {
-      return sum + (user.stats?.totalSpending || 0);
+    const totalSpending = usersWithStats.reduce((sum, user) => {
+      return sum + user.stats.totalSpending;
     }, 0);
     
     // Calculate total bookings
-    const totalBookings = usersWithStats.reduce((sum, user: any) => {
-      return sum + (user.stats?.bookingCount || 0);
+    const totalBookings = usersWithStats.reduce((sum, user) => {
+      return sum + user.stats.bookingCount;
     }, 0);
     
     // Group by date for chart data
     const byDate: Record<string, number> = {};
-    if (usersWithRoles) {
-      for (const userRole of usersWithRoles) {
-        const date = new Date(userRole.created_at).toISOString().split('T')[0];
-        byDate[date] = (byDate[date] || 0) + 1;
-      }
+    for (const userRole of userRoleRecords) {
+      const date = new Date(userRole.created_at).toISOString().split('T')[0];
+      byDate[date] = (byDate[date] || 0) + 1;
     }
     
     // Group by month for monthly trends
     const byMonth: Record<string, number> = {};
-    if (usersWithRoles) {
-      for (const userRole of usersWithRoles) {
-        const date = new Date(userRole.created_at);
-        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-        byMonth[monthKey] = (byMonth[monthKey] || 0) + 1;
-      }
+    for (const userRole of userRoleRecords) {
+      const date = new Date(userRole.created_at);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      byMonth[monthKey] = (byMonth[monthKey] || 0) + 1;
     }
     
     // Get top spenders
     const topSpenders = usersWithStats
-      .filter((user: any) => (user.stats?.totalSpending || 0) > 0)
-      .sort((a: any, b: any) => (b.stats?.totalSpending || 0) - (a.stats?.totalSpending || 0))
+      .filter((user) => user.stats.totalSpending > 0)
+      .sort((a, b) => b.stats.totalSpending - a.stats.totalSpending)
       .slice(0, 10)
-      .map((user: any) => ({
+      .map((user) => ({
         user_id: user.user_id,
         username: user.profiles?.username,
         full_name: user.profiles?.full_name,
         email: user.profiles?.email,
-        totalSpending: user.stats?.totalSpending || 0,
-        bookingCount: user.stats?.bookingCount || 0,
+        totalSpending: user.stats.totalSpending,
+        bookingCount: user.stats.bookingCount,
       }));
     
     // Get most active users (by bookings)
     const mostActiveUsers = usersWithStats
-      .filter((user: any) => (user.stats?.bookingCount || 0) > 0)
-      .sort((a: any, b: any) => (b.stats?.bookingCount || 0) - (a.stats?.bookingCount || 0))
+      .filter((user) => user.stats.bookingCount > 0)
+      .sort((a, b) => b.stats.bookingCount - a.stats.bookingCount)
       .slice(0, 10)
-      .map((user: any) => ({
+      .map((user) => ({
         user_id: user.user_id,
         username: user.profiles?.username,
         full_name: user.profiles?.full_name,
-        bookingCount: user.stats?.bookingCount || 0,
-        totalSpending: user.stats?.totalSpending || 0,
+        bookingCount: user.stats.bookingCount,
+        totalSpending: user.stats.totalSpending,
       }));
     
     return NextResponse.json({

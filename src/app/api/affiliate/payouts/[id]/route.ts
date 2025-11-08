@@ -116,7 +116,7 @@ export async function PATCH(
     }
 
     // For other updates, only allow updating certain fields
-    const allowedUpdates: Record<string, any> = {};
+    const allowedUpdates: Record<string, unknown> = {};
     if (updates.notes !== undefined) allowedUpdates.notes = updates.notes;
     if (updates.bank_account_name !== undefined) allowedUpdates.bank_account_name = updates.bank_account_name;
     if (updates.bank_account_number !== undefined) allowedUpdates.bank_account_number = updates.bank_account_number;

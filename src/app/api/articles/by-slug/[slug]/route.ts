@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * GET /api/articles/by-slug/[slug]
@@ -84,7 +85,7 @@ export async function GET(
 }
 
 // Helper function to check if user is admin
-async function checkIsAdmin(supabase: any, userId: string): Promise<boolean> {
+async function checkIsAdmin(supabase: SupabaseClient, userId: string): Promise<boolean> {
   const { data } = await supabase
     .from('user_roles')
     .select('role')

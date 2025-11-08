@@ -94,7 +94,7 @@ export const PUT = withAdminAuth(async (
     }
 
     // Build update object
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
 

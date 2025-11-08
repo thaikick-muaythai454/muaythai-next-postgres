@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { createClient } from '@/lib/database/supabase/client';
 import { LeaderboardData, LeaderboardEntry } from '@/types/gamification.types';
 import Image from 'next/image';
@@ -9,7 +9,6 @@ import { Link } from '@/navigation';
 
 export default function LeaderboardPage() {
   const params = useParams();
-  const router = useRouter();
   const leaderboardId = params.id as string;
   const supabase = createClient();
 
@@ -126,8 +125,8 @@ export default function LeaderboardPage() {
     );
   }
 
-  const totalPages = Math.ceil((leaderboardData.entries.length || 0) / limit);
-  const hasMore = leaderboardData.entries.length >= limit;
+  const totalEntries = leaderboardData.total_entries ?? leaderboardData.entries.length;
+  const totalPages = Math.max(1, Math.ceil((totalEntries || 0) / limit));
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -257,25 +256,30 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Pagination */}
-        {hasMore && (
-          <div className="mt-6 flex justify-center space-x-2">
-            <button
-              onClick={() => setPage(p => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              ก่อนหน้า
-            </button>
-            <span className="px-4 py-2 text-zinc-300">
-              หน้า {page}
+        {totalPages > 1 && (
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-sm text-zinc-400">
+              หน้า {page} จาก {totalPages}
             </span>
-            <button
-              onClick={() => setPage(p => p + 1)}
-              disabled={!hasMore}
-              className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              ถัดไป
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setPage((prev) => Math.max(1, prev - 1))}
+                disabled={page === 1}
+                className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                ก่อนหน้า
+              </button>
+              <span className="px-3 py-2 text-sm text-zinc-300 border border-zinc-700 rounded-lg">
+                {page}/{totalPages}
+              </span>
+              <button
+                onClick={() => setPage((prev) => Math.min(totalPages, prev + 1))}
+                disabled={page === totalPages}
+                className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                ถัดไป
+              </button>
+            </div>
           </div>
         )}
       </div>

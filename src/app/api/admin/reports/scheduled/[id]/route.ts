@@ -108,7 +108,7 @@ const updateScheduledReportHandler = withAdminAuth(async (
     const { id } = await params;
     const body = await request.json();
 
-      const updateData: any = {};
+      const updateData: Record<string, unknown> = {};
       if (body.name !== undefined) updateData.name = body.name;
       if (body.description !== undefined) updateData.description = body.description;
       if (body.status !== undefined) updateData.status = body.status;

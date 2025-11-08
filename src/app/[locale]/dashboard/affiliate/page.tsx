@@ -6,7 +6,6 @@ import { Card, CardBody, CardHeader, Button, Chip, Table, TableHeader, TableColu
 import {
   ShareIcon,
   UserPlusIcon,
-  CurrencyDollarIcon,
   TrophyIcon,
   LinkIcon,
   ClipboardDocumentIcon,
@@ -39,6 +38,24 @@ interface ReferralHistory {
   source?: string;
 }
 
+interface AffiliateApiReferral {
+  id: string;
+  referred_user_email?: string | null;
+  status?: 'pending' | 'completed' | 'rewarded' | null;
+  points_earned?: number | null;
+  commission_amount?: number | null;
+  created_at: string;
+  source?: string | null;
+}
+
+interface AffiliateApiResponse {
+  referralHistory?: AffiliateApiReferral[];
+  totalReferrals?: number;
+  totalEarnings?: number;
+  currentMonthReferrals?: number;
+  conversionRate?: number;
+}
+
 export default function AffiliateDashboardPage() {
   const { user } = useAuth();
   
@@ -62,7 +79,10 @@ export default function AffiliateDashboardPage() {
     setAffiliateLink(`${window.location.origin}/signup?ref=${code}`);
   }, [user]);
 
-  const calculateMonthlyGrowth = (referralHistory: any[], currentMonthReferrals: number) => {
+  const calculateMonthlyGrowth = (
+    referralHistory: ReferralHistory[],
+    currentMonthReferrals: number
+  ) => {
     if (!referralHistory || referralHistory.length === 0) return 0;
     
     const now = new Date();
@@ -88,22 +108,22 @@ export default function AffiliateDashboardPage() {
         throw new Error('Failed to fetch affiliate data');
       }
       
-      const data = await response.json();
-      
-      if (data.referralHistory) {
-        setReferralHistory(data.referralHistory.map((ref: any) => ({
-          id: ref.id,
-          referred_user_email: ref.referred_user_email || 'Unknown',
-          status: ref.status || 'pending',
-          points_earned: ref.points_earned || ref.commission_amount || 0,
-          created_at: ref.created_at,
-          source: ref.source || 'Direct'
-        })));
-      }
+      const data: AffiliateApiResponse = await response.json();
+      const apiReferralHistory: AffiliateApiReferral[] = data.referralHistory ?? [];
+      const normalizedHistory: ReferralHistory[] = apiReferralHistory.map((ref) => ({
+        id: ref.id,
+        referred_user_email: ref.referred_user_email || 'Unknown',
+        status: ref.status || 'pending',
+        points_earned: ref.points_earned ?? ref.commission_amount ?? 0,
+        created_at: ref.created_at,
+        source: ref.source || 'Direct'
+      }));
+
+      setReferralHistory(normalizedHistory);
 
       // Calculate top referral source
       const sourceCounts: Record<string, number> = {};
-      (data.referralHistory || []).forEach((ref: any) => {
+      normalizedHistory.forEach((ref) => {
         const source = ref.source || 'Direct';
         sourceCounts[source] = (sourceCounts[source] || 0) + 1;
       });
@@ -116,7 +136,7 @@ export default function AffiliateDashboardPage() {
         currentMonthReferrals: data.currentMonthReferrals || 0,
         conversionRate: data.conversionRate || 0,
         monthlyGrowth: calculateMonthlyGrowth(
-          data.referralHistory || [], 
+          normalizedHistory, 
           data.currentMonthReferrals || 0
         ),
         topReferralSource: topSource
@@ -190,7 +210,7 @@ export default function AffiliateDashboardPage() {
     );
   }
 
-  const StatCard = ({ icon, value, label, growth, gradient }: { icon: React.ReactNode; value: string | number; label: string; growth?: number; gradient?: string }) => (
+  const StatCard = ({ icon, value, label, growth }: { icon: React.ReactNode; value: string | number; label: string; growth?: number; gradient?: string }) => (
     <Card className="bg-zinc-800/60 border-zinc-700/50 hover:border-zinc-600 transition-all duration-300 hover:shadow-xl hover:shadow-red-500/10 group backdrop-blur-sm">
       <CardBody className="text-center p-6">
         <div className="mb-3 transform group-hover:scale-110 transition-transform duration-300">

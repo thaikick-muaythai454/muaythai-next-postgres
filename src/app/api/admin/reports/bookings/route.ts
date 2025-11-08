@@ -14,6 +14,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { withAdminAuth } from '@/lib/api/withAdminAuth';
+import type { Booking } from '@/types/database.types';
 
 const getBookingsReportHandler = withAdminAuth(async (
   request: NextRequest,
@@ -109,46 +110,47 @@ const getBookingsReportHandler = withAdminAuth(async (
     }
     
     // Calculate summary statistics
-    const totalBookings = bookings?.length || 0;
-    const totalRevenue = bookings?.reduce((sum, booking: any) => {
+    const bookingRecords = (bookings ?? []) as Booking[];
+    const totalBookings = bookingRecords.length;
+    const totalRevenue = bookingRecords.reduce((sum, booking) => {
       if (booking.payment_status === 'paid') {
-        return sum + (parseFloat(booking.price_paid?.toString() || '0') || 0);
+        return sum + Number(booking.price_paid ?? 0);
       }
       return sum;
-    }, 0) || 0;
+    }, 0);
     
     // Group by status
-    const byStatus = bookings?.reduce((acc: Record<string, number>, booking: any) => {
+    const byStatus = bookingRecords.reduce<Record<string, number>>((acc, booking) => {
       const status = booking.status || 'unknown';
       acc[status] = (acc[status] || 0) + 1;
       return acc;
-    }, {}) || {};
+    }, {});
     
     // Group by payment status
-    const byPaymentStatus = bookings?.reduce((acc: Record<string, number>, booking: any) => {
+    const byPaymentStatus = bookingRecords.reduce<Record<string, number>>((acc, booking) => {
       const paymentStatus = booking.payment_status || 'unknown';
       acc[paymentStatus] = (acc[paymentStatus] || 0) + 1;
       return acc;
-    }, {}) || {};
+    }, {});
     
     // Group by package type
-    const byPackageType = bookings?.reduce((acc: Record<string, number>, booking: any) => {
+    const byPackageType = bookingRecords.reduce<Record<string, number>>((acc, booking) => {
       const packageType = booking.package_type || 'unknown';
       acc[packageType] = (acc[packageType] || 0) + 1;
       return acc;
-    }, {}) || {};
+    }, {});
     
     // Group by date for chart data
     const byDate: Record<string, { count: number; revenue: number }> = {};
-    if (bookings) {
-      for (const booking of bookings) {
+    if (bookingRecords.length > 0) {
+      for (const booking of bookingRecords) {
         const date = new Date(booking.created_at).toISOString().split('T')[0];
         if (!byDate[date]) {
           byDate[date] = { count: 0, revenue: 0 };
         }
         byDate[date].count += 1;
         if (booking.payment_status === 'paid') {
-          byDate[date].revenue += parseFloat(booking.price_paid?.toString() || '0') || 0;
+          byDate[date].revenue += Number(booking.price_paid ?? 0);
         }
       }
     }
@@ -163,7 +165,7 @@ const getBookingsReportHandler = withAdminAuth(async (
           byPaymentStatus,
           byPackageType,
         },
-        bookings: bookings || [],
+        bookings: bookingRecords,
         charts: {
           byDate,
         },

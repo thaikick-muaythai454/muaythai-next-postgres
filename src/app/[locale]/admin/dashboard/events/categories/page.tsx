@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Toaster, toast } from 'react-hot-toast';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
@@ -82,9 +82,25 @@ function EventCategoriesContent() {
     loadCategories();
   }, [supabase]);
 
+  const filterCategories = useCallback(() => {
+    let filtered = [...categories];
+
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (cat) =>
+          cat.name_thai.toLowerCase().includes(query) ||
+          cat.name_english.toLowerCase().includes(query) ||
+          cat.slug.toLowerCase().includes(query)
+      );
+    }
+
+    setFilteredCategories(filtered);
+  }, [categories, searchQuery]);
+
   useEffect(() => {
     filterCategories();
-  }, [categories, searchQuery]);
+  }, [filterCategories]);
 
   async function loadCategories() {
     try {
@@ -103,22 +119,6 @@ function EventCategoriesContent() {
     } finally {
       setIsLoading(false);
     }
-  }
-
-  function filterCategories() {
-    let filtered = [...categories];
-
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (cat) =>
-          cat.name_thai.toLowerCase().includes(query) ||
-          cat.name_english.toLowerCase().includes(query) ||
-          cat.slug.toLowerCase().includes(query)
-      );
-    }
-
-    setFilteredCategories(filtered);
   }
 
   function handleCreate() {

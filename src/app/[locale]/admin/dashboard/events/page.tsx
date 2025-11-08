@@ -18,11 +18,11 @@ import {
 } from '@heroicons/react/24/outline';
 import { User } from '@supabase/supabase-js';
 import Image from 'next/image';
-import { Event, EventTicket } from '@/types';
+import { Event } from '@/types';
 import EventDetailModal from '@/components/features/admin/event-management/EventDetailModal';
-import EventEditModal from '@/components/features/admin/event-management/EventEditModal';
+import EventEditModal, { type EventUpdateData } from '@/components/features/admin/event-management/EventEditModal';
 import EventDeleteDialog from '@/components/features/admin/event-management/EventDeleteDialog';
-import EventCreateModal from '@/components/features/admin/event-management/EventCreateModal';
+import EventCreateModal, { type EventCreateData } from '@/components/features/admin/event-management/EventCreateModal';
 import EventTicketsModal from '@/components/features/admin/event-management/EventTicketsModal';
 
 function AdminEventsContent() {
@@ -108,7 +108,7 @@ function AdminEventsContent() {
     setFilteredEvents(filtered);
   }
 
-  async function handleCreate(eventData: any) {
+  async function handleCreate(eventData: EventCreateData) {
     try {
       setIsProcessing(true);
       const response = await fetch('/api/events', {
@@ -136,7 +136,7 @@ function AdminEventsContent() {
     }
   }
 
-  async function handleUpdate(eventId: string, eventData: any) {
+  async function handleUpdate(eventId: string, eventData: EventUpdateData) {
     try {
       setIsProcessing(true);
       const response = await fetch(`/api/events/${eventId}`, {

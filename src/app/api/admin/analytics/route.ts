@@ -2,6 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { withAdminAuth } from '@/lib/api/withAdminAuth';
 
+interface PaymentRecord {
+  amount: number | string | null;
+  status: string;
+  created_at: string | null;
+}
+
+const parsePaymentAmount = (value: PaymentRecord['amount']): number => {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+};
+
 /**
  * GET /api/admin/analytics
  * ข้อมูล analytics สำหรับ admin dashboard
@@ -80,9 +99,10 @@ const getAnalyticsHandler = withAdminAuth(async (
       .gte('created_at', startDateISO)
       .lte('created_at', endDateISO);
     
-    const monthlyRevenue = paymentsData?.reduce((sum, payment: any) => {
-      return sum + (parseFloat(payment.amount?.toString() || '0') || 0);
-    }, 0) || 0;
+    const monthlyPayments = (paymentsData ?? []) as PaymentRecord[];
+    const monthlyRevenue = monthlyPayments.reduce((sum, payment) => {
+      return sum + parsePaymentAmount(payment.amount);
+    }, 0);
     
     // Query ข้อมูลผู้ใช้ทั้งหมด
     const { count: totalUsersCount } = await supabase
@@ -105,9 +125,10 @@ const getAnalyticsHandler = withAdminAuth(async (
       .select('amount, status, created_at')
       .eq('status', 'succeeded');
     
-    const totalRevenue = allPaymentsData?.reduce((sum, payment: any) => {
-      return sum + (parseFloat(payment.amount?.toString() || '0') || 0);
-    }, 0) || 0;
+    const totalPayments = (allPaymentsData ?? []) as PaymentRecord[];
+    const totalRevenue = totalPayments.reduce((sum, payment) => {
+      return sum + parsePaymentAmount(payment.amount);
+    }, 0);
     
     // Query กิจกรรมล่าสุด (recent activities from various tables)
     const recentActivities: Array<{
@@ -199,11 +220,11 @@ const getAnalyticsHandler = withAdminAuth(async (
     
     // Get revenue by date for charts
     const revenueByDate: Record<string, number> = {};
-    if (paymentsData) {
-      for (const payment of paymentsData as any[]) {
-        const paymentDate = payment.created_at || new Date().toISOString();
+    if (monthlyPayments.length > 0) {
+      for (const payment of monthlyPayments) {
+        const paymentDate = payment.created_at ?? new Date().toISOString();
         const date = new Date(paymentDate).toISOString().split('T')[0];
-        const amount = parseFloat(payment.amount?.toString() || '0') || 0;
+        const amount = parsePaymentAmount(payment.amount);
         revenueByDate[date] = (revenueByDate[date] || 0) + amount;
       }
     }

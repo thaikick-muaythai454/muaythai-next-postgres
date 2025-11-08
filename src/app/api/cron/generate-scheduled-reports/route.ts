@@ -18,6 +18,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Resend } from 'resend';
 
+type ReportRow = Record<string, unknown>;
+
 /**
  * Verify cron secret for authentication
  */
@@ -142,7 +144,7 @@ function calculateNextRunAt(
  * Generate PDF report
  */
 function generatePDFReport(
-  data: any[],
+  data: ReportRow[],
   title: string,
   columns: string[],
   columnHeaders: string[]
@@ -186,7 +188,7 @@ function generatePDFReport(
  * Generate CSV report
  */
 function generateCSVReport(
-  data: any[],
+  data: ReportRow[],
   columns: string[],
   columnHeaders: string[]
 ): string {

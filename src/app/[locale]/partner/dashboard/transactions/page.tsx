@@ -29,13 +29,23 @@ import {
   ArrowDownTrayIcon,
   MegaphoneIcon,
 } from '@heroicons/react/24/outline';
+import type { Gym, Booking } from '@/types/database.types';
+
+interface TransactionEntry {
+  id: string;
+  date: string;
+  type: string;
+  description: string;
+  amount: number;
+  status: 'completed' | 'pending';
+}
 
 function PartnerTransactionsContent() {
   const supabase = createClient();
   const [user, setUser] = useState<{ email?: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [gym, setGym] = useState<any>(null);
+  const [transactions, setTransactions] = useState<TransactionEntry[]>([]);
+  const [gym, setGym] = useState<Gym | null>(null);
 
   useEffect(() => {
     async function loadUser() {
@@ -73,7 +83,7 @@ function PartnerTransactionsContent() {
         .order('created_at', { ascending: false });
       
       if (bookingsData) {
-        const mappedTransactions = bookingsData.map(b => ({
+        const mappedTransactions: TransactionEntry[] = (bookingsData as Booking[]).map((b) => ({
           id: b.booking_number,
           date: b.created_at,
           type: 'รายได้',

@@ -14,6 +14,26 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { withAdminAuth } from '@/lib/api/withAdminAuth';
 
+interface PaymentRecord {
+  amount: number | string | null;
+  status?: string | null;
+  payment_type?: string | null;
+  created_at: string;
+}
+
+const normalizePaymentAmount = (value: PaymentRecord['amount']): number => {
+  if (typeof value === 'number') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const parsed = Number.parseFloat(value);
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  return 0;
+};
+
 const getRevenueReportHandler = withAdminAuth(async (
   request: NextRequest,
   _context,
@@ -87,57 +107,58 @@ const getRevenueReportHandler = withAdminAuth(async (
     }
     
     // Calculate summary statistics
-    const totalPayments = payments?.length || 0;
-    const totalRevenue = payments?.reduce((sum, payment: any) => {
-      return sum + (parseFloat(payment.amount?.toString() || '0') || 0);
-    }, 0) || 0;
+    const paymentRecords = (payments ?? []) as PaymentRecord[];
+    const totalPayments = paymentRecords.length;
+    const totalRevenue = paymentRecords.reduce((sum, payment) => {
+      return sum + normalizePaymentAmount(payment.amount);
+    }, 0);
     
     // Group by status
-    const byStatus = payments?.reduce((acc: Record<string, { count: number; revenue: number }>, payment: any) => {
+    const byStatus = paymentRecords.reduce<Record<string, { count: number; revenue: number }>>((acc, payment) => {
       const status = payment.status || 'unknown';
       if (!acc[status]) {
         acc[status] = { count: 0, revenue: 0 };
       }
       acc[status].count += 1;
-      acc[status].revenue += parseFloat(payment.amount?.toString() || '0') || 0;
+      acc[status].revenue += normalizePaymentAmount(payment.amount);
       return acc;
-    }, {}) || {};
+    }, {});
     
     // Group by payment type
-    const byPaymentType = payments?.reduce((acc: Record<string, { count: number; revenue: number }>, payment: any) => {
+    const byPaymentType = paymentRecords.reduce<Record<string, { count: number; revenue: number }>>((acc, payment) => {
       const paymentType = payment.payment_type || 'unknown';
       if (!acc[paymentType]) {
         acc[paymentType] = { count: 0, revenue: 0 };
       }
       acc[paymentType].count += 1;
-      acc[paymentType].revenue += parseFloat(payment.amount?.toString() || '0') || 0;
+      acc[paymentType].revenue += normalizePaymentAmount(payment.amount);
       return acc;
-    }, {}) || {};
+    }, {});
     
     // Group by date for chart data
     const byDate: Record<string, { count: number; revenue: number }> = {};
-    if (payments) {
-      for (const payment of payments) {
+    if (paymentRecords.length > 0) {
+      for (const payment of paymentRecords) {
         const date = new Date(payment.created_at).toISOString().split('T')[0];
         if (!byDate[date]) {
           byDate[date] = { count: 0, revenue: 0 };
         }
         byDate[date].count += 1;
-        byDate[date].revenue += parseFloat(payment.amount?.toString() || '0') || 0;
+        byDate[date].revenue += normalizePaymentAmount(payment.amount);
       }
     }
     
     // Group by month for monthly trends
     const byMonth: Record<string, { count: number; revenue: number }> = {};
-    if (payments) {
-      for (const payment of payments) {
+    if (paymentRecords.length > 0) {
+      for (const payment of paymentRecords) {
         const date = new Date(payment.created_at);
         const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
         if (!byMonth[monthKey]) {
           byMonth[monthKey] = { count: 0, revenue: 0 };
         }
         byMonth[monthKey].count += 1;
-        byMonth[monthKey].revenue += parseFloat(payment.amount?.toString() || '0') || 0;
+        byMonth[monthKey].revenue += normalizePaymentAmount(payment.amount);
       }
     }
     
@@ -160,7 +181,7 @@ const getRevenueReportHandler = withAdminAuth(async (
           byStatus,
           byPaymentType,
         },
-        payments: payments || [],
+        payments: paymentRecords,
         charts: {
           byDate,
           byMonth,

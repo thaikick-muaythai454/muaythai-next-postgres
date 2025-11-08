@@ -43,7 +43,7 @@ export const POST = withAdminAuth<Record<string, never>>(async (
       );
     }
 
-    let updateData: any = {};
+    let updateData: Record<string, unknown> = {};
     let deleteOperation = false;
 
     // Map operation to database update
@@ -85,7 +85,6 @@ export const POST = withAdminAuth<Record<string, never>>(async (
         break;
     }
 
-    let result;
     let affectedCount = 0;
 
     if (deleteOperation) {

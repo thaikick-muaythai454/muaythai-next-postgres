@@ -33,17 +33,13 @@ import {
   BanknotesIcon,
   Cog6ToothIcon,
   HomeIcon,
-  CheckCircleIcon,
-  ClockIcon,
-  ArrowDownTrayIcon,
   PlusIcon,
   EyeIcon,
   CurrencyDollarIcon,
-  DocumentTextIcon,
   MegaphoneIcon,
 } from '@heroicons/react/24/outline';
 import { Toaster, toast } from 'react-hot-toast';
-import type { PartnerPayout } from '@/types/database.types';
+import type { PartnerPayout, Gym } from '@/types/database.types';
 import { CustomInput, CustomTextarea, CustomSelect } from '@/components/shared';
 import { Link } from '@/navigation';
 
@@ -58,7 +54,7 @@ interface PayoutStats {
 function PartnerPayoutsContent() {
   const supabase = createClient();
   const [user, setUser] = useState<{ email?: string } | null>(null);
-  const [gym, setGym] = useState<any>(null);
+  const [gym, setGym] = useState<Gym | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [payouts, setPayouts] = useState<PartnerPayout[]>([]);
   const [stats, setStats] = useState<PayoutStats>({

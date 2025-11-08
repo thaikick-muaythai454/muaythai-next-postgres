@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import type { ChipProps } from "@heroui/react";
 import { createClient } from "@/lib/database/supabase/client";
 import { RoleGuard } from "@/components/features/auth";
 import { DashboardLayout } from "@/components/shared";
@@ -93,13 +94,7 @@ function ErrorTrackingContent() {
     loadUser();
   }, [supabase]);
 
-  useEffect(() => {
-    if (user) {
-      loadErrorData();
-    }
-  }, [user, filters]);
-
-  const loadErrorData = async () => {
+  const loadErrorData = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (filters.severity) params.append("severity", filters.severity);
@@ -123,9 +118,15 @@ function ErrorTrackingContent() {
       console.error("Error loading error data:", error);
       toast.error("Failed to load error data");
     }
-  };
+  }, [filters]);
 
-  const getSeverityColor = (severity: string) => {
+  useEffect(() => {
+    if (user) {
+      loadErrorData();
+    }
+  }, [user, loadErrorData]);
+
+  const getSeverityColor = (severity: ErrorEvent["severity"]): ChipProps["color"] => {
     switch (severity) {
       case "critical":
         return "danger";
@@ -336,11 +337,7 @@ function ErrorTrackingContent() {
                   return (
                     <TableRow key={error.id}>
                       <TableCell>
-                        <Chip
-                          color={getSeverityColor(error.severity) as any}
-                          size="sm"
-                          variant="flat"
-                        >
+                        <Chip color={getSeverityColor(error.severity)} size="sm" variant="flat">
                           {error.severity.toUpperCase()}
                         </Chip>
                       </TableCell>

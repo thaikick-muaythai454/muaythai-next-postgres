@@ -9,11 +9,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { withAdminAuth } from '@/lib/api/withAdminAuth';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Helper function to check if user is admin
  */
-async function checkIsAdmin(supabase: any, userId: string): Promise<boolean> {
+async function checkIsAdmin(supabase: SupabaseClient, userId: string): Promise<boolean> {
   const { data } = await supabase
     .from('user_roles')
     .select('role')
@@ -172,7 +173,7 @@ export const PUT = withAdminAuth(async (
     }
 
     // Build update object
-    const updateData: any = {
+    const updateData: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
 

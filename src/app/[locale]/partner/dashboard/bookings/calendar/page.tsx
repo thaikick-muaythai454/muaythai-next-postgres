@@ -16,6 +16,7 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
+  type ChipProps,
 } from '@heroui/react';
 import {
   BuildingStorefrontIcon,
@@ -140,7 +141,7 @@ function BookingCalendarView() {
     });
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = (status: string): ChipProps['color'] => {
     switch (status) {
       case 'confirmed':
         return 'success';
@@ -262,7 +263,7 @@ function BookingCalendarView() {
                             >
                               <Chip
                                 size="sm"
-                                color={getStatusColor(booking.status) as any}
+                                color={getStatusColor(booking.status)}
                                 variant="flat"
                                 className="w-full text-xs"
                               >
@@ -322,7 +323,7 @@ function BookingCalendarView() {
                       <div>
                         <p className="text-sm text-default-500">สถานะ</p>
                         <Chip
-                          color={getStatusColor(selectedBooking.status) as any}
+                          color={getStatusColor(selectedBooking.status)}
                           variant="flat"
                         >
                           {selectedBooking.status}

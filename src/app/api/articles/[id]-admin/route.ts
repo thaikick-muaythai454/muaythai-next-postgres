@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * PUT /api/articles/[id]-admin
@@ -88,7 +89,7 @@ export async function PUT(
     } = body;
 
     // Build update object
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (slug !== undefined) {
       // Check if new slug is unique (if different from current)
@@ -275,7 +276,7 @@ export async function DELETE(
 }
 
 // Helper function to check if user is admin
-async function checkIsAdmin(supabase: any, userId: string): Promise<boolean> {
+async function checkIsAdmin(supabase: SupabaseClient, userId: string): Promise<boolean> {
   const { data } = await supabase
     .from('user_roles')
     .select('role')

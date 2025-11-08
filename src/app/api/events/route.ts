@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
+import type { SupabaseClient } from '@supabase/supabase-js';
+import type { Event as EventType, EventTicket } from '@/types/app.types';
 import { withAdminAuth } from '@/lib/api/withAdminAuth';
 
 /**
@@ -100,8 +102,10 @@ export async function GET(request: NextRequest) {
         .eq('is_active', true)
         .order('display_order', { ascending: true });
 
+      const typedTickets = (tickets ?? []) as EventTicket[];
+
       // Group tickets by event_id
-      const ticketsByEvent = tickets?.reduce((acc: any, ticket: any) => {
+      const ticketsByEvent = typedTickets.reduce<Record<string, EventTicket[]>>((acc, ticket) => {
         if (!acc[ticket.event_id]) {
           acc[ticket.event_id] = [];
         }
@@ -110,8 +114,8 @@ export async function GET(request: NextRequest) {
       }, {});
 
       // Add tickets to events
-      data.forEach((event: any) => {
-        event.tickets = ticketsByEvent?.[event.id] || [];
+      (data as EventType[]).forEach((event) => {
+        event.tickets = ticketsByEvent[event.id] || [];
       });
     }
 
@@ -313,7 +317,7 @@ const postEventHandler = withAdminAuth(async (
 export { postEventHandler as POST };
 
 // Helper function to check if user is admin
-async function checkIsAdmin(supabase: any, userId: string): Promise<boolean> {
+async function checkIsAdmin(supabase: SupabaseClient, userId: string): Promise<boolean> {
   const { data } = await supabase
     .from('user_roles')
     .select('role')
@@ -322,4 +326,3 @@ async function checkIsAdmin(supabase: any, userId: string): Promise<boolean> {
   
   return data?.role === 'admin';
 }
-

@@ -59,7 +59,7 @@ const updateCustomReportHandler = withAdminAuth(async (
     const { id } = await params;
     const body = await request.json();
 
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
     if (body.name !== undefined) updateData.name = body.name;
     if (body.description !== undefined) updateData.description = body.description;
     if (body.table_name !== undefined) updateData.table_name = body.table_name;

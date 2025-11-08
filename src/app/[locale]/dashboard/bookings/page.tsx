@@ -19,7 +19,6 @@ import {
   Tab,
 } from '@heroui/react';
 import {
-  HomeIcon,
   UserIcon,
   CalendarIcon,
   HeartIcon,
@@ -181,6 +180,28 @@ function BookingsContent() {
       userEmail={user?.email}
       showPartnerButton={true}
     >
+
+      {/* Booking Statistics */}
+      <section className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
+        {[
+          { label: 'ทั้งหมด', value: stats.total, icon: CalendarIcon, color: 'text-primary' },
+          { label: 'รอดำเนินการ', value: stats.pending, icon: ClockIcon, color: 'text-warning' },
+          { label: 'ยืนยันแล้ว', value: stats.confirmed, icon: CheckCircleIcon, color: 'text-success' },
+          { label: 'ยกเลิก', value: stats.cancelled, icon: XCircleIcon, color: 'text-danger' },
+        ].map(({ label, value, icon: Icon, color }) => (
+          <Card key={label} className="bg-default-100/50 backdrop-blur-sm border-none">
+            <CardBody className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-default-500">{label}</p>
+                <p className="mt-1 text-2xl font-semibold text-default-900">{value}</p>
+              </div>
+              <span className={`${color}`}>
+                <Icon className="w-8 h-8" />
+              </span>
+            </CardBody>
+          </Card>
+        ))}
+      </section>
 
       {/* Bookings Table */}
       <section>

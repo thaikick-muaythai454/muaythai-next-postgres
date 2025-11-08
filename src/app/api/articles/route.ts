@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { withAdminAuth } from '@/lib/api/withAdminAuth';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * GET /api/articles
@@ -202,7 +203,7 @@ const postArticleHandler = withAdminAuth(async (
     const authorName = profile?.display_name || profile?.full_name || user.email || 'Admin';
 
     // Insert article
-    const articleData: any = {
+    const articleData: Record<string, unknown> = {
       slug,
       title,
       excerpt,
@@ -264,7 +265,7 @@ const postArticleHandler = withAdminAuth(async (
 export { postArticleHandler as POST };
 
 // Helper function to check if user is admin
-async function checkIsAdmin(supabase: any, userId: string): Promise<boolean> {
+async function checkIsAdmin(supabase: SupabaseClient, userId: string): Promise<boolean> {
   const { data } = await supabase
     .from('user_roles')
     .select('role')
