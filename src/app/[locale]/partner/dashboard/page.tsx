@@ -29,7 +29,7 @@ import {
   MegaphoneIcon,
 } from '@heroicons/react/24/outline';
 import { Toaster, toast } from 'react-hot-toast';
-import type { Gym, GymPackage } from '@/types/database.types';
+import type { Gym, GymPackage, Booking } from '@/types/database.types';
 import { CustomInput, CustomTextarea, CustomSelect } from '@/components/shared';
 import { validatePackageType, validateDurationMonths, validatePrice } from '@/lib/utils/validation';
 
@@ -41,6 +41,15 @@ interface PackageFormData {
   price: string;
   duration_months: number | null;
   features: string[];
+}
+
+interface TransactionSummary {
+  id: string;
+  date: string;
+  type: string;
+  description: string;
+  amount: number;
+  status: Booking['status'];
 }
 
 /**
@@ -71,8 +80,8 @@ function PartnerDashboardContent() {
   const { isOpen, onOpen, onClose } = useDisclosure();
   
   // Real data states
-  const [recentBookings, setRecentBookings] = useState<any[]>([]);
-  const [recentTransactions, setRecentTransactions] = useState<any[]>([]);
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
+  const [recentTransactions, setRecentTransactions] = useState<TransactionSummary[]>([]);
   const [formData, setFormData] = useState<PackageFormData>({
     package_type: '',
     name: '',
