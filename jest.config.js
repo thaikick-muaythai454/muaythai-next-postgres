@@ -8,7 +8,7 @@ export default {
   
   // Test file patterns
   testMatch: [
-    '**/tests/**/*.test.{ts,tsx}',
+    '**/tests/**/*.test.{ts,tsx,js,mjs}',
     '!**/tests/analysis/**', // Exclude analysis tests (use custom runner)
   ],
   

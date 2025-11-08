@@ -190,3 +190,23 @@ export function isAnalyticsAvailable(): boolean {
   return typeof window !== 'undefined' && typeof window.gtag === 'function';
 }
 
+declare global {
+  interface Window {
+    trackUserSignup?: typeof trackUserSignup;
+    trackUserLogin?: typeof trackUserLogin;
+    trackSearch?: typeof trackSearch;
+    trackProductView?: typeof trackProductView;
+    trackBookingCompletion?: typeof trackBookingCompletion;
+    trackPaymentSuccess?: typeof trackPaymentSuccess;
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.trackUserSignup = trackUserSignup;
+  window.trackUserLogin = trackUserLogin;
+  window.trackSearch = trackSearch;
+  window.trackProductView = trackProductView;
+  window.trackBookingCompletion = trackBookingCompletion;
+  window.trackPaymentSuccess = trackPaymentSuccess;
+}
+

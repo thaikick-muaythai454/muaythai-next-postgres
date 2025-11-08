@@ -510,21 +510,22 @@
 ### ✅ 6. Edge Cases & Error Handling
 
 **Test Cases:**
-- [ ] **TC-6.1**: Duplicate prevention
-  - [ ] Same signup conversion not created twice
-  - [ ] Same booking conversion not created twice
-  - [ ] Duplicate check uses `reference_id` + `reference_type`
+- [x] **TC-6.1**: Duplicate prevention *(tests/integration/affiliate/edge-cases.test.js)*
+  - [x] Same signup conversion not created twice
+  - [x] Same booking conversion not created twice
+  - [x] Duplicate check uses `reference_id` + `reference_type`
 
-- [ ] **TC-6.2**: Error handling
-  - [ ] Affiliate conversion failure doesn't block signup
-  - [ ] Affiliate conversion failure doesn't block booking
-  - [ ] Affiliate conversion failure doesn't block payment
-  - [ ] Errors are logged appropriately
+- [x] **TC-6.2**: Error handling *(tests/integration/affiliate/edge-cases.test.js)*
+  - [x] Affiliate conversion failure doesn't block signup *(integration test covers user survival)*
+  - [x] Affiliate conversion failure doesn't block booking
+  - [x] Affiliate conversion failure doesn't block payment *(booking update proceeds when conversion update fails)*
+  - [x] Errors are logged appropriately *(console.warn captured via Jest spy)*
+  - _Latest run_: `NEXT_PUBLIC_SUPABASE_URL="http://127.0.0.1:8000" SUPABASE_SERVICE_ROLE_KEY="sb_secret_***" npm run test:integration:affiliate -- --runTestsByPath tests/integration/affiliate/edge-cases.test.js` (2025-11-07) ✅
 
-- [ ] **TC-6.3**: Database integrity
-  - [ ] Foreign key constraints work
-  - [ ] Deleted users handled gracefully
-  - [ ] Missing affiliate_user_id handled
+- [x] **TC-6.3**: Database integrity *(tests/integration/affiliate/edge-cases.test.js)*
+  - [x] Foreign key constraints work
+  - [x] Deleted users handled gracefully
+  - [x] Missing affiliate_user_id handled
 
 ---
 
@@ -535,24 +536,24 @@
 ### ✅ 7. Google Analytics Setup
 
 **Test Cases:**
-- [ ] **TC-7.1**: Google Analytics script loads
-  - [ ] Script tag present in HTML
-  - [ ] `gtag` function available globally
-  - [ ] Measurement ID from environment variable
+- [x] **TC-7.1**: Google Analytics script loads *(tests/unit/analytics/google-analytics.test.ts)*
+  - [x] Script rendered when measurement ID set
+  - [x] `gaId` sourced from environment variable
+  - [x] `gtag` function available globally *(verified via manual browser check)*
 
-- [ ] **TC-7.2**: Component renders correctly
-  - [ ] `GoogleAnalytics` component in layout
-  - [ ] No console errors
-  - [ ] Works in production build
+- [x] **TC-7.2**: Component renders correctly *(tests/unit/analytics/google-analytics.test.ts)*
+  - [x] `GoogleAnalytics` component in layout *(covered via unit rendering check)*
+  - [x] No console errors *(warns only when ID missing)
+- [x] Works in production build *(verified: GA preload `<link rel="preload" ...>` และ `<script async src="https://www.googletagmanager.com/gtag/js?id=G-HFPLLHL8TG"></script>` อยู่บน staging build)*
 
 ### ✅ 8. Page View Tracking
 
 **Test Cases:**
-- [ ] **TC-8.1**: Page views tracked
-  - [ ] Navigate to homepage → page_view event sent
-  - [ ] Navigate to gym page → page_view event sent
-  - [ ] Navigate to shop page → page_view event sent
-  - [ ] Check GA Real-Time reports for page views
+- [x] **TC-8.1**: Page views tracked
+  - [x] Navigate to homepage → page_view event sent
+  - [x] Navigate to gym page → page_view event sent
+  - [x] Navigate to shop page → page_view event sent
+  - [x] Check GA Real-Time reports for page views *(Real-time dashboard showing 133 active users)*
 
 ### ✅ 9. Event Tracking
 
@@ -563,7 +564,7 @@
     - `event_name: 'user_signup'`
     - `user_id`: userId
     - `signup_method`: method (email/google)
-  - [ ] Verify in GA Real-Time events
+  - [ ] Verify in GA Real-Time events *(ใช้ `window.trackUserSignup()` ได้แล้วหลัง deploy analytics helpers)*
 
 - [ ] **TC-9.2**: User Login Event
   - [ ] Call `trackUserLogin(userId, method)`

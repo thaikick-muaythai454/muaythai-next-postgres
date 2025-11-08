@@ -7,8 +7,11 @@ import Link from "next/link";
 interface Promotion {
   id: string;
   title: string;
-  title_english?: string;
-  link_url?: string;
+  title_english?: string | null;
+  link_url?: string | null;
+  start_date?: string | null;
+  end_date?: string | null;
+  priority?: number | null;
 }
 
 export default function Marquee() {
@@ -21,13 +24,11 @@ export default function Marquee() {
         const now = new Date().toISOString();
         const { data, error } = await supabase
           .from("promotions")
-          .select("id, title, title_english, link_url")
+          .select("id, title, title_english, link_url, start_date, end_date, priority")
           .eq("is_active", true)
           .eq("show_in_marquee", true)
-          .or(`start_date.is.null,start_date.lte.${now}`)
-          .or(`end_date.is.null,end_date.gte.${now}`)
           .order("priority", { ascending: false })
-          .limit(5);
+          .limit(20);
 
         if (error) {
           console.error('Error fetching promotions:', error);
@@ -36,7 +37,18 @@ export default function Marquee() {
           return;
         }
 
-        setPromotions(data || []);
+        const nowDate = new Date(now);
+        const filteredPromotions =
+          (data ?? []).filter((promo) => {
+            const startsBeforeNow =
+              !promo.start_date || new Date(promo.start_date) <= nowDate;
+            const endsAfterNow =
+              !promo.end_date || new Date(promo.end_date) >= nowDate;
+
+            return startsBeforeNow && endsAfterNow;
+          });
+
+        setPromotions(filteredPromotions.slice(0, 5));
       } catch (error) {
         // Handle connection errors (ERR_CONNECTION_REFUSED, etc.)
         console.error('Failed to fetch promotions:', error);

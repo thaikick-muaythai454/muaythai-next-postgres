@@ -53,9 +53,7 @@ export function AuthLayout({
         <div className="w-full h-full bg-black/50 absolute top-0 left-0 z-0"></div>
         <div className="relative z-20 flex flex-col justify-center items-center text-center p-8">
           <div className="max-w-sm">
-            <h1 className="text-3xl lg:text-4xl font-bold mb-4">
-              {title}
-            </h1>
+            <h1 className="text-3xl lg:text-4xl font-bold mb-4">{title}</h1>
             <p className="text-lg text-zinc-200 mb-6 leading-relaxed">
               {subtitle || "เข้าร่วมชุมชนนักมวยไทยที่ใหญ่ที่สุด"}
             </p>

@@ -81,12 +81,20 @@ function LoginForm() {
         const { data: { session } } = await supabase.auth.getSession();
 
         if (session) {
-          // User is already logged in, redirect them
-          router.push(redirectTo);
+          const loginPaths = ["/login", "/signin", "/auth/login"];
+          const currentPath = typeof window !== "undefined" ? window.location.pathname : "";
+
+          let redirectTarget = redirectTo || "/";
+          if (loginPaths.some(path => redirectTarget.startsWith(path))) {
+            redirectTarget = "/";
+          }
+
+          if (redirectTarget !== currentPath) {
+            router.replace(redirectTarget);
+          }
         }
       } catch {
-        // Error occurred during login
-        // Silently handle errors
+        // Silently ignore auth check errors
       } finally {
         setIsCheckingAuth(false);
       }
@@ -191,9 +199,13 @@ function LoginForm() {
           }
 
           email = userData[0].email;
-        } catch (rpcNetworkError: any) {
+        } catch (err: unknown) {
+          const message =
+            err instanceof Error ? err.message : "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต";
           setErrors({
-            general: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต",
+            general: message.includes("fetch") || message.includes("Failed to fetch")
+              ? "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต"
+              : `เกิดข้อผิดพลาดในการค้นหาผู้ใช้: ${message}`,
           });
           setIsLoading(false);
           return;
@@ -235,27 +247,37 @@ function LoginForm() {
           router.push(redirectTo);
           router.refresh(); // Refresh to update server components
         }
-      } catch (authNetworkError: any) {
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : "";
+        const name = err instanceof Error ? err.name : "";
+        const causeCode =
+          typeof err === "object" && err !== null && "cause" in err && (err as { cause?: { code?: string } }).cause
+            ? (err as { cause?: { code?: string } }).cause?.code
+            : undefined;
+
         // Check if it's a fetch error
-        if (authNetworkError.message?.includes("fetch") || 
-            authNetworkError.message?.includes("Failed to fetch") ||
-            authNetworkError.name === "TypeError" ||
-            authNetworkError.cause?.code === "ECONNREFUSED" ||
-            authNetworkError.cause?.code === "ENOTFOUND") {
+        if (
+          message.includes("fetch") ||
+          message.includes("Failed to fetch") ||
+          name === "TypeError" ||
+          causeCode === "ECONNREFUSED" ||
+          causeCode === "ENOTFOUND"
+        ) {
           
           setErrors({
             general: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต",
           });
         } else {
           setErrors({
-            general: `เกิดข้อผิดพลาดในการเชื่อมต่อ: ${authNetworkError.message || "Unknown error"}`,
+            general: `เกิดข้อผิดพลาดในการเชื่อมต่อ: ${message || "Unknown error"}`,
           });
         }
       }
-    } catch (unknownError: any) {
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "กรุณาลองใหม่อีกครั้ง";
       // Unknown error occurred
       setErrors({
-        general: `เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ: ${unknownError.message || "กรุณาลองใหม่อีกครั้ง"}`,
+        general: `เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ: ${message}`,
       });
     } finally {
       setIsLoading(false);
