@@ -11,7 +11,7 @@ import { createClient } from '@/lib/database/supabase/server';
  */
 export async function POST(
   request: NextRequest,
-  context: { params: Promise<Record<string, string>> }
+  _context: { params: Promise<Record<string, string>> }
 ): Promise<NextResponse> {
   try {
     const supabase = await createClient();

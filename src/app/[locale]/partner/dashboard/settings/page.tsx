@@ -19,7 +19,6 @@ import {
   BanknotesIcon,
   CurrencyDollarIcon,
   Cog6ToothIcon,
-  HomeIcon,
   BellIcon,
   ShieldCheckIcon,
   MegaphoneIcon,

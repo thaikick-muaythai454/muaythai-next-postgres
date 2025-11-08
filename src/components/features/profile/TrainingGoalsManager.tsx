@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardBody, CardHeader, Button, Input, Select, SelectItem, Progress } from '@heroui/react';
-import { PlusIcon, TrashIcon, PencilIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 
 interface TrainingGoal {
@@ -90,9 +90,9 @@ export function TrainingGoalsManager() {
         target_date: '',
       });
       loadGoals();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Create error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาด');
+      toast.error((error as Error).message || 'เกิดข้อผิดพลาด');
     }
   };
 
@@ -112,9 +112,9 @@ export function TrainingGoalsManager() {
 
       toast.success('ลบเป้าหมายสำเร็จ!');
       loadGoals();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Delete error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาด');
+      toast.error((error as Error).message || 'เกิดข้อผิดพลาด');
     }
   };
 
@@ -135,9 +135,9 @@ export function TrainingGoalsManager() {
       }
 
       loadGoals();
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Update error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาด');
+      toast.error((error as Error).message || 'เกิดข้อผิดพลาด');
     }
   };
 

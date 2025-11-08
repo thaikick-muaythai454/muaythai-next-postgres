@@ -8,7 +8,6 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/database/supabase/server';
 import { 
   getPendingEmails, 
   updateEmailQueueStatus,
@@ -106,7 +105,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get pending emails from queue
-    const pendingEmails = await getPendingEmails(MAX_EMAILS_PER_RUN);
+    const pendingEmails: EmailQueueItem[] = await getPendingEmails(MAX_EMAILS_PER_RUN);
 
     if (pendingEmails.length === 0) {
       return NextResponse.json({
@@ -489,8 +488,6 @@ export async function POST(request: NextRequest) {
           default: {
             // Generic email sending (for other types)
             try {
-              const supabase = await createClient();
-              
               // Try SMTP first
               if (useSmtp && isSmtpConfigured()) {
                 const nodemailer = await import('nodemailer');

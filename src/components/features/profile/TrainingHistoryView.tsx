@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Card, CardBody, Select, SelectItem } from '@heroui/react';
+import { Card, CardBody } from '@heroui/react';
 import { CalendarIcon, MapPinIcon } from '@heroicons/react/24/outline';
 
 interface TrainingHistoryStats {

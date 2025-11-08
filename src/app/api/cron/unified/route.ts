@@ -550,6 +550,7 @@ async function handleUnifiedCron(request: NextRequest) {
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     const dayOfWeek = now.getDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
     const tasks: Record<string, unknown> = {};
 
@@ -561,8 +562,17 @@ async function handleUnifiedCron(request: NextRequest) {
 
     // Send booking reminders at 9 AM daily (when this cron runs at 9 AM)
     if (currentHour === 9 && currentMinute === 0) {
-      const remindersResult = await sendBookingReminders();
-      tasks.bookingReminders = remindersResult;
+      if (isWeekend) {
+        tasks.bookingReminders = {
+          success: true,
+          processed: 0,
+          skipped: true,
+          reason: 'Booking reminders are not sent on weekends',
+        };
+      } else {
+        const remindersResult = await sendBookingReminders();
+        tasks.bookingReminders = remindersResult;
+      }
     }
 
     // Publish scheduled articles - check for any articles due to be published
@@ -582,6 +592,12 @@ async function handleUnifiedCron(request: NextRequest) {
 
     const results = {
       timestamp: now.toISOString(),
+      schedule: {
+        dayOfWeek,
+        isWeekend,
+        hour: currentHour,
+        minute: currentMinute,
+      },
       tasks,
     };
 

@@ -7,7 +7,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { withAdminAuth } from '@/lib/api/withAdminAuth';
-import type { CustomReport } from '@/types/database.types';
+// import type { CustomReport } from '@/types/database.types';
 
 const getCustomReportsHandler = withAdminAuth(async (
   request: NextRequest,

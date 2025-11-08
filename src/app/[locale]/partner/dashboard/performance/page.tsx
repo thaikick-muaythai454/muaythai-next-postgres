@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
@@ -22,8 +22,6 @@ import {
   Cog6ToothIcon,
   HomeIcon,
   UsersIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
   ClockIcon,
   XCircleIcon,
   CheckCircleIcon,
@@ -78,23 +76,7 @@ function PartnerPerformanceContent() {
   const [selectedPeriod, setSelectedPeriod] = useState<'day' | 'week' | 'month'>('day');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  useEffect(() => {
-    async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      await loadMetrics();
-      setIsLoading(false);
-    }
-    loadData();
-  }, [supabase]);
-
-  useEffect(() => {
-    if (user) {
-      loadMetrics();
-    }
-  }, [selectedPeriod]);
-
-  const loadMetrics = async () => {
+  const loadMetrics = useCallback(async () => {
     setIsRefreshing(true);
     try {
       const response = await fetch(
@@ -113,6 +95,26 @@ function PartnerPerformanceContent() {
     } finally {
       setIsRefreshing(false);
     }
+  }, [selectedPeriod]);
+
+  useEffect(() => {
+    async function loadData() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      if (user) {
+        await loadMetrics();
+      }
+      setIsLoading(false);
+    }
+    loadData();
+  }, [loadMetrics, supabase]);
+
+  useEffect(() => {
+    loadMetrics();
+  }, [loadMetrics]);
+
+  const handleManualRefresh = () => {
+    loadMetrics();
   };
 
   const menuItems: MenuItem[] = [
@@ -180,7 +182,7 @@ function PartnerPerformanceContent() {
         <div className="space-y-6">
           {/* Period Selector */}
           <Card>
-            <CardBody>
+            <CardBody className="flex flex-wrap items-center justify-between gap-4">
               <Tabs
                 selectedKey={selectedPeriod}
                 onSelectionChange={(key) => setSelectedPeriod(key as 'day' | 'week' | 'month')}
@@ -190,6 +192,23 @@ function PartnerPerformanceContent() {
                 <Tab key="week" title="รายสัปดาห์" />
                 <Tab key="month" title="รายเดือน" />
               </Tabs>
+              <div className="flex items-center gap-3">
+                {isRefreshing && (
+                  <div className="flex items-center gap-2 text-sm text-default-500">
+                    <Spinner size="sm" />
+                    <span>กำลังรีเฟรชข้อมูล...</span>
+                  </div>
+                )}
+                <Chip
+                  as="button"
+                  onClick={handleManualRefresh}
+                  color="primary"
+                  variant="flat"
+                  className="cursor-pointer"
+                >
+                  รีเฟรชข้อมูล
+                </Chip>
+              </div>
             </CardBody>
           </Card>
 
@@ -364,4 +383,3 @@ function PartnerPerformanceContent() {
 }
 
 export default PartnerPerformanceContent;
-

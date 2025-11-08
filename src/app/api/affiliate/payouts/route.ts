@@ -192,6 +192,57 @@ export async function POST(request: NextRequest) {
           message: 'Payout request created successfully',
         });
       }
+
+      const resolvedPayoutNumber =
+        typeof payoutNumberData === 'string'
+          ? payoutNumberData
+          : payoutNumberData?.payout_number;
+
+      if (!resolvedPayoutNumber) {
+        console.warn('generate_affiliate_payout_number returned unexpected payload:', payoutNumberData);
+        return NextResponse.json(
+          { error: 'Failed to generate payout number' },
+          { status: 500 }
+        );
+      }
+
+      const { data: payout, error: payoutError } = await supabase
+        .from('affiliate_payouts')
+        .insert({
+          affiliate_user_id: user.id,
+          payout_number: resolvedPayoutNumber,
+          amount: netAmount,
+          total_commission: totalCommission,
+          platform_fee: platformFee,
+          net_amount: netAmount,
+          status: 'pending',
+          payout_method: payout_method,
+          period_start_date: period_start_date,
+          period_end_date: period_end_date,
+          bank_account_name: bank_account_name || null,
+          bank_account_number: bank_account_number || null,
+          bank_name: bank_name || null,
+          bank_branch: bank_branch || null,
+          promptpay_number: promptpay_number || null,
+          notes: notes || null,
+          related_conversion_ids: conversions.map(c => c.id),
+        })
+        .select()
+        .single();
+
+      if (payoutError) {
+        console.error('Error creating payout:', payoutError);
+        return NextResponse.json(
+          { error: 'Failed to create payout request' },
+          { status: 500 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        payout,
+        message: 'Payout request created successfully',
+      });
     }
 
     // Use the RPC function result if available

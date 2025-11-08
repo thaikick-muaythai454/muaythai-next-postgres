@@ -53,9 +53,9 @@ export function NotificationPreferencesPanel() {
       }
 
       toast.success('บันทึกการตั้งค่าแจ้งเตือนสำเร็จ!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Save error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการบันทึก');
+      toast.error((error as Error).message || 'เกิดข้อผิดพลาดในการบันทึก');
     } finally {
       setIsSaving(false);
     }

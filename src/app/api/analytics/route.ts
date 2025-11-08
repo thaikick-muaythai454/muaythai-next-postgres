@@ -28,7 +28,14 @@ export async function GET(request: NextRequest) {
     const eventType = searchParams.get('event');
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const limit = Number.parseInt(searchParams.get('limit') || '50', 10);
+
+    const appliedFilters = {
+      event: eventType || null,
+      startDate: startDate || null,
+      endDate: endDate || null,
+      limit: Number.isNaN(limit) ? 50 : limit,
+    };
     
     // Check if analytics_events table exists, if not return empty
     // For now, we'll return a basic structure
@@ -37,6 +44,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: [],
+      filters: appliedFilters,
       message: 'Analytics events endpoint - table not yet implemented',
     });
     

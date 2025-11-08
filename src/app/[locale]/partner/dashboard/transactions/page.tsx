@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
@@ -47,6 +47,35 @@ function PartnerTransactionsContent() {
   const [transactions, setTransactions] = useState<TransactionEntry[]>([]);
   const [gym, setGym] = useState<Gym | null>(null);
 
+  const loadTransactions = useCallback(
+    async (gymId: string) => {
+      try {
+        const { data: bookingsData } = await supabase
+          .from('bookings')
+          .select('*')
+          .eq('gym_id', gymId)
+          .eq('payment_status', 'paid')
+          .order('created_at', { ascending: false });
+
+        if (bookingsData) {
+          const mappedTransactions: TransactionEntry[] = (bookingsData as Booking[]).map((b) => ({
+            id: b.booking_number,
+            date: b.created_at,
+            type: 'รายได้',
+            description: `การจอง ${b.package_name} - ${b.customer_name}`,
+            amount: Number(b.price_paid || 0),
+            status: b.status === 'confirmed' || b.status === 'completed' ? 'completed' : 'pending',
+          }));
+
+          setTransactions(mappedTransactions);
+        }
+      } catch (error) {
+        console.error('Error loading transactions:', error);
+      }
+    },
+    [supabase]
+  );
+
   useEffect(() => {
     async function loadUser() {
       const { data: { user } } = await supabase.auth.getUser();
@@ -71,35 +100,10 @@ function PartnerTransactionsContent() {
       setIsLoading(false);
     }
     loadUser();
-  }, [supabase]);
+  }, [loadTransactions, supabase]);
   
-  const loadTransactions = async (gymId: string) => {
-    try {
-      const { data: bookingsData } = await supabase
-        .from('bookings')
-        .select('*')
-        .eq('gym_id', gymId)
-        .eq('payment_status', 'paid')
-        .order('created_at', { ascending: false });
-      
-      if (bookingsData) {
-        const mappedTransactions: TransactionEntry[] = (bookingsData as Booking[]).map((b) => ({
-          id: b.booking_number,
-          date: b.created_at,
-          type: 'รายได้',
-          description: `การจอง ${b.package_name} - ${b.customer_name}`,
-          amount: Number(b.price_paid || 0),
-          status: b.status === 'confirmed' || b.status === 'completed' ? 'completed' : 'pending',
-        }));
-        
-        setTransactions(mappedTransactions);
-      }
-    } catch (error) {
-      console.error('Error loading transactions:', error);
-    }
-  };
-
   const menuItems: MenuItem[] = [
+    { label: 'แดชบอร์ด', href: '/partner/dashboard', icon: HomeIcon },
     { label: 'ข้อมูลยิม', href: '/partner/dashboard/gym', icon: BuildingStorefrontIcon },
     { label: 'โปรโมชั่น', href: '/partner/dashboard/promotions', icon: MegaphoneIcon },
     { label: 'ประวัติการจอง', href: '/partner/dashboard/bookings', icon: CalendarIcon },
@@ -119,12 +123,16 @@ function PartnerTransactionsContent() {
     })
     .reduce((sum, t) => sum + t.amount, 0);
 
+  const headerSubtitle = gym?.gym_name
+    ? `ดูประวัติธุรกรรมและรายได้สำหรับ ${gym.gym_name}`
+    : 'ดูประวัติธุรกรรมและรายได้';
+
   if (isLoading) {
     return (
       <DashboardLayout
         menuItems={menuItems}
         headerTitle="รายการธุรกรรม"
-        headerSubtitle="ดูประวัติธุรกรรมและรายได้"
+        headerSubtitle={headerSubtitle}
         roleLabel="พาร์ทเนอร์"
         roleColor="secondary"
         userEmail={user?.email}
@@ -140,7 +148,7 @@ function PartnerTransactionsContent() {
     <DashboardLayout
       menuItems={menuItems}
       headerTitle="รายการธุรกรรม"
-      headerSubtitle="ดูประวัติธุรกรรมและรายได้"
+      headerSubtitle={headerSubtitle}
       roleLabel="พาร์ทเนอร์"
       roleColor="secondary"
       userEmail={user?.email}
@@ -149,6 +157,11 @@ function PartnerTransactionsContent() {
         <div className="gap-6 grid grid-cols-1 md:grid-cols-3">
           <Card className="bg-gradient-to-br from-success-500 to-success-700 border-none">
             <CardBody>
+              {gym?.gym_name && (
+                <p className="mb-1 text-white/60 text-xs uppercase tracking-wide">
+                  {gym.gym_name}
+                </p>
+              )}
               <p className="mb-2 text-white/80 text-sm">ยอดคงเหลือ</p>
               <p className="font-mono font-bold text-3xl">฿{Number(totalBalance || 0).toLocaleString()}</p>
               <Button size="sm" className="bg-white/20 backdrop-blur-sm mt-4 text-white">
@@ -166,6 +179,11 @@ function PartnerTransactionsContent() {
             <CardBody>
               <p className="mb-2 text-default-400 text-sm">ถอนเงินแล้ว</p>
               <p className="font-mono font-bold text-warning text-2xl">฿0</p>
+              {gym?.location && (
+                <p className="mt-2 text-default-500 text-xs">
+                  สถานที่: {gym.location}
+                </p>
+              )}
             </CardBody>
           </Card>
         </div>

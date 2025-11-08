@@ -13,7 +13,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
  */
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<Record<string, string>> }
+  _context: { params: Promise<Record<string, string>> }
 ) {
   try {
     const supabase = await createClient();
@@ -197,7 +197,7 @@ export async function PUT(
  */
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<Record<string, string>> }
+  _context: { params: Promise<Record<string, string>> }
 ) {
   try {
     const supabase = await createClient();

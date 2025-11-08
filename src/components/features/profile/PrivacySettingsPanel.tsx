@@ -52,9 +52,9 @@ export function PrivacySettingsPanel() {
       }
 
       toast.success('บันทึกการตั้งค่าความเป็นส่วนตัวสำเร็จ!');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Save error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการบันทึก');
+      toast.error((error as Error).message || 'เกิดข้อผิดพลาดในการบันทึก');
     } finally {
       setIsSaving(false);
     }
