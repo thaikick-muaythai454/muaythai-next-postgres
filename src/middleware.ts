@@ -20,7 +20,9 @@ export async function middleware(request: NextRequest) {
     path === '/coming-soon' ||
     locales.some((locale) => path === `/${locale}/coming-soon`)
 
-  if (host === 'thaikickmuaythai.com' && !isComingSoonPath) {
+  const comingSoonHosts = ['thaikickmuaythai.com', 'www.thaikickmuaythai.com'];
+
+  if (comingSoonHosts.includes(host ?? '') && !isComingSoonPath) {
     // Specific real domain: redirect to Coming Soon page
     const comingSoonUrl = new URL(`/${locales[0]}/coming-soon`, request.url)
     return NextResponse.redirect(comingSoonUrl)
