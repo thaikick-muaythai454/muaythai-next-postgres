@@ -19,7 +19,10 @@ export default function LayoutWrapper({
   const authPages = ['/login', '/signup', '/forget-password', '/reset-password', '/update-password'];
   const isAuthPage = authPages.includes(pathname);
 
-  const hideHeaderFooter = isAdminPage || isDashboardPage || isPartnerDashboard || isAuthPage;
+  const isComingSoonPage =
+    pathname === '/coming-soon' || pathname.endsWith('/coming-soon');
+
+  const hideHeaderFooter = isAdminPage || isDashboardPage || isPartnerDashboard || isAuthPage || isComingSoonPage;
 
   // Track page views automatically
   usePageView();

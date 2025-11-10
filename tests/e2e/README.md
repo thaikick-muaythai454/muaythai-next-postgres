@@ -27,6 +27,20 @@ E2E_TEST_ADMIN_PASSWORD=<password-for-created-admin-user>
 
 > ℹ️ หากไม่ตั้งค่ารหัสผ่านเหล่านี้ สคริปต์และ tests จะหยุดทำงานพร้อมข้อความ error เพื่อป้องกันการ hard-code ความลับลงใน repository
 
+## 👤 Test Accounts จาก `run-create-user.sh test-users`
+
+หลังจากรัน `./scripts/shell/run-create-user.sh test-users` ระบบจะสร้างผู้ใช้ไว้ 5 บัญชีสำหรับการทดสอบ โดยใช้อีเมลตามตารางด้านล่าง และดึงรหัสผ่านจาก environment variables ที่ตั้งไว้ใน `.env.local`:
+
+| Role            | Email                         | Password Env Var(s)¹                  |
+|-----------------|------------------------------|---------------------------------------|
+| Admin           | `admin@muaythai.com`         | `E2E_ADMIN_PASSWORD` → `E2E_TEST_ADMIN_PASSWORD` |
+| Partner         | `partner@muaythai.com`       | `E2E_PARTNER_PASSWORD` → `E2E_TEST_PARTNER_PASSWORD` |
+| Regular User    | `user@muaythai.com`          | `E2E_REGULAR_PASSWORD` → `E2E_TEST_USER_PASSWORD` |
+| Gym Owner       | `gymowner@muaythai.com`      | ใช้ `E2E_TEST_USER_PASSWORD` (หรือ `E2E_DEFAULT_PASSWORD` เป็น fallback) |
+| Trainer         | `trainer@muaythai.com`       | ใช้ `E2E_TEST_USER_PASSWORD` (หรือ `E2E_DEFAULT_PASSWORD` เป็น fallback) |
+
+¹ สคริปต์และ Playwright tests จะลองอ่านรหัสผ่านตามลำดับที่ระบุ (ลูกศรชี้ไป fallback ถัดไป) และสุดท้ายจะใช้ `E2E_DEFAULT_PASSWORD` เมื่อไม่มีค่าก่อนหน้า
+
 ## 📁 Structure
 
 ```

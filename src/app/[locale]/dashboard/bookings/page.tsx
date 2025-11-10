@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { createClient } from '@/lib/database/supabase/client';
-import { RoleGuard } from '@/components/features/auth';
-import { DashboardLayout, type MenuItem } from '@/components/shared';
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/database/supabase/client";
+import { RoleGuard } from "@/components/features/auth";
+import { DashboardLayout, type MenuItem } from "@/components/shared";
 import {
   Card,
   CardBody,
@@ -17,7 +17,7 @@ import {
   TableCell,
   Tabs,
   Tab,
-} from '@heroui/react';
+} from "@heroui/react";
 import {
   UserIcon,
   CalendarIcon,
@@ -26,9 +26,9 @@ import {
   CheckCircleIcon,
   ClockIcon,
   XCircleIcon,
-} from '@heroicons/react/24/outline';
-import { User } from '@supabase/supabase-js';
-import type { Booking as BookingType } from '@/types/database.types';
+} from "@heroicons/react/24/outline";
+import { User } from "@supabase/supabase-js";
+import type { Booking as BookingType } from "@/types/database.types";
 
 interface BookingWithGym extends BookingType {
   gyms?: {
@@ -44,18 +44,21 @@ function BookingsContent() {
   const [user, setUser] = useState<User | null>(null);
   const [bookings, setBookings] = useState<BookingWithGym[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedTab, setSelectedTab] = useState('all');
+  const [selectedTab, setSelectedTab] = useState("all");
 
   useEffect(() => {
     async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       setUser(user);
 
       if (user) {
         // Fetch user's bookings with gym information
         const { data, error } = await supabase
-          .from('bookings')
-          .select(`
+          .from("bookings")
+          .select(
+            `
             *,
             gyms:gym_id (
               id,
@@ -63,9 +66,10 @@ function BookingsContent() {
               gym_name_english,
               slug
             )
-          `)
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
+          `
+          )
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
 
         if (!error && data) {
           setBookings(data as BookingWithGym[]);
@@ -78,33 +82,44 @@ function BookingsContent() {
   }, [supabase]);
 
   const menuItems: MenuItem[] = [
-    { label: 'การจองของฉัน', href: '/dashboard/bookings', icon: CalendarIcon },
-    { label: 'รายการโปรด', href: '/dashboard/favorites', icon: HeartIcon },
-    { label: 'ประวัติการเงิน', href: '/dashboard/transactions', icon: BanknotesIcon },
-    { label: 'โปรไฟล์', href: '/dashboard/profile', icon: UserIcon },
+    { label: "การจองของฉัน", href: "/dashboard/bookings", icon: CalendarIcon },
+    { label: "รายการโปรด", href: "/dashboard/favorites", icon: HeartIcon },
+    {
+      label: "ประวัติการเงิน",
+      href: "/dashboard/transactions",
+      icon: BanknotesIcon,
+    },
+    { label: "โปรไฟล์", href: "/dashboard/profile", icon: UserIcon },
   ];
 
   const getStatusChip = (status: string) => {
-    const statusConfig: Record<string, { label: string; color: 'warning' | 'success' | 'danger' | 'default'; icon: typeof ClockIcon }> = {
+    const statusConfig: Record<
+      string,
+      {
+        label: string;
+        color: "warning" | "success" | "danger" | "default";
+        icon: typeof ClockIcon;
+      }
+    > = {
       pending: {
-        label: 'รอดำเนินการ',
-        color: 'default' as const,
-        icon: ClockIcon
+        label: "รอดำเนินการ",
+        color: "default" as const,
+        icon: ClockIcon,
       },
       confirmed: {
-        label: 'ยืนยันแล้ว',
-        color: 'warning' as const,
-        icon: ClockIcon
+        label: "ยืนยันแล้ว",
+        color: "warning" as const,
+        icon: ClockIcon,
       },
       completed: {
-        label: 'เสร็จสิ้น',
-        color: 'success' as const,
-        icon: CheckCircleIcon
+        label: "เสร็จสิ้น",
+        color: "success" as const,
+        icon: CheckCircleIcon,
       },
       cancelled: {
-        label: 'ยกเลิก',
-        color: 'danger' as const,
-        icon: XCircleIcon
+        label: "ยกเลิก",
+        color: "danger" as const,
+        icon: XCircleIcon,
       },
     };
 
@@ -124,11 +139,14 @@ function BookingsContent() {
   };
 
   const getPaymentStatusChip = (status: string) => {
-    const statusConfig: Record<string, { label: string; color: 'warning' | 'success' | 'danger' | 'default' }> = {
-      pending: { label: 'รอชำระ', color: 'warning' as const },
-      paid: { label: 'ชำระแล้ว', color: 'success' as const },
-      failed: { label: 'ล้มเหลว', color: 'danger' as const },
-      refunded: { label: 'คืนเงินแล้ว', color: 'default' as const },
+    const statusConfig: Record<
+      string,
+      { label: string; color: "warning" | "success" | "danger" | "default" }
+    > = {
+      pending: { label: "รอชำระ", color: "warning" as const },
+      paid: { label: "ชำระแล้ว", color: "success" as const },
+      failed: { label: "ล้มเหลว", color: "danger" as const },
+      refunded: { label: "คืนเงินแล้ว", color: "default" as const },
     };
 
     const config = statusConfig[status] || statusConfig.pending;
@@ -139,17 +157,17 @@ function BookingsContent() {
     );
   };
 
-  const filteredBookings = bookings.filter(booking => {
-    if (selectedTab === 'all') return true;
+  const filteredBookings = bookings.filter((booking) => {
+    if (selectedTab === "all") return true;
     return booking.status === selectedTab;
   });
 
   const stats = {
     total: bookings.length,
-    pending: bookings.filter(b => b.status === 'pending').length,
-    confirmed: bookings.filter(b => b.status === 'confirmed').length,
-    completed: bookings.filter(b => b.status === 'completed').length,
-    cancelled: bookings.filter(b => b.status === 'cancelled').length,
+    pending: bookings.filter((b) => b.status === "pending").length,
+    confirmed: bookings.filter((b) => b.status === "confirmed").length,
+    completed: bookings.filter((b) => b.status === "completed").length,
+    cancelled: bookings.filter((b) => b.status === "cancelled").length,
   };
 
   if (isLoading) {
@@ -180,20 +198,44 @@ function BookingsContent() {
       userEmail={user?.email}
       showPartnerButton={true}
     >
-
       {/* Booking Statistics */}
       <section className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
         {[
-          { label: 'ทั้งหมด', value: stats.total, icon: CalendarIcon, color: 'text-primary' },
-          { label: 'รอดำเนินการ', value: stats.pending, icon: ClockIcon, color: 'text-warning' },
-          { label: 'ยืนยันแล้ว', value: stats.confirmed, icon: CheckCircleIcon, color: 'text-success' },
-          { label: 'ยกเลิก', value: stats.cancelled, icon: XCircleIcon, color: 'text-danger' },
+          {
+            label: "ทั้งหมด",
+            value: stats.total,
+            icon: CalendarIcon,
+            color: "text-primary",
+          },
+          {
+            label: "รอดำเนินการ",
+            value: stats.pending,
+            icon: ClockIcon,
+            color: "text-warning",
+          },
+          {
+            label: "ยืนยันแล้ว",
+            value: stats.confirmed,
+            icon: CheckCircleIcon,
+            color: "text-success",
+          },
+          {
+            label: "ยกเลิก",
+            value: stats.cancelled,
+            icon: XCircleIcon,
+            color: "text-danger",
+          },
         ].map(({ label, value, icon: Icon, color }) => (
-          <Card key={label} className="bg-default-100/50 backdrop-blur-sm border-none">
-            <CardBody className="flex items-center justify-between">
+          <Card
+            key={label}
+            className="bg-zinc-900 backdrop-blur-sm border-none rounded-lg border border-zinc-600"
+          >
+            <CardBody className="flex flex-row items-center justify-between">
               <div>
                 <p className="text-sm text-default-500">{label}</p>
-                <p className="mt-1 text-2xl font-semibold text-default-900">{value}</p>
+                <p className="mt-1 text-2xl font-semibold text-default-900">
+                  {value}
+                </p>
               </div>
               <span className={`${color}`}>
                 <Icon className="w-8 h-8" />
@@ -205,12 +247,13 @@ function BookingsContent() {
 
       {/* Bookings Table */}
       <section>
-        <Card className="bg-default-100/50 backdrop-blur-sm border-none">
+        <Card className="backdrop-blur-sm border-none rounded-lg">
           <CardBody>
             <Tabs
+              aria-label="Options"
               selectedKey={selectedTab}
               onSelectionChange={(key) => setSelectedTab(key as string)}
-              className="mb-6"
+              className=""
               color="danger"
             >
               <Tab key="all" title="ทั้งหมด" />
@@ -240,12 +283,18 @@ function BookingsContent() {
               <TableBody emptyContent="ไม่พบข้อมูลการจอง">
                 {filteredBookings.map((booking) => (
                   <TableRow key={booking.id}>
-                    <TableCell className="font-mono text-sm">{booking.booking_number}</TableCell>
+                    <TableCell className="font-mono text-sm">
+                      {booking.booking_number}
+                    </TableCell>
                     <TableCell>
                       <div>
-                        <p className="font-semibold text-white">{booking.gyms?.gym_name || 'N/A'}</p>
+                        <p className="font-semibold text-white">
+                          {booking.gyms?.gym_name || "N/A"}
+                        </p>
                         {booking.gyms?.gym_name_english && (
-                          <p className="text-default-400 text-xs">{booking.gyms.gym_name_english}</p>
+                          <p className="text-default-400 text-xs">
+                            {booking.gyms.gym_name_english}
+                          </p>
                         )}
                       </div>
                     </TableCell>
@@ -253,50 +302,61 @@ function BookingsContent() {
                       <div>
                         <p className="text-white">{booking.package_name}</p>
                         <p className="text-default-400 text-xs">
-                          {booking.package_type === 'one_time' ? 'ครั้งเดียว' : `${booking.duration_months} เดือน`}
+                          {booking.package_type === "one_time"
+                            ? "ครั้งเดียว"
+                            : `${booking.duration_months} เดือน`}
                         </p>
                       </div>
                     </TableCell>
                     <TableCell className="text-default-400">
-                      {new Date(booking.start_date).toLocaleDateString('th-TH', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric'
-                      })}
+                      {new Date(booking.start_date).toLocaleDateString(
+                        "th-TH",
+                        {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}
                     </TableCell>
                     <TableCell className="text-default-400">
-                      {booking.end_date 
-                        ? new Date(booking.end_date).toLocaleDateString('th-TH', {
-                            year: 'numeric',
-                            month: 'short',
-                            day: 'numeric'
-                          })
-                        : '-'
-                      }
+                      {booking.end_date
+                        ? new Date(booking.end_date).toLocaleDateString(
+                            "th-TH",
+                            {
+                              year: "numeric",
+                              month: "short",
+                              day: "numeric",
+                            }
+                          )
+                        : "-"}
                     </TableCell>
                     <TableCell>{getStatusChip(booking.status)}</TableCell>
-                    <TableCell>{getPaymentStatusChip(booking.payment_status)}</TableCell>
+                    <TableCell>
+                      {getPaymentStatusChip(booking.payment_status)}
+                    </TableCell>
                     <TableCell className="font-mono text-white">
                       ฿{Number(booking.price_paid).toLocaleString()}
                     </TableCell>
                     <TableCell>
-                      {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                      {(booking.status === "pending" ||
+                        booking.status === "confirmed") && (
                         <Button
                           size="sm"
                           color="danger"
                           variant="flat"
                           onPress={async () => {
-                            if (confirm('คุณต้องการยกเลิกการจองนี้หรือไม่?')) {
+                            if (confirm("คุณต้องการยกเลิกการจองนี้หรือไม่?")) {
                               const { error } = await supabase
-                                .from('bookings')
-                                .update({ status: 'cancelled' })
-                                .eq('id', booking.id);
-                              
+                                .from("bookings")
+                                .update({ status: "cancelled" })
+                                .eq("id", booking.id);
+
                               if (!error) {
                                 // Reload data
                                 const { data } = await supabase
-                                  .from('bookings')
-                                  .select(`
+                                  .from("bookings")
+                                  .select(
+                                    `
                                     *,
                                     gyms:gym_id (
                                       id,
@@ -304,10 +364,11 @@ function BookingsContent() {
                                       gym_name_english,
                                       slug
                                     )
-                                  `)
-                                  .eq('user_id', user?.id)
-                                  .order('created_at', { ascending: false });
-                                
+                                  `
+                                  )
+                                  .eq("user_id", user?.id)
+                                  .order("created_at", { ascending: false });
+
                                 if (data) setBookings(data as BookingWithGym[]);
                               }
                             }
@@ -316,12 +377,8 @@ function BookingsContent() {
                           ยกเลิก
                         </Button>
                       )}
-                      {booking.status === 'completed' && (
-                        <Button
-                          size="sm"
-                          color="secondary"
-                          variant="flat"
-                        >
+                      {booking.status === "completed" && (
+                        <Button size="sm" color="secondary" variant="flat">
                           รีวิว
                         </Button>
                       )}

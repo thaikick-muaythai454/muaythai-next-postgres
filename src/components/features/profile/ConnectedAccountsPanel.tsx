@@ -7,7 +7,12 @@ import {
   LinkIcon,
   TrashIcon,
 } from '@heroicons/react/24/outline';
-import { linkGoogleAccount, unlinkGoogleAccount, getConnectedAccounts } from '@/services/auth.service';
+import {
+  linkGoogleAccount,
+  linkFacebookAccount,
+  unlinkOAuthAccount,
+  getConnectedAccounts,
+} from '@/services/auth.service';
 import { toast } from 'react-hot-toast';
 
 interface ConnectedIdentity {
@@ -24,7 +29,7 @@ interface ConnectedIdentity {
 export function ConnectedAccountsPanel() {
   const [identities, setIdentities] = useState<ConnectedIdentity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLinking, setIsLinking] = useState(false);
+  const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
   const [isUnlinking, setIsUnlinking] = useState<string | null>(null);
 
   useEffect(() => {
@@ -46,36 +51,41 @@ export function ConnectedAccountsPanel() {
     }
   };
 
-  const handleConnectGoogle = async () => {
+  const handleConnectProvider = async (provider: 'google' | 'facebook') => {
+    const providerName = provider === 'google' ? 'Google' : 'Facebook';
+    const linkHandler = provider === 'google' ? linkGoogleAccount : linkFacebookAccount;
+
     try {
-      setIsLinking(true);
-      await linkGoogleAccount();
+      setLinkingProvider(provider);
+      await linkHandler();
       // The redirect will happen automatically
     } catch (error) {
-      console.error('Error linking Google account:', error);
-      const message = error instanceof Error ? error.message : 'ไม่สามารถเชื่อมต่อบัญชี Google ได้';
+      console.error(`Error linking ${provider} account:`, error);
+      const message = error instanceof Error ? error.message : `ไม่สามารถเชื่อมต่อบัญชี ${providerName} ได้`;
       toast.error(message, {
         duration: 3000,
       });
-      setIsLinking(false);
+      setLinkingProvider(null);
     }
   };
 
-  const handleUnlinkGoogle = async (provider: string = 'google') => {
-    if (!confirm('คุณแน่ใจหรือไม่ที่จะยกเลิกการเชื่อมต่อบัญชี Google นี้?')) {
+  const handleUnlinkProvider = async (provider: 'google' | 'facebook') => {
+    const providerName = provider === 'google' ? 'Google' : 'Facebook';
+
+    if (!confirm(`คุณแน่ใจหรือไม่ที่จะยกเลิกการเชื่อมต่อบัญชี ${providerName} นี้?`)) {
       return;
     }
 
     try {
       setIsUnlinking(provider);
-      await unlinkGoogleAccount(provider);
+      await unlinkOAuthAccount(provider);
       await loadConnectedAccounts();
-      toast.success('ยกเลิกการเชื่อมต่อบัญชี Google สำเร็จ', {
+      toast.success(`ยกเลิกการเชื่อมต่อบัญชี ${providerName} สำเร็จ`, {
         duration: 3000,
       });
     } catch (error) {
-      console.error('Error unlinking Google account:', error);
-      const message = error instanceof Error ? error.message : 'ไม่สามารถยกเลิกการเชื่อมต่อได้';
+      console.error(`Error unlinking ${provider} account:`, error);
+      const message = error instanceof Error ? error.message : `ไม่สามารถยกเลิกการเชื่อมต่อบัญชี ${providerName} ได้`;
       toast.error(message, {
         duration: 3000,
       });
@@ -85,6 +95,7 @@ export function ConnectedAccountsPanel() {
   };
 
   const hasGoogleAccount = identities.some((id) => id.provider === 'google');
+  const hasFacebookAccount = identities.some((id) => id.provider === 'facebook');
 
   if (isLoading) {
     return (
@@ -149,7 +160,7 @@ export function ConnectedAccountsPanel() {
                   <TrashIcon className="w-4 h-4" />
                 )
               }
-              onPress={() => handleUnlinkGoogle('google')}
+              onPress={() => handleUnlinkProvider('google')}
               isDisabled={isUnlinking !== null}
             >
               {isUnlinking === 'google' ? 'กำลังยกเลิก...' : 'ยกเลิกการเชื่อมต่อ'}
@@ -160,17 +171,83 @@ export function ConnectedAccountsPanel() {
               color="primary"
               variant="solid"
               startContent={
-                isLinking ? (
+                linkingProvider === 'google' ? (
                   <div className="border-2 border-white border-t-transparent rounded-full w-4 h-4 animate-spin"></div>
                 ) : (
                   <LinkIcon className="w-4 h-4" />
                 )
               }
-              onPress={handleConnectGoogle}
-              isDisabled={isLinking}
+              onPress={() => handleConnectProvider('google')}
+              isDisabled={linkingProvider !== null}
               className="bg-gradient-to-r from-blue-600 to-blue-700"
             >
-              {isLinking ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อ Google'}
+              {linkingProvider === 'google' ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อ Google'}
+            </Button>
+          )}
+        </div>
+
+        {/* Facebook Account */}
+        <div className="flex justify-between items-center p-4 bg-zinc-900/50 border border-zinc-700 rounded-lg">
+          <div className="flex items-center gap-4">
+            <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-lg">f</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <p className="font-semibold text-white">Facebook</p>
+                {hasFacebookAccount && (
+                  <Chip
+                    size="sm"
+                    color="success"
+                    variant="flat"
+                    startContent={<CheckCircleIcon className="w-3 h-3" />}
+                  >
+                    เชื่อมต่อแล้ว
+                  </Chip>
+                )}
+              </div>
+              {hasFacebookAccount && (
+                <p className="text-zinc-400 text-sm mt-1">
+                  {identities.find((id) => id.provider === 'facebook')?.identity_data?.email ||
+                    'บัญชี Facebook'}
+                </p>
+              )}
+            </div>
+          </div>
+          {hasFacebookAccount ? (
+            <Button
+              size="sm"
+              color="danger"
+              variant="flat"
+              startContent={
+                isUnlinking === 'facebook' ? (
+                  <div className="border-2 border-red-500 border-t-transparent rounded-full w-4 h-4 animate-spin"></div>
+                ) : (
+                  <TrashIcon className="w-4 h-4" />
+                )
+              }
+              onPress={() => handleUnlinkProvider('facebook')}
+              isDisabled={isUnlinking !== null}
+            >
+              {isUnlinking === 'facebook' ? 'กำลังยกเลิก...' : 'ยกเลิกการเชื่อมต่อ'}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              color="primary"
+              variant="solid"
+              startContent={
+                linkingProvider === 'facebook' ? (
+                  <div className="border-2 border-white border-t-transparent rounded-full w-4 h-4 animate-spin"></div>
+                ) : (
+                  <LinkIcon className="w-4 h-4" />
+                )
+              }
+              onPress={() => handleConnectProvider('facebook')}
+              isDisabled={linkingProvider !== null}
+              className="bg-gradient-to-r from-blue-700 to-blue-900"
+            >
+              {linkingProvider === 'facebook' ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อ Facebook'}
             </Button>
           )}
         </div>
@@ -178,7 +255,7 @@ export function ConnectedAccountsPanel() {
         {/* Info message */}
         <div className="bg-blue-950/30 border border-blue-800/50 p-4 rounded-lg">
           <p className="text-blue-300 text-sm">
-            💡 <strong>เคล็ดลับ:</strong> การเชื่อมต่อบัญชี Google ช่วยให้คุณเข้าสู่ระบบได้ง่ายขึ้น
+            💡 <strong>เคล็ดลับ:</strong> การเชื่อมต่อบัญชี Google หรือ Facebook ช่วยให้คุณเข้าสู่ระบบได้ง่ายขึ้น
             และไม่ต้องจำรหัสผ่าน
           </p>
         </div>

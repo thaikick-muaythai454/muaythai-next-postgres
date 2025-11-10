@@ -1,6 +1,8 @@
 import { Bai_Jamjuree } from "next/font/google";
 import "./globals.css";
 
+import "@heroui/theme";
+
 const baiJamjuree = Bai_Jamjuree({
   variable: "--font-bai-jamjuree",
   subsets: ["latin", "thai"],

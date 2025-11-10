@@ -61,14 +61,14 @@ export default function SidebarContent({
   return (
     <>
       <div className={`flex items-center p-6 border-white/5 border-b ${onClose ? 'justify-between' : 'justify-start'}`}>
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex justify-center items-center bg-brand-primary rounded w-10 h-10 font-bold text-white">
-            MT
-          </div>
+        <div className="flex flex-col">
           <span className="font-semibold text-lg">
-            MUAYTHAI
+            แดชบอร์ดของฉัน
           </span>
-        </Link>
+          <span className="text-default-400 text-sm">
+            จัดการบัญชีและการตั้งค่า
+          </span>
+        </div>
         {onClose && (
           <Button
             isIconOnly

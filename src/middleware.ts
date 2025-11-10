@@ -1,4 +1,4 @@
-import { type NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import { updateSession } from '@/lib/database/supabase/middleware'
 import { rateLimit } from '@/lib/middleware/rate-limit'
 import { csrfProtection } from '@/lib/middleware/csrf-protection'
@@ -13,7 +13,18 @@ const intlMiddleware = createIntlMiddleware({
 })
 
 export async function middleware(request: NextRequest) {
+  const host = request.headers.get('host')
   const path = request.nextUrl.pathname
+
+  const isComingSoonPath =
+    path === '/coming-soon' ||
+    locales.some((locale) => path === `/${locale}/coming-soon`)
+
+  if (host === 'thaikickmuaythai.com' && !isComingSoonPath) {
+    // Specific real domain: redirect to Coming Soon page
+    const comingSoonUrl = new URL(`/${locales[0]}/coming-soon`, request.url)
+    return NextResponse.redirect(comingSoonUrl)
+  }
 
   // Skip i18n middleware for API routes, static files, and internal Next.js routes
   const shouldSkipI18n =

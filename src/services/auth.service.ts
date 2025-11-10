@@ -86,14 +86,16 @@ export function onAuthStateChange(callback: (user: ReturnType<typeof getCurrentU
   return subscription;
 }
 
+type OAuthProvider = 'google' | 'facebook' | 'apple';
+
 /**
- * เข้าสู่ระบบด้วย Google OAuth
+ * Helper สำหรับเข้าสู่ระบบด้วย OAuth Provider
  */
-export async function signInWithGoogle() {
+async function signInWithOAuthProvider(provider: OAuthProvider) {
   const supabase = createClient();
-  
+
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
+    provider,
     options: {
       redirectTo: `${window.location.origin}/auth/callback`,
     },
@@ -107,15 +109,29 @@ export async function signInWithGoogle() {
 }
 
 /**
- * เชื่อมต่อบัญชี Google (สำหรับผู้ใช้ที่ล็อกอินอยู่แล้ว)
+ * เข้าสู่ระบบด้วย Google OAuth
+ */
+export async function signInWithGoogle() {
+  return signInWithOAuthProvider('google');
+}
+
+/**
+ * เข้าสู่ระบบด้วย Facebook OAuth
+ */
+export async function signInWithFacebook() {
+  return signInWithOAuthProvider('facebook');
+}
+
+/**
+ * เชื่อมต่อบัญชี OAuth (สำหรับผู้ใช้ที่ล็อกอินอยู่แล้ว)
  * Uses Supabase Auth manual identity linking (beta)
  * Requires GOTRUE_SECURITY_MANUAL_LINKING_ENABLED: true in Supabase config
  */
-export async function linkGoogleAccount() {
+async function linkOAuthAccount(provider: Exclude<OAuthProvider, 'apple'>) {
   const supabase = createClient();
-  
+
   const { data, error } = await supabase.auth.linkIdentity({
-    provider: 'google',
+    provider,
     options: {
       redirectTo: `${window.location.origin}/auth/callback`,
     },
@@ -126,6 +142,14 @@ export async function linkGoogleAccount() {
   }
 
   return data;
+}
+
+export async function linkGoogleAccount() {
+  return linkOAuthAccount('google');
+}
+
+export async function linkFacebookAccount() {
+  return linkOAuthAccount('facebook');
 }
 
 /**
@@ -133,7 +157,7 @@ export async function linkGoogleAccount() {
  * Uses Supabase Auth unlinkIdentity() - requires user to have at least 2 linked identities
  * @param provider - OAuth provider to unlink (e.g., 'google', 'facebook', 'apple')
  */
-export async function unlinkGoogleAccount(provider: string = 'google') {
+export async function unlinkOAuthAccount(provider: OAuthProvider = 'google') {
   const supabase = createClient();
   
   // First, get all user identities
@@ -169,6 +193,11 @@ export async function unlinkGoogleAccount(provider: string = 'google') {
   }
 
   return data;
+}
+
+// Backwards compatibility
+export async function unlinkGoogleAccount(provider: string = 'google') {
+  return unlinkOAuthAccount(provider as OAuthProvider);
 }
 
 /**

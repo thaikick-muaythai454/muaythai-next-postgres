@@ -12,7 +12,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { AuthLayout } from "@/components/compositions/layouts";
 import { Button } from "@/components/shared";
-import { signInWithGoogle } from '@/services/auth.service';
+import { signInWithGoogle, signInWithFacebook } from '@/services/auth.service';
 import { toast } from 'react-hot-toast';
 
 /**
@@ -60,6 +60,7 @@ function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isFacebookLoading, setIsFacebookLoading] = useState(false);
 
   // Show error message from URL parameter
   useEffect(() => {
@@ -302,6 +303,20 @@ function LoginForm() {
     }
   };
 
+  const handleFacebookSignIn = async () => {
+    try {
+      setIsFacebookLoading(true);
+      setErrors((prev) => ({ ...prev, general: undefined }));
+      await signInWithFacebook();
+    } catch (error: unknown) {
+      console.error('Facebook sign-in failed:', error);
+      const message =
+        error instanceof Error ? error.message : 'ไม่สามารถเข้าสู่ระบบด้วย Facebook ได้';
+      toast.error(message, { duration: 3000 });
+      setIsFacebookLoading(false);
+    }
+  };
+
   /**
    * Toggle password visibility
    */
@@ -337,16 +352,37 @@ function LoginForm() {
             loading={isGoogleLoading}
             loadingText="กำลังเชื่อมต่อ Google..."
             leftIcon={
-              <span className="flex items-center justify-center w-4 h-4">
+              <span className="flex items-center justify-center w-4 h-4 text-white">
                 <svg viewBox="0 0 24 24" className="w-4 h-4" aria-hidden="true">
-                  <path fill="#EA4335" d="M12 10.8v3.84h5.44c-.24 1.44-1.6 4.24-5.44 4.24-3.28 0-5.96-2.72-5.96-6.08s2.68-6.08 5.96-6.08c1.88 0 3.16.8 3.88 1.48l2.64-2.56C16.72 3.68 14.56 2.8 12 2.8 6.88 2.8 2.8 6.88 2.8 12s4.08 9.2 9.2 9.2c5.32 0 8.84-3.72 8.84-8.96 0-.6-.04-1.04-.12-1.44H12z" />
+                  <path fill="currentColor" d="M12 10.8v3.84h5.44c-.24 1.44-1.6 4.24-5.44 4.24-3.28 0-5.96-2.72-5.96-6.08s2.68-6.08 5.96-6.08c1.88 0 3.16.8 3.88 1.48l2.64-2.56C16.72 3.68 14.56 2.8 12 2.8 6.88 2.8 2.8 6.88 2.8 12s4.08 9.2 9.2 9.2c5.32 0 8.84-3.72 8.84-8.96 0-.6-.04-1.04-.12-1.44H12z" />
                 </svg>
               </span>
             }
             onClick={handleGoogleSignIn}
-            disabled={isGoogleLoading}
+            disabled={isGoogleLoading || isFacebookLoading}
           >
             เข้าสู่ระบบด้วย Google
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            fullWidth
+            loading={isFacebookLoading}
+            loadingText="กำลังเชื่อมต่อ Facebook..."
+            leftIcon={
+              <span className="flex items-center justify-center w-4 h-4">
+                <svg viewBox="0 0 24 24" className="w-4 h-4" aria-hidden="true">
+                  <path
+                    fill="#1877F2"
+                    d="M22 12a10 10 0 1 0-11.562 9.875v-6.988H7.898V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.462h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.887h-2.33v6.988A10.001 10.001 0 0 0 22 12Z"
+                  />
+                </svg>
+              </span>
+            }
+            onClick={handleFacebookSignIn}
+            disabled={isFacebookLoading || isGoogleLoading}
+          >
+            เข้าสู่ระบบด้วย Facebook
           </Button>
           <div className="flex items-center gap-4">
             <div className="flex-1 h-px bg-zinc-700" />
