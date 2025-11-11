@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
 import {
   Card,
   CardBody,
-  CardHeader,
+  // CardHeader,
   Chip,
   Table,
   TableHeader,
@@ -22,7 +22,7 @@ import {
   ModalBody,
   ModalFooter,
   useDisclosure,
-  Input,
+  // Input,
   Select,
   SelectItem,
 } from '@heroui/react';
@@ -84,31 +84,7 @@ function PartnerPayoutsContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  useEffect(() => {
-    async function loadData() {
-      const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
-      
-      if (user) {
-        const { data: gymData } = await supabase
-          .from('gyms')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        setGym(gymData);
-        
-        if (gymData) {
-          await loadPayouts();
-        }
-      }
-      
-      setIsLoading(false);
-    }
-    loadData();
-  }, [supabase]);
-
-  const loadPayouts = async () => {
+  const loadPayouts = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (statusFilter !== 'all') {
@@ -140,13 +116,37 @@ function PartnerPayoutsContent() {
       console.error('Error loading payouts:', error);
       toast.error('เกิดข้อผิดพลาดในการโหลดข้อมูล');
     }
-  };
+  }, [statusFilter]);
+
+  useEffect(() => {
+    async function loadData() {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      
+      if (user) {
+        const { data: gymData } = await supabase
+          .from('gyms')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        setGym(gymData);
+        
+        if (gymData) {
+          await loadPayouts();
+        }
+      }
+      
+      setIsLoading(false);
+    }
+    loadData();
+  }, [loadPayouts, supabase]);
 
   useEffect(() => {
     if (gym) {
       loadPayouts();
     }
-  }, [statusFilter, gym]);
+  }, [gym, loadPayouts]);
 
   const handleRequestPayout = () => {
     setRequestForm({
@@ -367,21 +367,21 @@ function PartnerPayoutsContent() {
       {/* Stats Cards */}
       <section className="mb-8">
         <div className="gap-4 grid grid-cols-1 md:grid-cols-4">
-          <Card className="bg-gradient-to-br from-success-500 to-success-700 border-none">
+          <Card className="bg-linear-to-br from-success-500 to-success-700 border-none">
             <CardBody>
               <p className="mb-2 text-white/80 text-sm">จ่ายเงินสำเร็จ</p>
               <p className="font-bold text-white text-2xl">{stats.totalCompleted}</p>
               <p className="font-mono text-white/90 text-sm">฿{stats.totalAmount.toLocaleString()}</p>
             </CardBody>
           </Card>
-          <Card className="bg-gradient-to-br from-warning-500 to-warning-600 border-none">
+          <Card className="bg-linear-to-br from-warning-500 to-warning-600 border-none">
             <CardBody>
               <p className="mb-2 text-white/80 text-sm">รอดำเนินการ</p>
               <p className="font-bold text-white text-2xl">{stats.totalPending}</p>
               <p className="font-mono text-white/90 text-sm">฿{stats.pendingAmount.toLocaleString()}</p>
             </CardBody>
           </Card>
-          <Card className="bg-gradient-to-br from-default-500 to-default-600 border-none">
+          <Card className="bg-linear-to-br from-default-500 to-default-600 border-none">
             <CardBody>
               <p className="mb-2 text-white/80 text-sm">กำลังดำเนินการ</p>
               <p className="font-bold text-white text-2xl">{stats.totalProcessing}</p>

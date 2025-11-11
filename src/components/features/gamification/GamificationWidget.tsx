@@ -55,7 +55,7 @@ export default function GamificationWidget({ className = '' }: GamificationWidge
   );
 
   return (
-    <div className={`bg-gradient-to-br from-blue-950/50 to-purple-950/50 backdrop-blur-sm border border-blue-700/30 rounded-lg shadow-md p-4 ${className}`}>
+    <div className={`bg-linear-to-br from-blue-950/50 to-purple-950/50 backdrop-blur-sm border border-blue-700/30 rounded-lg shadow-md p-4 ${className}`}>
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-2">
           <span className="text-2xl">{getLevelIcon(stats.current_level)}</span>
@@ -84,7 +84,7 @@ export default function GamificationWidget({ className = '' }: GamificationWidge
         
         <div className="w-full bg-zinc-800 rounded-full h-2">
           <div
-            className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500"
+            className="bg-linear-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500"
             style={{ width: `${progressPercentage}%` }}
           ></div>
         </div>

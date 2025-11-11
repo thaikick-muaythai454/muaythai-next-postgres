@@ -228,22 +228,39 @@ export async function signupUser(page: Page, credentials: UserCredentials): Prom
  * Login with credentials
  */
 export async function loginUser(page: Page, identifier: string, password: string): Promise<void> {
-  await page.goto('/login');
-  
-  // Wait for the login form to load completely
+  await page.goto('/login', { waitUntil: 'domcontentloaded' });
+
+  // Allow locale middleware or client redirects to settle
+  await page.waitForLoadState('networkidle');
+
+  // Wait for the login form to be visible on the final route
   await page.waitForSelector('input[name="identifier"]', { timeout: 15000, state: 'visible' });
-  await page.waitForTimeout(1000); // Wait for client-side hydration
-  
-  // Fill in the login form with locator (better auto-waiting)
-  await page.locator('input[name="identifier"]').fill(identifier);
-  await page.waitForTimeout(300);
-  
-  await page.locator('input[name="password"]').fill(password);
-  await page.waitForTimeout(300);
-  
-  // Submit the form
+  await page.waitForTimeout(500); // hydration buffer
+
+  const identifierInput = page.locator('input[name="identifier"]');
+  const passwordInput = page.locator('input[name="password"]');
+
+  // Some environments refresh once after hydration; guard by re-filling if value is cleared
+  await identifierInput.fill(identifier, { timeout: 5000 });
+  await page.waitForTimeout(200);
+  if ((await identifierInput.inputValue()) !== identifier) {
+    console.log('Identifier input was cleared after fill, retrying once…');
+    await page.waitForLoadState('networkidle');
+    await identifierInput.fill(identifier, { timeout: 5000 });
+    await page.waitForTimeout(200);
+  }
+
+  await passwordInput.fill(password, { timeout: 5000 });
+  await page.waitForTimeout(200);
+  if ((await passwordInput.inputValue()) !== password) {
+    console.log('Password input was cleared after fill, retrying once…');
+    await page.waitForLoadState('networkidle');
+    await passwordInput.fill(password, { timeout: 5000 });
+    await page.waitForTimeout(200);
+  }
+
   await page.locator('button[type="submit"]').click();
-  
+
   // Wait for navigation or retry a couple of times if authentication is still propagating
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -259,18 +276,16 @@ export async function loginUser(page: Page, identifier: string, password: string
       console.log('Login attempt still pending, retrying...');
       await page.waitForTimeout(4000);
 
-      // Re-submit credentials just in case
-      await page.locator('input[name="identifier"]').fill(identifier);
+      await identifierInput.fill(identifier, { timeout: 5000 });
       await page.waitForTimeout(200);
-      await page.locator('input[name="password"]').fill(password);
+      await passwordInput.fill(password, { timeout: 5000 });
       await page.waitForTimeout(200);
       await page.locator('button[type="submit"]').click();
     }
   }
 
-  // Additional waits for session persistence and client hydration
   await page.waitForLoadState('networkidle');
-  await page.waitForTimeout(1500);
+  await page.waitForTimeout(1000);
 
   const postLoginUrl = page.url();
   if (postLoginUrl.includes('/login')) {

@@ -25,7 +25,7 @@ import {
   Cog6ToothIcon,
   PencilIcon,
   PhotoIcon,
-  HomeIcon,
+  // HomeIcon,
   MapPinIcon,
   PhoneIcon,
   EnvelopeIcon,

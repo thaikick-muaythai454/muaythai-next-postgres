@@ -3,6 +3,7 @@ import { headers } from 'next/headers';
 import { stripe } from '@/lib/payments';
 import { createClient } from '@/lib/database/supabase/server';
 import { sendPaymentReceiptEmail, sendPaymentFailedEmail } from '@/lib/email/resend';
+import { awardReferralBookingPoints, revokeReferralBookingPoints } from '@/services/referral.service';
 import Stripe from 'stripe';
 
 // Disable body parser to get raw body for signature verification
@@ -204,8 +205,12 @@ async function handlePaymentSuccess(
       }
     }
 
-    // Option 2: Update via booking directly (using metadata.bookingId)
-    const bookingId = paymentIntent.metadata?.bookingId;
+    let bookingId = paymentIntent.metadata?.bookingId as string | undefined;
+
+    if (!bookingId && payment?.metadata) {
+      const metadata = payment.metadata as Record<string, unknown>;
+      bookingId = metadata?.bookingId as string | undefined;
+    }
 
     if (bookingId) {
       // Updating booking directly
@@ -244,6 +249,49 @@ async function handlePaymentSuccess(
 
           if (conversionUpdateError) {
             console.warn('Failed to update affiliate conversion status:', conversionUpdateError);
+          }
+
+          try {
+            await awardReferralBookingPoints({
+              bookingId,
+              supabase,
+            });
+          } catch (referralPointsError) {
+            console.warn('Referral booking points error:', referralPointsError);
+          }
+
+          if (payment && (!payment.metadata || !(payment.metadata as Record<string, unknown>)?.bookingId)) {
+            await supabase
+              .from('payments')
+              .update({
+                metadata: {
+                  ...(payment.metadata as Record<string, unknown> | null ?? {}),
+                  bookingId,
+                },
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', payment.id);
+          }
+
+          if (payment) {
+            const { data: orderRecord } = await supabase
+              .from('orders')
+              .select('id, metadata')
+              .eq('payment_id', payment.id)
+              .maybeSingle();
+
+            if (orderRecord && !(orderRecord.metadata as Record<string, unknown> | null ?? {})?.bookingId) {
+              await supabase
+                .from('orders')
+                .update({
+                  metadata: {
+                    ...(orderRecord.metadata as Record<string, unknown> | null ?? {}),
+                    bookingId,
+                  },
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', orderRecord.id);
+            }
           }
         } catch (conversionError) {
           // Don't fail payment processing if affiliate conversion update fails
@@ -329,34 +377,50 @@ async function handlePaymentFailed(
 ) {
   console.log('Payment failed:', paymentIntent.id);
 
-  // Update payment status
-  await supabase
-    .from('payments')
-    .update({
-      status: 'failed',
-      updated_at: new Date().toISOString(),
-    })
-    .eq('stripe_payment_intent_id', paymentIntent.id);
+  const failureCode = paymentIntent.last_payment_error?.code ?? 'unknown';
+  const failureReason = paymentIntent.last_payment_error?.message ?? 'ไม่สามารถดำเนินการได้';
+  const nowIso = new Date().toISOString();
 
-  // Update order status
   const { data: payment } = await supabase
     .from('payments')
-    .select('id, user_id')
+    .select('id, user_id, metadata')
     .eq('stripe_payment_intent_id', paymentIntent.id)
-    .single();
+    .maybeSingle();
 
   if (payment) {
+    await supabase
+      .from('payments')
+      .update({
+        status: 'failed',
+        updated_at: nowIso,
+        metadata: {
+          ...(payment.metadata as Record<string, unknown> | null ?? {}),
+          last_failure_code: failureCode,
+          last_failure_message: failureReason,
+          last_failure_at: nowIso,
+        },
+      })
+      .eq('id', payment.id);
+
     await supabase
       .from('orders')
       .update({
         status: 'canceled',
-        updated_at: new Date().toISOString(),
+        updated_at: nowIso,
       })
       .eq('payment_id', payment.id);
+  } else {
+    await supabase
+      .from('payments')
+      .update({
+        status: 'failed',
+        updated_at: nowIso,
+      })
+      .eq('stripe_payment_intent_id', paymentIntent.id);
   }
 
-  // Get booking from metadata to send failed email
-  const bookingId = paymentIntent.metadata?.bookingId;
+  const bookingId = paymentIntent.metadata?.bookingId as string | undefined;
+
   if (bookingId) {
     try {
       const { data: booking } = await supabase
@@ -372,7 +436,7 @@ async function handlePaymentFailed(
         .single();
 
       if (booking) {
-        const failureReason = paymentIntent.last_payment_error?.message || 'ไม่สามารถดำเนินการได้';
+        const failureContext = getFailureNotificationContent(failureCode, failureReason);
 
         await sendPaymentFailedEmail({
           to: booking.customer_email || '',
@@ -380,28 +444,28 @@ async function handlePaymentFailed(
           transactionNumber: paymentIntent.id,
           amount: paymentIntent.amount ? paymentIntent.amount / 100 : booking.price_paid || 0,
           paymentMethod: 'Stripe',
-          failureReason,
+          failureReason: failureContext.emailMessage,
           retryUrl: `/gyms/booking/${booking.gym_id}`,
           supportEmail: process.env.CONTACT_EMAIL_TO || 'support@muaythai.com',
         });
 
-        // Create in-app notification
         await supabase
           .from('notifications')
           .insert({
             user_id: booking.user_id,
             type: 'payment_failed',
-            title: 'การชำระเงินไม่สำเร็จ',
-            message: `การชำระเงินสำหรับการจอง ${booking.booking_number} ไม่สำเร็จ: ${failureReason}`,
+            title: failureContext.title,
+            message: failureContext.notificationMessage(booking.booking_number || ''),
             link_url: `/gyms/booking/${booking.gym_id}`,
             metadata: {
               booking_id: booking.id,
               payment_intent_id: paymentIntent.id,
+              failure_code: failureCode,
             },
           });
       }
-    } catch (emailError) {
-      console.warn('Email notification error:', emailError);
+    } catch (notificationError) {
+      console.warn('Payment failure notification error:', notificationError);
     }
   }
 }
@@ -461,7 +525,7 @@ async function handleRefund(supabase: Awaited<ReturnType<typeof createClient>>, 
   // Update order status
   const { data: payment } = await supabase
     .from('payments')
-    .select('id')
+    .select('id, metadata')
     .eq('stripe_payment_intent_id', paymentIntentId)
     .single();
 
@@ -473,6 +537,52 @@ async function handleRefund(supabase: Awaited<ReturnType<typeof createClient>>, 
         updated_at: new Date().toISOString(),
       })
       .eq('payment_id', payment.id);
+  }
+
+  let bookingId: string | undefined;
+
+  if (charge.metadata?.bookingId && typeof charge.metadata.bookingId === 'string') {
+    bookingId = charge.metadata.bookingId;
+  }
+
+  if (!bookingId && payment?.metadata) {
+    const paymentMetadata = payment.metadata as Record<string, unknown> | null ?? {};
+    const metadataBookingId = paymentMetadata?.bookingId;
+    if (typeof metadataBookingId === 'string') {
+      bookingId = metadataBookingId;
+    }
+  }
+
+  if (!bookingId) {
+    const { data: bookingByPayment } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('payment_id', paymentIntentId)
+      .maybeSingle();
+
+    if (bookingByPayment) {
+      bookingId = bookingByPayment.id;
+    }
+  }
+
+  if (bookingId) {
+    await supabase
+      .from('bookings')
+      .update({
+        payment_status: 'refunded',
+        status: 'cancelled',
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', bookingId);
+
+    try {
+      await revokeReferralBookingPoints({
+        bookingId,
+        supabase,
+      });
+    } catch (revokeError) {
+      console.warn('Referral booking points revoke error:', revokeError);
+    }
   }
 }
 
@@ -611,3 +721,43 @@ async function handleDispute(
 
 // Note: Specific payment type handlers removed
 // Payment success now updates booking directly via metadata.bookingId
+
+type FailureNotificationContext = {
+  title: string;
+  emailMessage: string;
+  notificationMessage: (bookingNumber: string) => string;
+};
+
+function getFailureNotificationContent(code: string | undefined, fallbackMessage: string): FailureNotificationContext {
+  switch (code) {
+    case 'authentication_required':
+      return {
+        title: 'ต้องยืนยันการชำระเงินเพิ่มเติม',
+        emailMessage: 'การชำระเงินถูกปฏิเสธเนื่องจากต้องยืนยันเพิ่มเติม กรุณาลองใหม่และทำตามขั้นตอนจากธนาคาร (3D Secure)',
+        notificationMessage: (bookingNumber: string) =>
+          `การชำระเงินสำหรับการจอง ${bookingNumber || ''} ต้องยืนยันเพิ่มเติม กรุณาลองใหม่และทำตามขั้นตอนจากธนาคาร`,
+      };
+    case 'insufficient_funds':
+      return {
+        title: 'ยอดเงินไม่เพียงพอ',
+        emailMessage: 'ยอดเงินในบัญชีหรือบัตรไม่เพียงพอ กรุณาตรวจสอบยอดเงินหรือเลือกวิธีชำระเงินอื่น',
+        notificationMessage: (bookingNumber: string) =>
+          `ยอดเงินไม่เพียงพอสำหรับการจอง ${bookingNumber || ''} กรุณาใช้วิธีชำระเงินอื่นหรือเติมเงินแล้วลองใหม่`,
+      };
+    case 'do_not_honor':
+    case 'transaction_not_allowed':
+      return {
+        title: 'ธนาคารปฏิเสธการชำระเงิน',
+        emailMessage: 'ธนาคารผู้ออกบัตรปฏิเสธธุรกรรม (do_not_honor) กรุณาติดต่อธนาคารหรือใช้บัตรใบอื่น',
+        notificationMessage: (bookingNumber: string) =>
+          `ธนาคารปฏิเสธการชำระเงินสำหรับการจอง ${bookingNumber || ''} กรุณาติดต่อธนาคารหรือใช้บัตรใบอื่น`,
+      };
+    default:
+      return {
+        title: 'การชำระเงินไม่สำเร็จ',
+        emailMessage: fallbackMessage,
+        notificationMessage: (bookingNumber: string) =>
+          `การชำระเงินสำหรับการจอง ${bookingNumber || ''} ไม่สำเร็จ: ${fallbackMessage}`,
+      };
+  }
+}

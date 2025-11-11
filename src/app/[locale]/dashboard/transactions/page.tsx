@@ -1,21 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
-import { DashboardLayout, type MenuItem } from '@/components/shared';
+import { DashboardLayout, dashboardMenuItems } from '@/components/shared';
 import { Card, CardBody, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Button, Tabs, Tab } from '@heroui/react';
 import {
-  UserIcon,
-  CalendarIcon,
-  HeartIcon,
-  BanknotesIcon,
   ArrowDownTrayIcon,
   CheckCircleIcon,
   ClockIcon,
   XCircleIcon,
   PlusCircleIcon,
   MinusCircleIcon,
+  BanknotesIcon,
+  ArrowTrendingUpIcon,
 } from '@heroicons/react/24/outline';
 import { User } from '@supabase/supabase-js';
 
@@ -93,12 +91,33 @@ function TransactionsContent() {
     loadUser();
   }, [supabase, loadTransactions]);
 
-  const menuItems: MenuItem[] = [
-    { label: 'การจองของฉัน', href: '/dashboard/bookings', icon: CalendarIcon },
-    { label: 'รายการโปรด', href: '/dashboard/favorites', icon: HeartIcon },
-    { label: 'ประวัติการเงิน', href: '/dashboard/transactions', icon: BanknotesIcon },
-    { label: 'โปรไฟล์', href: '/dashboard/profile', icon: UserIcon },
-  ];
+  const stats = useMemo(() => {
+    const payments = transactions.filter((transaction) => transaction.type === 'payment');
+    const refunds = transactions.filter((transaction) => transaction.type === 'refund');
+
+    const paymentAmount = payments.reduce((total, transaction) => total + Math.abs(transaction.amount), 0);
+    const refundAmount = refunds.reduce((total, transaction) => total + transaction.amount, 0);
+    const netAmount = transactions.reduce((total, transaction) => total + transaction.amount, 0);
+
+    return {
+      totalTransactions: transactions.length,
+      paymentAmount,
+      refundAmount,
+      netAmount,
+    };
+  }, [transactions]);
+
+  const formatCurrency = (value: number) =>
+    `฿${Math.abs(value).toLocaleString('th-TH', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    })}`;
+
+  const formatSignedCurrency = (value: number) => {
+    if (value === 0) return '฿0';
+    const formatted = formatCurrency(value);
+    return value > 0 ? `+${formatted}` : `-${formatted}`;
+  };
 
   const getTypeChip = (type: Transaction['type']) => {
     const typeConfig = {
@@ -173,10 +192,12 @@ function TransactionsContent() {
     return transaction.type === selectedTab;
   });
 
+  const netColorClass = stats.netAmount >= 0 ? 'text-success' : 'text-danger';
+
   if (isLoading) {
     return (
       <DashboardLayout
-        menuItems={menuItems}
+        menuItems={dashboardMenuItems}
         headerTitle="ประวัติการเงิน"
         headerSubtitle="ดูประวัติธุรกรรมและยอดคงเหลือ"
         roleLabel="ผู้ใช้ทั่วไป"
@@ -185,7 +206,7 @@ function TransactionsContent() {
         showPartnerButton={true}
       >
         <div className="flex justify-center items-center py-20">
-          <div className="border-4 border-red-600 border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
+          <div className="border-4 border-primary border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
         </div>
       </DashboardLayout>
     );
@@ -193,7 +214,7 @@ function TransactionsContent() {
 
   return (
     <DashboardLayout
-      menuItems={menuItems}
+      menuItems={dashboardMenuItems}
       headerTitle="ประวัติการเงิน"
       headerSubtitle="ดูประวัติธุรกรรมและยอดคงเหลือ"
       roleLabel="ผู้ใช้ทั่วไป"
@@ -201,13 +222,52 @@ function TransactionsContent() {
       userEmail={user?.email}
       showPartnerButton={true}
     >
-
+      <section className="grid grid-cols-1 gap-4 mb-6 md:grid-cols-2 lg:grid-cols-4">
+        {[
+          {
+            label: 'ธุรกรรมทั้งหมด',
+            value: stats.totalTransactions.toLocaleString('th-TH'),
+            icon: BanknotesIcon,
+            color: 'text-primary',
+          },
+          {
+            label: 'ยอดชำระเงิน',
+            value: stats.paymentAmount > 0 ? `-${formatCurrency(stats.paymentAmount)}` : '฿0',
+            icon: MinusCircleIcon,
+            color: 'text-danger',
+          },
+          {
+            label: 'ยอดคืนเงิน',
+            value: stats.refundAmount > 0 ? formatCurrency(stats.refundAmount) : '฿0',
+            icon: PlusCircleIcon,
+            color: 'text-success',
+          },
+          {
+            label: 'ยอดสุทธิ',
+            value: formatSignedCurrency(stats.netAmount),
+            icon: ArrowTrendingUpIcon,
+            color: netColorClass,
+          },
+        ].map(({ label, value, icon: Icon, color }) => (
+          <Card key={label} className="bg-zinc-900 backdrop-blur-sm border-none rounded-lg">
+            <CardBody className="flex flex-row items-center justify-between border border-zinc-700 rounded-lg">
+              <div>
+                <p className="text-sm text-default-500">{label}</p>
+                <p className="mt-1 text-2xl font-semibold text-white">{value}</p>
+              </div>
+              <span className={color}>
+                <Icon className="w-8 h-8" />
+              </span>
+            </CardBody>
+          </Card>
+        ))}
+      </section>
       {/* Transactions Table */}
       <section>
-        <Card className="bg-default-100/50 backdrop-blur-sm border-none">
-          <CardBody>
+        <Card className="backdrop-blur-sm border-none rounded-lg">
+          <CardBody className="p-0">
             <div className="flex sm:flex-row flex-col justify-between items-start sm:items-center gap-4 mb-6">
-              <h2 className="font-bold text-xl">ประวัติธุรกรรม</h2>
+              <h2 className="font-bold text-xl text-white">ประวัติธุรกรรม</h2>
               <Button
                 color="primary"
                 variant="flat"
@@ -221,8 +281,16 @@ function TransactionsContent() {
             <Tabs
               selectedKey={selectedTab}
               onSelectionChange={(key) => setSelectedTab(key as string)}
-              className="mb-6"
-              color="danger"
+              disableAnimation
+              classNames={{
+                base: "w-full",
+                tabList:
+                  "bg-zinc-900/60 border border-zinc-700 rounded-lg p-1 gap-1 overflow-x-auto !p-0.5",
+                tab: "px-4 py-2 text-sm rounded-md text-default-400 transition-all data-[hover-unselected=true]:bg-zinc-800/60 data-[selected=true]:bg-red-600 data-[selected=true]:text-white",
+                tabContent:
+                  "font-normal group-data-[selected=true]:font-medium group-data-[selected=true]:text-white",
+                cursor: "hidden",
+              }}
             >
               <Tab key="all" title="ทั้งหมด" />
               <Tab key="payment" title="จ่ายเงิน" />
@@ -233,7 +301,10 @@ function TransactionsContent() {
             <Table
               aria-label="Transactions table"
               classNames={{
-                wrapper: "bg-transparent",
+                wrapper:
+                  "bg-zinc-900/60 border border-zinc-700 rounded-lg gap-1 overflow-x-auto text-sm mt-4",
+                thead: "bg-transparent",
+                th: "bg-transparent text-white border-b border-zinc-700 p-0 font-medium",
               }}
             >
               <TableHeader>
@@ -245,12 +316,16 @@ function TransactionsContent() {
                 <TableColumn>สถานะ</TableColumn>
                 <TableColumn>อ้างอิง</TableColumn>
               </TableHeader>
-              <TableBody emptyContent="ไม่พบข้อมูลธุรกรรม">
+              <TableBody emptyContent="ไม่พบข้อมูลธุรกรรม" className="text-white">
                 {filteredTransactions.map((transaction) => (
-                  <TableRow key={transaction.id}>
+                  <TableRow key={transaction.id} className="hover:bg-zinc-800/50">
                     <TableCell className="font-mono text-white">{transaction.id}</TableCell>
                     <TableCell className="text-default-400">
-                      {new Date(transaction.date).toLocaleDateString('th-TH')}
+                      {new Date(transaction.date).toLocaleDateString('th-TH', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                      })}
                     </TableCell>
                     <TableCell>{getTypeChip(transaction.type)}</TableCell>
                     <TableCell className="text-default-400">{transaction.description}</TableCell>
@@ -259,7 +334,9 @@ function TransactionsContent() {
                         transaction.amount > 0 ? 'text-success' : 'text-danger'
                       }`}
                     >
-                      {transaction.amount > 0 ? '+' : ''}฿{Math.abs(transaction.amount).toLocaleString()}
+                      {transaction.amount === 0
+                        ? '฿0'
+                        : `${transaction.amount > 0 ? '+' : '-'}${formatCurrency(transaction.amount)}`}
                     </TableCell>
                     <TableCell>{getStatusChip(transaction.status)}</TableCell>
                     <TableCell className="font-mono text-default-400 text-sm">

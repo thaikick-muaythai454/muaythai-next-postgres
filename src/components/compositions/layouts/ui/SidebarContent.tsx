@@ -10,6 +10,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { createClient } from '@/lib/database/supabase/client';
 import type { MenuItem } from '../DashboardLayout';
+import { cn } from '@/lib/utils/cn';
 
 interface SidebarContentProps {
   menuItems: MenuItem[];
@@ -85,7 +86,7 @@ export default function SidebarContent({
           <Avatar
             size="md"
             classNames={{
-              base: `bg-gradient-to-br ${
+              base: `bg-linear-to-br ${
                 roleColor === 'danger' ? 'from-red-600 to-red-700' :
                 roleColor === 'secondary' ? 'from-purple-600 to-purple-700' :
                 'from-blue-600 to-blue-700'
@@ -114,11 +115,12 @@ export default function SidebarContent({
               key={item.href}
               href={item.href}
               onClick={onLinkClick}
-              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+              className={cn(
+                'flex items-center gap-3 px-4 py-3 rounded-lg transition-all',
                 isActive
-                  ? 'bg-danger font-semibold'
-                  : 'text-default-400 hover:bg-white/5 hover:text-white'
-              }`}
+                  ? 'bg-red-600 text-white font-semibold shadow-lg shadow-red-900/40'
+                  : 'text-default-400 hover:bg-red-600/10 hover:text-white'
+              )}
             >
               <Icon className="w-5 h-5" />
               <span>{item.label}</span>

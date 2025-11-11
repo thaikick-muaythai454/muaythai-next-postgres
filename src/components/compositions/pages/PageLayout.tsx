@@ -16,7 +16,7 @@ export function PageLayout({
 }: PageLayoutProps) {
   const backgroundClasses = {
     default: 'bg-zinc-950',
-    gradient: 'bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950',
+    gradient: 'bg-linear-to-br from-zinc-950 via-zinc-900 to-zinc-950',
     pattern: 'bg-zinc-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-zinc-900 via-zinc-950 to-black',
   };
 

@@ -107,7 +107,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="top-0 z-[5000] fixed bg-zinc-950/40 supports-[backdrop-filter]:bg-zinc-950/60 backdrop-blur border-white/10 border-b w-screen h-16 text-zinc-50">
+    <header className="top-0 z-5000 fixed bg-zinc-950/40 supports-backdrop-filter:bg-zinc-950/60 backdrop-blur border-white/10 border-b w-screen h-16 text-zinc-50">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex justify-center items-center gap-8">
@@ -166,7 +166,7 @@ export default function Header() {
                 </div>
                 <div className="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-200 right-0 absolute bg-zinc-950/95 backdrop-blur-md shadow-2xl border border-white/20 rounded-xl w-64 z-50 overflow-hidden">
                   {/* User Info */}
-                  <div className="px-4 py-3 border-white/10 border-b bg-gradient-to-r from-zinc-800/30 to-zinc-700/30">
+                  <div className="px-4 py-3 border-white/10 border-b bg-linear-to-r from-zinc-800/30 to-zinc-700/30">
                     <p className="font-semibold text-sm truncate">
                       {user.user_metadata?.full_name || "ผู้ใช้งาน"}
                     </p>
@@ -175,7 +175,7 @@ export default function Header() {
                     </p>
                     {userRole && (
                       <div className="flex items-center gap-1 mt-2">
-                        <span className="inline-block bg-gradient-to-r from-red-500/20 to-red-600/20 px-3 py-1 rounded-full text-red-400 text-xs font-medium border border-red-500/30">
+                        <span className="inline-block bg-linear-to-r from-red-500/20 to-red-600/20 px-3 py-1 rounded-full text-red-400 text-xs font-medium border border-red-500/30">
                           {ROLE_NAMES[userRole]}
                         </span>
                       </div>
@@ -186,7 +186,7 @@ export default function Header() {
                   {userRole && (
                     <Link
                       href={getDashboardPath(userRole)}
-                      className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-red-500/10 hover:to-red-600/10 px-4 py-3 text-zinc-300 hover:text-white text-sm transition-all duration-200"
+                      className="group flex items-center gap-3 hover:bg-linear-to-r hover:from-red-500/10 hover:to-red-600/10 px-4 py-3 text-zinc-300 hover:text-white text-sm transition-all duration-200"
                     >
                       {userRole === "admin" && (
                         <ShieldCheckIcon className="w-5 h-5 group-hover:text-red-400 transition-colors" />
@@ -205,7 +205,7 @@ export default function Header() {
                   {userRole === "authenticated" && !applicationStatus && (
                     <Link
                       href="/partner/apply"
-                      className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-blue-500/10 hover:to-blue-600/10 px-4 py-3 text-zinc-300 hover:text-white text-sm transition-all duration-200"
+                      className="group flex items-center gap-3 hover:bg-linear-to-r hover:from-blue-500/10 hover:to-blue-600/10 px-4 py-3 text-zinc-300 hover:text-white text-sm transition-all duration-200"
                     >
                       <BuildingStorefrontIcon className="w-5 h-5 group-hover:text-blue-400 transition-colors" />
                       <span className="font-medium">สมัคร Partner</span>
@@ -215,7 +215,7 @@ export default function Header() {
                   {/* Show Application Status if pending */}
                   {userRole === "authenticated" &&
                     applicationStatus === "pending" && (
-                      <div className="px-4 py-3 border-white/10 border-t bg-gradient-to-r from-yellow-500/10 to-orange-500/10">
+                      <div className="px-4 py-3 border-white/10 border-t bg-linear-to-r from-yellow-500/10 to-orange-500/10">
                         <div className="flex items-center gap-2">
                           <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
                           <p className="text-yellow-400 text-xs font-medium">
@@ -229,7 +229,7 @@ export default function Header() {
                   <button
                     onClick={handleLogout}
                     disabled={isLoggingOut}
-                    className="group flex items-center gap-3 hover:bg-gradient-to-r hover:from-red-500/10 hover:to-red-600/10 disabled:opacity-50 px-4 py-3 w-full text-zinc-300 hover:text-white text-sm text-left transition-all duration-200"
+                    className="group flex items-center gap-3 hover:bg-linear-to-r hover:from-red-500/10 hover:to-red-600/10 disabled:opacity-50 px-4 py-3 w-full text-zinc-300 hover:text-white text-sm text-left transition-all duration-200"
                     aria-label="Button"
                   >
                     <ArrowRightStartOnRectangleIcon className="w-5 h-5 group-hover:text-red-400 transition-colors" />

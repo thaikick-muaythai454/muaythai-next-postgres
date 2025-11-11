@@ -199,7 +199,7 @@ export function NotificationList({
                   }`}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="text-2xl flex-shrink-0">
+                    <div className="text-2xl shrink-0">
                       {getNotificationIcon(notification.type)}
                     </div>
                     <div className="flex-1 min-w-0">
@@ -214,7 +214,7 @@ export function NotificationList({
                           {notification.title}
                         </h4>
                         {!notification.is_read && (
-                          <div className="w-2 h-2 bg-primary rounded-full flex-shrink-0 mt-2"></div>
+                          <div className="w-2 h-2 bg-primary rounded-full shrink-0 mt-2"></div>
                         )}
                       </div>
                       <p className="text-sm text-default-600 mt-1">
@@ -239,7 +239,7 @@ export function NotificationList({
                         {formatDate(notification.created_at)}
                       </p>
                     </div>
-                    <div className="flex flex-col gap-1 flex-shrink-0">
+                    <div className="flex flex-col gap-1 shrink-0">
                       {!notification.is_read && (
                         <Button
                           isIconOnly

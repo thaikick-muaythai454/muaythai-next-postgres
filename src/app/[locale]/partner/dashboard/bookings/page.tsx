@@ -258,31 +258,31 @@ function PartnerBookingsContent() {
     >
       {/* Stats Cards */}
       <section className="gap-4 grid grid-cols-1 md:grid-cols-5 mb-6">
-        <Card className="bg-gradient-to-br from-blue-500 to-blue-600">
+        <Card className="bg-linear-to-br from-blue-500 to-blue-600">
           <CardBody className="text-center">
             <p className="mb-1 text-white/80 text-sm">ทั้งหมด</p>
             <p className="font-bold text-3xl">{stats.total}</p>
           </CardBody>
         </Card>
-        <Card className="bg-gradient-to-br from-yellow-500 to-yellow-600">
+        <Card className="bg-linear-to-br from-yellow-500 to-yellow-600">
           <CardBody className="text-center">
             <p className="mb-1 text-white/80 text-sm">รอยืนยัน</p>
             <p className="font-bold text-3xl">{stats.pending}</p>
           </CardBody>
         </Card>
-        <Card className="bg-gradient-to-br from-green-500 to-green-600">
+        <Card className="bg-linear-to-br from-green-500 to-green-600">
           <CardBody className="text-center">
             <p className="mb-1 text-white/80 text-sm">ยืนยันแล้ว</p>
             <p className="font-bold text-3xl">{stats.confirmed}</p>
           </CardBody>
         </Card>
-        <Card className="bg-gradient-to-br from-purple-500 to-purple-600">
+        <Card className="bg-linear-to-br from-purple-500 to-purple-600">
           <CardBody className="text-center">
             <p className="mb-1 text-white/80 text-sm">เสร็จสิ้น</p>
             <p className="font-bold text-3xl">{stats.completed}</p>
           </CardBody>
         </Card>
-        <Card className="bg-gradient-to-br from-red-500 to-red-600">
+        <Card className="bg-linear-to-br from-red-500 to-red-600">
           <CardBody className="text-center">
             <p className="mb-1 text-white/80 text-sm">ยกเลิก</p>
             <p className="font-bold text-3xl">{stats.cancelled}</p>

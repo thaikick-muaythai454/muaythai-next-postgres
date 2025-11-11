@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { use, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/database/supabase/client";
 import type { Gym, GymPackage } from "@/types";
 import type { User } from "@supabase/supabase-js";
@@ -86,6 +86,20 @@ export default function BookingPage({
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const selectedPackageDiscount = useMemo(() => {
+    if (!formData.selectedPackage) return null;
+    return calculateDiscountPrice(
+      formData.selectedPackage.price,
+      formData.selectedPromotion
+    );
+  }, [formData.selectedPackage, formData.selectedPromotion]);
+
+  const originalPackagePrice = formData.selectedPackage?.price ?? 0;
+  const selectedDiscountAmount = selectedPackageDiscount?.discountAmount ?? 0;
+  const selectedFinalPrice = selectedPackageDiscount?.finalPrice ?? originalPackagePrice;
+  const hasSelectedDiscount =
+    selectedPackageDiscount ? selectedPackageDiscount.discountAmount > 0 : false;
 
   // Check authentication and load user profile
   useEffect(() => {
@@ -316,6 +330,7 @@ export default function BookingPage({
           payment_method: 'stripe',
           promotion_id: discountResult.promotionId,
           discount_amount: discountResult.discountAmount,
+          price_paid: discountResult.finalPrice,
         }),
       });
 
@@ -522,7 +537,7 @@ export default function BookingPage({
                             <ul className="space-y-2">
                               {pkg.features.map((feature, idx) => (
                                 <li key={idx} className="flex items-center gap-2 text-zinc-300 text-sm">
-                                  <CheckIcon className="flex-shrink-0 w-4 h-4 text-green-500" />
+                                  <CheckIcon className="shrink-0 w-4 h-4 text-green-500" />
                                   <span>{feature}</span>
                                 </li>
                               ))}
@@ -543,7 +558,7 @@ export default function BookingPage({
                         <button
                           key={pkg.id}
                           onClick={() => selectPackage(pkg)}
-                          className={`text-left bg-gradient-to-br from-zinc-700 to-zinc-800 hover:from-zinc-600 hover:to-zinc-700 p-6 border rounded-lg transition-all ${
+                          className={`text-left bg-linear-to-br from-zinc-700 to-zinc-800 hover:from-zinc-600 hover:to-zinc-700 p-6 border rounded-lg transition-all ${
                             formData.selectedPackage?.id === pkg.id
                               ? "border-red-500 ring-2 ring-red-500/50"
                               : "border-zinc-600"
@@ -576,7 +591,7 @@ export default function BookingPage({
                             <ul className="space-y-2">
                               {pkg.features.map((feature, idx) => (
                                 <li key={idx} className="flex items-center gap-2 text-zinc-300 text-xs">
-                                  <CheckIcon className="flex-shrink-0 w-3 h-3 text-green-500" />
+                                  <CheckIcon className="shrink-0 w-3 h-3 text-green-500" />
                                   <span>{feature}</span>
                                 </li>
                               ))}
@@ -687,49 +702,43 @@ export default function BookingPage({
               <h2 className="font-semibold text-xl">ข้อมูลผู้จอง</h2>
               
               {/* Selected Package Summary */}
-              {formData.selectedPackage && (() => {
-                const discountResult = calculateDiscountPrice(
-                  formData.selectedPackage.price,
-                  formData.selectedPromotion
-                );
-                return (
-                  <div className="bg-zinc-700/50 p-4 rounded-lg">
-                    <p className="mb-2 font-semibold text-white">แพ็คเกจที่เลือก:</p>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="text-white">{formData.selectedPackage.name}</p>
-                          {formData.selectedPackage.duration_months && (
-                            <p className="text-zinc-400 text-sm">
-                              ระยะเวลา {formData.selectedPackage.duration_months} เดือน
-                            </p>
-                          )}
-                          {formData.selectedPromotion && (
-                            <p className="text-green-400 text-sm mt-1">
-                              {formatDiscountText(formData.selectedPromotion)} - {formData.selectedPromotion.title}
-                            </p>
-                          )}
-                        </div>
-                        <div className="text-right">
-                          {discountResult.originalPrice !== discountResult.finalPrice && (
-                            <div className="line-through text-zinc-500 text-sm mb-1">
-                              ฿{discountResult.originalPrice.toLocaleString()}
-                            </div>
-                          )}
-                          <div className="font-bold text-red-500 text-xl">
-                            ฿{discountResult.finalPrice.toLocaleString()}
+              {formData.selectedPackage && selectedPackageDiscount && (
+                <div className="bg-zinc-700/50 p-4 rounded-lg">
+                  <p className="mb-2 font-semibold text-white">แพ็คเกจที่เลือก:</p>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-white">{formData.selectedPackage.name}</p>
+                        {formData.selectedPackage.duration_months && (
+                          <p className="text-zinc-400 text-sm">
+                            ระยะเวลา {formData.selectedPackage.duration_months} เดือน
+                          </p>
+                        )}
+                        {formData.selectedPromotion && (
+                          <p className="text-green-400 text-sm mt-1">
+                            {formatDiscountText(formData.selectedPromotion)} - {formData.selectedPromotion.title}
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        {hasSelectedDiscount && (
+                          <div className="line-through text-zinc-500 text-sm mb-1">
+                            ฿{originalPackagePrice.toLocaleString()}
                           </div>
-                          {discountResult.discountAmount > 0 && (
-                            <div className="text-green-400 text-xs mt-1">
-                              ประหยัด ฿{discountResult.discountAmount.toLocaleString()}
-                            </div>
-                          )}
+                        )}
+                        <div className="font-bold text-red-500 text-xl">
+                          ฿{selectedFinalPrice.toLocaleString()}
                         </div>
+                        {hasSelectedDiscount && (
+                          <div className="text-green-400 text-xs mt-1">
+                            ประหยัด ฿{selectedDiscountAmount.toLocaleString()}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
-                );
-              })()}
+                </div>
+              )}
 
               <div>
                 <label className="block mb-2 text-zinc-300 text-sm">
@@ -843,6 +852,14 @@ export default function BookingPage({
                     <span>แพ็คเกจ:</span>
                     <span className="font-semibold text-white">{formData.selectedPackage?.name}</span>
                   </div>
+                  {formData.selectedPromotion && selectedPackageDiscount && (
+                    <div className="flex justify-between">
+                      <span>โปรโมชั่น:</span>
+                      <span className="font-semibold text-green-400">
+                        {formatDiscountText(formData.selectedPromotion)} · {formData.selectedPromotion.title}
+                      </span>
+                    </div>
+                  )}
                   {formData.selectedPackage?.duration_months && (
                     <div className="flex justify-between">
                       <span>ระยะเวลา:</span>
@@ -857,10 +874,22 @@ export default function BookingPage({
                       {new Date(formData.startDate).toLocaleDateString('th-TH')}
                     </span>
                   </div>
+                  <div className="flex justify-between">
+                    <span>ราคาปกติ:</span>
+                    <span className={hasSelectedDiscount ? 'line-through text-zinc-500' : 'font-semibold text-white'}>
+                      ฿{originalPackagePrice.toLocaleString()}
+                    </span>
+                  </div>
+                  {hasSelectedDiscount && (
+                    <div className="flex justify-between text-green-400">
+                      <span>ส่วนลด:</span>
+                      <span>-฿{selectedDiscountAmount.toLocaleString()}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between pt-4 border-zinc-600 border-t">
-                    <span className="font-semibold text-lg">ยอดรวม:</span>
+                    <span className="font-semibold text-lg">ยอดชำระสุทธิ:</span>
                     <span className="font-bold text-red-500 text-2xl">
-                      ฿{formData.selectedPackage?.price.toLocaleString()}
+                      ฿{selectedFinalPrice.toLocaleString()}
                     </span>
                   </div>
                 </div>

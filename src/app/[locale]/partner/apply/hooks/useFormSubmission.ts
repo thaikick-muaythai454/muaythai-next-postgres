@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { SupabaseClient } from "@supabase/supabase-js";
 import { User } from "@supabase/supabase-js";
-import { FormData, GymData, ApplicationStatus } from "../types";
+import { FormData, GymData } from "../types";
 import { validateForm } from "../utils/validation";
 import { uploadImages } from "../utils/fileUpload";
 
@@ -92,4 +92,3 @@ export const useFormSubmission = ({ supabase, user, onSuccess }: UseFormSubmissi
     setErrors,
   };
 };
-

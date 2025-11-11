@@ -83,7 +83,7 @@ export function AchievementsShowcase() {
           {earnedBadges.map((earned) => (
             <Card
               key={earned.id}
-              className="bg-gradient-to-br from-yellow-900/30 to-yellow-800/20 border border-yellow-700/50"
+              className="bg-linear-to-br from-yellow-900/30 to-yellow-800/20 border border-yellow-700/50"
             >
               <CardBody className="items-center justify-center text-center p-4">
                 <div className="mb-2">

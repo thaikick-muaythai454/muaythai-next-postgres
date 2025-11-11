@@ -67,7 +67,7 @@ export default function Marquee() {
     : placeholderPromotions;
 
   return (
-    <div className="relative bg-gradient-to-r from-red-600 to-red-700 py-3 w-full overflow-hidden">
+    <div className="relative bg-linear-to-r from-red-600 to-red-700 py-3 w-full overflow-hidden">
       <div className="flex gap-8 whitespace-nowrap animate-marquee">
         {displayPromotions.map((promo, i) => (
           <span key={`${promo.id}-${i}`} className="font-bold text-lg tracking-wider">

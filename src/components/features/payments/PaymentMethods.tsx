@@ -197,7 +197,7 @@ export default function PaymentMethods({
                 }`}
               >
                 <div className="flex items-start gap-4">
-                  <method.icon className="w-8 h-8 text-red-500 flex-shrink-0" />
+                  <method.icon className="w-8 h-8 text-red-500 shrink-0" />
                   <div className="flex-1">
                     <h4 className="font-semibold mb-1">{method.name}</h4>
                     <p className="text-zinc-400 text-sm mb-3">{method.description}</p>

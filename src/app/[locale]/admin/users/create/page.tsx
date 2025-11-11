@@ -40,12 +40,24 @@ interface CreatedUser {
   role: string;
 }
 
+const PASSWORD_FIELD = "password";
+
+const generateSecurePassword = (length = 16): string => {
+  const charset =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()-_=+[]{}|;:,.<>?";
+  const randomValues = new Uint32Array(length);
+  crypto.getRandomValues(randomValues);
+
+  return Array.from(randomValues, (value) => charset[value % charset.length]).join("");
+};
+
 export default function CreateUserPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [autoGeneratePassword, setAutoGeneratePassword] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [generatedPassword, setGeneratedPassword] = useState<string | null>(null);
   const [createdUser, setCreatedUser] = useState<CreatedUser | null>(null);
 
   const [formData, setFormData] = useState<UserFormData>({
@@ -127,18 +139,26 @@ export default function CreateUserPage() {
     setIsLoading(true);
     setErrors({});
     setSuccessMessage("");
+    setGeneratedPassword(null);
     setCreatedUser(null);
 
     try {
-      const userData = {
+      const passwordForSubmission = autoGeneratePassword
+        ? generateSecurePassword()
+        : formData.password;
+
+      const baseUserData = {
         email: formData.email,
-        password: autoGeneratePassword ? undefined : formData.password,
         full_name: formData.full_name,
         username: formData.username || undefined,
         phone: formData.phone || undefined,
         role: formData.role,
         avatar_url: formData.avatar_url || undefined,
-        auto_generate_password: autoGeneratePassword
+      };
+
+      const userData = {
+        ...baseUserData,
+        [PASSWORD_FIELD]: passwordForSubmission,
       };
 
       const response = await fetch('/api/users/create', {
@@ -157,6 +177,7 @@ export default function CreateUserPage() {
 
       setSuccessMessage("สร้างผู้ใช้สำเร็จแล้ว!");
       setCreatedUser(result.user);
+      setGeneratedPassword(autoGeneratePassword ? passwordForSubmission : null);
       
       // Reset form
       setFormData({
@@ -197,7 +218,7 @@ export default function CreateUserPage() {
         {successMessage && (
           <div className="mb-6 bg-green-500/20 p-4 border border-green-500 rounded-lg">
             <div className="flex items-center gap-3">
-              <CheckCircleIcon className="flex-shrink-0 w-6 h-6 text-green-400" />
+              <CheckCircleIcon className="shrink-0 w-6 h-6 text-green-400" />
               <div>
                 <p className="text-green-400 text-sm font-medium">{successMessage}</p>
                 {createdUser && (
@@ -205,6 +226,12 @@ export default function CreateUserPage() {
                     <p>อีเมล: {createdUser.email}</p>
                     <p>ชื่อ: {createdUser.full_name}</p>
                     <p>บทบาท: {createdUser.role}</p>
+                    {generatedPassword && (
+                      <p className="mt-2">
+                        รหัสผ่านชั่วคราว:{" "}
+                        <span className="font-mono break-all">{generatedPassword}</span>
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -217,7 +244,7 @@ export default function CreateUserPage() {
           {errors.general && (
             <div className="bg-red-500/20 p-4 border border-red-500 rounded-lg">
               <div className="flex items-center gap-3">
-                <ExclamationTriangleIcon className="flex-shrink-0 w-6 h-6 text-red-400" />
+                <ExclamationTriangleIcon className="shrink-0 w-6 h-6 text-red-400" />
                 <p className="text-red-400 text-sm">{errors.general}</p>
               </div>
             </div>

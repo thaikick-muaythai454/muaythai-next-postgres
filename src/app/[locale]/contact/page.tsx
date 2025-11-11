@@ -201,7 +201,7 @@ export default function ContactPage() {
               <div className="space-y-6">
                 {contactInfo.map((info, index) => (
                   <div key={index} className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                       {info.icon}
                     </div>
                     <div>

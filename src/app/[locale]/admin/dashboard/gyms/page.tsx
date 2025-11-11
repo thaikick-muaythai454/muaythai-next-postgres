@@ -12,6 +12,7 @@ import {
   EyeIcon,
   PencilIcon,
   TrashIcon,
+  ArrowDownTrayIcon,
 } from '@heroicons/react/24/outline';
 import { User } from '@supabase/supabase-js';
 import type { Gym } from '@/types';
@@ -37,6 +38,8 @@ function AdminGymsContent() {
     selectedTab,
     isLoading,
     isProcessing,
+    isExporting,
+    exportGyms,
     setSelectedGym,
     setSearchQuery,
     setSelectedTab,
@@ -135,22 +138,42 @@ function AdminGymsContent() {
 
       {/* Gyms Table */}
       <section>
-        <Card className="bg-default-100/50 backdrop-blur-sm border-none">
+        <Card className="border border-default-200/60 bg-default-50/40 backdrop-blur-md shadow-sm">
           <CardBody>
-            <div className="flex sm:flex-row flex-col justify-between items-start sm:items-center gap-4 mb-6">
-              <h2 className="font-bold text-xl">
-                รายชื่อยิม ({filteredGyms.length})
-              </h2>
-              <Input
-                placeholder="ค้นหายิม..."
-                value={searchQuery}
-                onValueChange={setSearchQuery}
-                startContent={<MagnifyingGlassIcon className="w-4 h-4 text-default-400" />}
-                className="max-w-xs"
-                classNames={{
-                  input: 'text-white',
-                }}
-              />
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between mb-6">
+              <div>
+                <h2 className="font-semibold text-xl text-default-900">
+                  รายชื่อยิม ({filteredGyms.length})
+                </h2>
+                <p className="text-sm text-default-500">
+                  ค้นหา ตรวจสอบสถานะ และจัดการรายละเอียดของค่ายมวยในระบบ
+                </p>
+              </div>
+
+              <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:items-center">
+                <Input
+                  placeholder="ค้นหายิม..."
+                  value={searchQuery}
+                  radius="lg"
+                  size="sm"
+                  variant="bordered"
+                  onValueChange={setSearchQuery}
+                  startContent={<MagnifyingGlassIcon className="w-4 h-4 text-default-400" />}
+                  className="w-full sm:w-64"
+                />
+                <Button
+                  color="danger"
+                  size="sm"
+                  radius="lg"
+                  variant="solid"
+                  startContent={<ArrowDownTrayIcon className="w-4 h-4" />}
+                  isLoading={isExporting}
+                  isDisabled={isExporting || filteredGyms.length === 0}
+                  onPress={() => exportGyms()}
+                >
+                  ส่งออก CSV
+                </Button>
+              </div>
             </div>
 
             <Tabs
@@ -169,8 +192,8 @@ function AdminGymsContent() {
               aria-label="Gyms table"
               classNames={{
                 wrapper: 'bg-transparent border border-default-200 rounded-lg overflow-hidden',
-                th: 'bg-default-100/80 text-default-700 font-semibold text-sm border-b border-default-200 py-4',
-                td: 'border-b border-default-200/50 py-4',
+                th: 'bg-default-100/80 text-default-700 font-semibold text-xs uppercase tracking-wide border-b border-default-200 py-3',
+                td: 'border-b border-default-200/50 py-4 text-sm align-middle',
                 tr: 'hover:bg-default-50/50 transition-colors',
               }}
               removeWrapper={false}

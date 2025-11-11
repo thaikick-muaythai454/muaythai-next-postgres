@@ -316,7 +316,9 @@ export default function GymBookingPage() {
   };
 
   const handlePaymentSuccess = (paymentIntentId: string) => {
-    router.push(`/gyms/booking-success?orderId=${orderId}&orderNumber=${orderNumber}`);
+    router.push(
+      `/gyms/booking-success?orderId=${orderId}&orderNumber=${orderNumber}&paymentIntentId=${paymentIntentId}`
+    );
   };
 
   const handlePaymentError = (errorMsg: string) => {

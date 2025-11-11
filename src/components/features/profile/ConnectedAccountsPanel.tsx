@@ -123,7 +123,7 @@ export function ConnectedAccountsPanel() {
         {/* Google Account */}
         <div className="flex justify-between items-center p-4 bg-zinc-900/50 border border-zinc-700 rounded-lg">
           <div className="flex items-center gap-4">
-            <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-red-500 to-yellow-500 rounded-lg flex items-center justify-center">
+            <div className="shrink-0 w-10 h-10 bg-linear-to-br from-red-500 to-yellow-500 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">G</span>
             </div>
             <div>
@@ -179,7 +179,7 @@ export function ConnectedAccountsPanel() {
               }
               onPress={() => handleConnectProvider('google')}
               isDisabled={linkingProvider !== null}
-              className="bg-gradient-to-r from-blue-600 to-blue-700"
+              className="bg-linear-to-r from-blue-600 to-blue-700"
             >
               {linkingProvider === 'google' ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อ Google'}
             </Button>
@@ -189,7 +189,7 @@ export function ConnectedAccountsPanel() {
         {/* Facebook Account */}
         <div className="flex justify-between items-center p-4 bg-zinc-900/50 border border-zinc-700 rounded-lg">
           <div className="flex items-center gap-4">
-            <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
+            <div className="shrink-0 w-10 h-10 bg-linear-to-br from-blue-600 to-blue-800 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">f</span>
             </div>
             <div>
@@ -245,7 +245,7 @@ export function ConnectedAccountsPanel() {
               }
               onPress={() => handleConnectProvider('facebook')}
               isDisabled={linkingProvider !== null}
-              className="bg-gradient-to-r from-blue-700 to-blue-900"
+              className="bg-linear-to-r from-blue-700 to-blue-900"
             >
               {linkingProvider === 'facebook' ? 'กำลังเชื่อมต่อ...' : 'เชื่อมต่อ Facebook'}
             </Button>

@@ -17,3 +17,6 @@ export { default as Footer } from './ui/Footer';
 export { default as SidebarContent } from './ui/SidebarContent';
 export { default as LayoutWrapper } from './ui/LayoutWrapper';
 
+// Menu configurations
+export { dashboardMenuItems } from './dashboardMenuItems';
+

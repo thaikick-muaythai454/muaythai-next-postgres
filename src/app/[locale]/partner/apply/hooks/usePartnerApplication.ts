@@ -57,7 +57,7 @@ export const usePartnerApplication = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [router, supabase]);
+  }, [locale, router, supabase]);
 
   useEffect(() => {
     checkAuthAndRole();

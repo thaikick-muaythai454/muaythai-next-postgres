@@ -102,7 +102,7 @@ export default function LeaderboardPage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <div className="border-4 border-red-600 border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
+        <div className="border-4 border-primary border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
       </div>
     );
   }

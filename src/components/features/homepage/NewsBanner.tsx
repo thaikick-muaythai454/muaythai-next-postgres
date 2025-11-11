@@ -82,7 +82,7 @@ function NewsSlide({ item, isActive }: { item: typeof NEWS_ITEMS[0]; isActive: b
           className="object-cover transition-transform duration-500 group-hover:scale-105"
           priority={isActive}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/40 to-transparent" />
       </div>
 
       {/* Content */}
@@ -127,7 +127,7 @@ function NewsBannerContent() {
   };
 
   return (
-    <div className="relative bg-gradient-to-r from-zinc-950 via-zinc-900 to-zinc-950 border-y border-zinc-800/50">
+    <div className="relative bg-linear-to-r from-zinc-950 via-zinc-900 to-zinc-950 border-y border-zinc-800/50">
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">

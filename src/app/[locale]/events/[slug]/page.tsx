@@ -289,7 +289,7 @@ export default function EventDetailPage({
               </div>
 
               {/* CTA */}
-              <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 rounded-lg text-center">
+              <div className="bg-linear-to-r from-red-600 to-red-700 p-6 rounded-lg text-center">
                 <h3 className="mb-2 font-bold text-xl">
                   พร้อมจองตั๋วแล้ว?
                 </h3>

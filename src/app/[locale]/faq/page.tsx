@@ -202,9 +202,9 @@ export default function FAQPage() {
                           {faq.question}
                         </h3>
                         {isOpen ? (
-                          <ChevronUpIcon className="flex-shrink-0 w-6 h-6 text-zinc-400" />
+                          <ChevronUpIcon className="shrink-0 w-6 h-6 text-zinc-400" />
                         ) : (
-                          <ChevronDownIcon className="flex-shrink-0 w-6 h-6 text-zinc-400" />
+                          <ChevronDownIcon className="shrink-0 w-6 h-6 text-zinc-400" />
                         )}
                       </button>
                       

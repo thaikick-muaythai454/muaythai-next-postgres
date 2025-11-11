@@ -58,9 +58,20 @@ export default function DashboardLayout({
     router.refresh();
   };
 
+  const localePrefix = `/${locale}`;
+  const trimmedPathname = pathname.startsWith(localePrefix)
+    ? pathname.slice(localePrefix.length)
+    : pathname;
+  const normalizedPathname =
+    trimmedPathname === ""
+      ? "/"
+      : trimmedPathname.startsWith("/")
+        ? trimmedPathname
+        : `/${trimmedPathname}`;
+
   const sidebarProps = {
     menuItems,
-    pathname,
+    pathname: normalizedPathname,
     roleLabel,
     roleColor,
     userEmail,
@@ -69,7 +80,7 @@ export default function DashboardLayout({
   };
 
   return (
-    <div className="flex bg-gradient-to-br from-zinc-950 to-zinc-950 min-h-screen mt-16">
+    <div className="flex bg-linear-to-br from-zinc-950 to-zinc-950 min-h-screen mt-16">
       {/* Sidebar - Desktop */}
       {!hideSidebar && (
         <aside className="hidden top-0 lg:sticky lg:flex flex-col bg-zinc-950/50 backdrop-blur-xl border-white/5 border-r w-64 h-screen max-h-screen">
@@ -118,7 +129,7 @@ export default function DashboardLayout({
         )}
 
         {/* Page Header */}
-        <div className="bg-gradient-to-r from-red-950/20 to-transparent px-4 sm:px-6 lg:px-8 py-8 border-white/5 border-b">
+        <div className="bg-linear-to-r from-red-950/20 to-transparent px-4 sm:px-6 lg:px-8 py-8 border-white/5 border-b">
           <div className="mx-auto max-w-7xl">
             <h1 className="mb-2 font-bold text-3xl md:text-4xl">
               {headerTitle}

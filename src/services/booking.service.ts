@@ -9,6 +9,7 @@ export interface CreateBookingInput {
   user_id: string;
   gym_id: string;
   package_id: string;
+  payment_id?: string | null;
   customer_name: string;
   customer_email: string;
   customer_phone: string;
@@ -205,10 +206,20 @@ export async function createBooking(data: CreateBookingInput) {
   const end_date = calculateEndDate(data.start_date, gymPackage.duration_months);
   const bookingNumber = generateBookingNumber();
 
-  // Calculate final price (use provided price_paid or calculate from package price)
-  const finalPrice = data.price_paid !== undefined 
-    ? data.price_paid 
-    : (gymPackage.price || 0) - (data.discount_amount || 0);
+  const sanitizedDiscountAmount =
+    typeof data.discount_amount === 'number' && data.discount_amount > 0
+      ? Math.round(data.discount_amount * 100) / 100
+      : null;
+
+  const finalPrice =
+    typeof data.price_paid === 'number' && !Number.isNaN(data.price_paid)
+      ? Math.max(0, Math.round(data.price_paid * 100) / 100)
+      : Math.max(
+          0,
+          Math.round(
+            ((gymPackage.price || 0) - (sanitizedDiscountAmount ?? 0)) * 100
+          ) / 100
+        );
 
   // If promotion_id is provided, verify it exists and increment current_uses
   if (data.promotion_id) {
@@ -243,6 +254,7 @@ export async function createBooking(data: CreateBookingInput) {
     .insert({
       user_id: data.user_id,
       gym_id: data.gym_id,
+      payment_id: data.payment_id || null,
       package_id: data.package_id,
       booking_number: bookingNumber,
       customer_name: data.customer_name.trim(),
@@ -257,6 +269,7 @@ export async function createBooking(data: CreateBookingInput) {
       special_requests: data.special_requests?.trim() || null,
       payment_method: data.payment_method || null,
       promotion_id: data.promotion_id || null,
+      discount_amount: sanitizedDiscountAmount,
       payment_status: 'pending',
       status: 'pending',
     })

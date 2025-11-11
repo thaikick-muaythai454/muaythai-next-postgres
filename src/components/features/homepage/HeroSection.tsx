@@ -91,7 +91,7 @@ function HeroContent() {
 export default function HeroSection() {
   return (
     <div className="relative flex justify-center items-center mt-16 overflow-hidden">
-      <div className="bottom-0 left-0 z-10 absolute bg-gradient-to-t from-zinc-950 to-transparent w-full h-1/5"></div>
+      <div className="bottom-0 left-0 z-10 absolute bg-linear-to-t from-zinc-950 to-transparent w-full h-1/5"></div>
       <VideoBackground />
       <Overlay />
       <HeroContent />

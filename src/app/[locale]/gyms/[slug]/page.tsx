@@ -75,7 +75,7 @@ const GymHeader = memo(function GymHeader({ gym }: { gym: Gym }) {
 
 const GalleryPlaceholder = memo(function GalleryPlaceholder() {
   return (
-    <div className="flex justify-center items-center bg-gradient-to-br from-zinc-700 to-zinc-950 rounded-lg h-96">
+    <div className="flex justify-center items-center bg-linear-to-br from-zinc-700 to-zinc-950 rounded-lg h-96">
       <div className="text-center">
         <div className="mb-4 text-zinc-600 text-9xl">🥊</div>
         <p className="text-zinc-400">ภาพประกอบจะมาเร็วๆ นี้</p>
@@ -114,7 +114,7 @@ const LocationSection = memo(function LocationSection({
     <div className="bg-zinc-950 p-6 border border-zinc-700 rounded-lg">
       <h2 className="mb-4 font-bold text-2xl">ที่อยู่และแผนที่</h2>
       <div className="flex items-start gap-3 mb-4">
-        <MapPinIcon className="flex-shrink-0 w-6 h-6 text-red-500" />
+        <MapPinIcon className="shrink-0 w-6 h-6 text-red-500" />
         <p className="text-zinc-300">{location || "ไม่มีข้อมูลที่อยู่"}</p>
       </div>
       {mapUrl && (
@@ -158,7 +158,7 @@ const ContactInfo = memo(function ContactInfo({ gym }: { gym: Gym }) {
       <div className="space-y-4">
         {gym.phone && (
           <div className="flex items-start gap-3">
-            <PhoneIcon className="flex-shrink-0 mt-0.5 w-5 h-5 text-green-500" />
+            <PhoneIcon className="shrink-0 mt-0.5 w-5 h-5 text-green-500" />
             <div>
               <p className="mb-1 text-zinc-400 text-xs">โทรศัพท์</p>
               <Link
@@ -172,7 +172,7 @@ const ContactInfo = memo(function ContactInfo({ gym }: { gym: Gym }) {
         )}
         {gym.email && (
           <div className="flex items-start gap-3">
-            <EnvelopeIcon className="flex-shrink-0 mt-0.5 w-5 h-5 text-blue-500" />
+            <EnvelopeIcon className="shrink-0 mt-0.5 w-5 h-5 text-blue-500" />
             <div>
               <p className="mb-1 text-zinc-400 text-xs">อีเมล</p>
               <Link
@@ -186,7 +186,7 @@ const ContactInfo = memo(function ContactInfo({ gym }: { gym: Gym }) {
         )}
         {gym.website && (
           <div className="flex items-start gap-3">
-            <GlobeAltIcon className="flex-shrink-0 mt-0.5 w-5 h-5 text-purple-500" />
+            <GlobeAltIcon className="shrink-0 mt-0.5 w-5 h-5 text-purple-500" />
             <div>
               <p className="mb-1 text-zinc-400 text-xs">เว็บไซต์</p>
               <Link
@@ -202,7 +202,7 @@ const ContactInfo = memo(function ContactInfo({ gym }: { gym: Gym }) {
         )}
         {gym.socials && (
           <div className="flex items-start gap-3">
-            <GlobeAltIcon className="flex-shrink-0 mt-0.5 w-5 h-5 text-purple-500" />
+            <GlobeAltIcon className="shrink-0 mt-0.5 w-5 h-5 text-purple-500" />
             <div>
               <p className="mb-1 text-zinc-400 text-xs">โซเชียลมีเดีย</p>
               <p className="text-zinc-300">{gym.socials}</p>
@@ -229,16 +229,34 @@ const QuickInfo = memo(function QuickInfo({ gym }: { gym: Gym }) {
           <ClockIcon className="w-5 h-5 text-blue-500" />
           <div>
             <p className="text-zinc-400 text-xs">เวลาทำการ</p>
-            <p className="text-zinc-300">จันทร์-เสาร์: 06:00-20:00</p>
+            <p className="text-zinc-300">
+              {/* ใช้ gym.opening_hours หากมีข้อมูล ไม่งั้น fallback */}
+              {gym.opening_hours
+                ? gym.opening_hours
+                : "จันทร์-เสาร์: 06:00-20:00"}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3">
           <CurrencyDollarIcon className="w-5 h-5 text-green-500" />
           <div>
             <p className="text-zinc-400 text-xs">ราคา</p>
-            <p className="font-semibold text-zinc-300">ติดต่อสอบถาม</p>
+            <p className="font-semibold text-zinc-300">
+              {/* ใช้ gym.price หากมีข้อมูล ไม่งั้น fallback */}
+              {gym.price ? gym.price : "ติดต่อสอบถาม"}
+            </p>
           </div>
         </div>
+        {/* ใช้ gym.usage_details หากมีข้อมูล */}
+        {gym.usage_details && (
+          <div className="flex items-center gap-3">
+            <GlobeAltIcon className="w-5 h-5 text-purple-500" />
+            <div>
+              <p className="text-zinc-400 text-xs">การใช้บริการ</p>
+              <p className="text-zinc-300">{gym.usage_details}</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -246,7 +264,7 @@ const QuickInfo = memo(function QuickInfo({ gym }: { gym: Gym }) {
 
 const CTABooking = memo(function CTABooking({ gymSlug }: { gymSlug: string }) {
   return (
-    <div className="bg-gradient-to-r from-red-600 to-red-700 p-6 rounded-lg text-center">
+    <div className="bg-linear-to-r from-red-600 to-red-700 p-6 rounded-lg text-center">
       <h3 className="mb-2 font-bold text-xl">
         ต้องการใช้บริการค่ายมวย
       </h3>

@@ -16,7 +16,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         // Primary button - main action buttons
-        primary: "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-xl hover:shadow-red-500/25 focus:ring-red-500/50",
+        primary: "bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-xl hover:shadow-red-500/25 focus:ring-red-500/50",
         
         // Secondary button - secondary actions
         secondary: "bg-zinc-700 hover:bg-zinc-600 text-zinc-300 border border-zinc-600 hover:border-zinc-500 focus:ring-zinc-500/50",
@@ -207,13 +207,13 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ) : (
           <>
             {leftIcon && (
-              <span className="flex-shrink-0" aria-hidden="true">
+              <span className="shrink-0" aria-hidden="true">
                 {leftIcon}
               </span>
             )}
             {children}
             {rightIcon && (
-              <span className="flex-shrink-0" aria-hidden="true">
+              <span className="shrink-0" aria-hidden="true">
                 {rightIcon}
               </span>
             )}

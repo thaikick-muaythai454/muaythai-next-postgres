@@ -2,8 +2,9 @@ import { HeroSection, QuickSearchBar, FeaturedSection, LatestProducts, NewsBanne
 import { Marquee } from "@/components/shared/ui";
 import { GYMS, EVENTS } from "@/lib/data";
 
-export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
+export default async function HomePage({ params }: { params: Promise<{ locale?: string | undefined }> }) {
   const { locale } = await params;
+  console.log(locale);
 
   return (
     <>

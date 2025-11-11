@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "../hero.ts";
 
 @theme {
   --background: #0F0F0F;
@@ -158,6 +159,6 @@ button:focus {
 }
 
 .container {
-  @apply flex justify-center items-center px-4 sm:px-6 lg:px-8 py-8 w-full max-w-[2560px] min-h-[calc(100vh_-_132px)];
+  @apply flex justify-center items-center px-4 sm:px-6 lg:px-8 py-8 w-full max-w-[2560px] min-h-[calc(100vh-132px)];
   background-color: var(--color-background);
 }

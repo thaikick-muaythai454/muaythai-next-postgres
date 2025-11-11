@@ -3,13 +3,10 @@
 import { useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
-import { DashboardLayout, type MenuItem } from '@/components/shared';
+import { DashboardLayout, dashboardMenuItems } from '@/components/shared';
 import { Card, CardBody, CardHeader, Button, Input, Chip } from '@heroui/react';
 import {
   UserIcon,
-  CalendarIcon,
-  HeartIcon,
-  BanknotesIcon,
   PencilIcon,
   CheckCircleIcon,
   ClockIcon,
@@ -70,13 +67,6 @@ function ProfileContent() {
     loadUser();
   }, [supabase]);
 
-  const menuItems: MenuItem[] = [
-    { label: 'การจองของฉัน', href: '/dashboard/bookings', icon: CalendarIcon },
-    { label: 'รายการโปรด', href: '/dashboard/favorites', icon: HeartIcon },
-    { label: 'ประวัติการเงิน', href: '/dashboard/transactions', icon: BanknotesIcon },
-    { label: 'โปรไฟล์', href: '/dashboard/profile', icon: UserIcon },
-  ];
-
   const handleSaveProfile = async () => {
     if (!user) return;
 
@@ -124,7 +114,7 @@ function ProfileContent() {
   if (isLoading) {
     return (
       <DashboardLayout
-        menuItems={menuItems}
+        menuItems={dashboardMenuItems}
         headerTitle="โปรไฟล์"
         headerSubtitle="จัดการข้อมูลส่วนตัวของคุณ"
         roleLabel="ผู้ใช้ทั่วไป"
@@ -133,7 +123,7 @@ function ProfileContent() {
         showPartnerButton={true}
       >
         <div className="flex justify-center items-center py-20">
-          <div className="border-4 border-red-600 border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
+          <div className="border-4 border-primary border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
         </div>
       </DashboardLayout>
     );
@@ -141,7 +131,7 @@ function ProfileContent() {
 
   return (
     <DashboardLayout
-      menuItems={menuItems}
+      menuItems={dashboardMenuItems}
       headerTitle="โปรไฟล์"
       headerSubtitle="จัดการข้อมูลส่วนตัวของคุณ"
       roleLabel="ผู้ใช้ทั่วไป"
@@ -154,7 +144,7 @@ function ProfileContent() {
       <div className="gap-6 grid grid-cols-1 lg:grid-cols-3">
         {/* Profile Summary */}
         <div className="lg:col-span-1 space-y-6">
-          <Card className="bg-gradient-to-br from-zinc-800 to-zinc-950 backdrop-blur-sm border border-zinc-700">
+          <Card className="bg-linear-to-br from-zinc-800 to-zinc-950 backdrop-blur-sm border border-zinc-700">
             <CardBody className="items-center gap-4 py-8 text-center">
               <ProfilePictureUpload
                 currentAvatarUrl={avatarUrl}
@@ -234,7 +224,7 @@ function ProfileContent() {
                   variant="shadow"
                   startContent={<PencilIcon className="w-4 h-4" />}
                   onPress={() => setIsEditing(true)}
-                  className="bg-gradient-to-r from-blue-600 to-blue-700"
+                  className="bg-linear-to-r from-blue-600 to-blue-700"
                 >
                   แก้ไข
                 </Button>
@@ -253,7 +243,7 @@ function ProfileContent() {
                     color="primary"
                     onPress={handleSaveProfile}
                     isLoading={isSaving}
-                    className="bg-gradient-to-r from-green-600 to-green-700"
+                    className="bg-linear-to-r from-green-600 to-green-700"
                   >
                     {isSaving ? 'กำลังบันทึก...' : 'บันทึก'}
                   </Button>
@@ -279,7 +269,7 @@ function ProfileContent() {
                           inputWrapper: "bg-zinc-950/50 border-zinc-700 hover:border-zinc-600 focus-within:border-blue-500",
                         }}
                         startContent={
-                          <UserIcon className="flex-shrink-0 w-4 h-4 text-zinc-400" />
+                          <UserIcon className="shrink-0 w-4 h-4 text-zinc-400" />
                         }
                       />
                     </div>
@@ -400,7 +390,7 @@ function ProfileContent() {
           <ConnectedAccountsPanel />
 
           {/* Danger Zone */}
-          <Card className="bg-gradient-to-br from-red-950/50 to-red-900/30 backdrop-blur-sm border border-red-800/50">
+          <Card className="bg-linear-to-br from-red-950/50 to-red-900/30 backdrop-blur-sm border border-red-800/50">
             <CardHeader className="border-red-800/50 border-b">
               <div className="flex items-center gap-3">
                 <div className="bg-red-600/20 p-2 rounded-lg">

@@ -170,7 +170,7 @@ export default function ProductImagesModal({
                   className="bg-zinc-900 p-4 rounded-lg flex items-start gap-4"
                 >
                   {/* Image Preview */}
-                  <div className="relative w-24 h-24 bg-zinc-800 rounded-lg overflow-hidden flex-shrink-0">
+                  <div className="relative w-24 h-24 bg-zinc-800 rounded-lg overflow-hidden shrink-0">
                     <Image
                       src={image.imageUrl}
                       alt={image.altText || `Image ${index + 1}`}

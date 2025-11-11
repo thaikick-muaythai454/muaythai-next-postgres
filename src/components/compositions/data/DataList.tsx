@@ -52,7 +52,7 @@ export function DataList({
             <div className="flex items-start gap-4">
               {/* Avatar */}
               {item.avatar && (
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   {item.avatar}
                 </div>
               )}
@@ -71,7 +71,7 @@ export function DataList({
 
               {/* Actions */}
               {item.actions && (
-                <div className="flex-shrink-0">
+                <div className="shrink-0">
                   {item.actions}
                 </div>
               )}

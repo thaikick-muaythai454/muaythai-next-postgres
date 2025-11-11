@@ -185,7 +185,7 @@ export default function ProductDetailPage({
         <div className="gap-12 grid grid-cols-1 lg:grid-cols-2">
           {/* Product Images */}
           <div>
-            <div className="relative flex justify-center items-center bg-gradient-to-br from-zinc-700 to-zinc-950 mb-4 rounded-lg aspect-square overflow-hidden">
+            <div className="relative flex justify-center items-center bg-linear-to-br from-zinc-700 to-zinc-950 mb-4 rounded-lg aspect-square overflow-hidden">
               <Image
                 src={primaryImage}
                 alt={productName}
@@ -422,7 +422,7 @@ export default function ProductDetailPage({
                   href={`/shop/${relatedProduct.slug}`}
                   className="group bg-zinc-950 hover:shadow-lg hover:shadow-red-500/20 border border-zinc-700 hover:border-red-500 rounded-lg overflow-hidden transition-all"
                 >
-                  <div className="relative aspect-square bg-gradient-to-br from-zinc-700 to-zinc-950">
+                  <div className="relative aspect-square bg-linear-to-br from-zinc-700 to-zinc-950">
                     <Image
                       src={relatedProduct.image || relatedProduct.images?.[0] || "/assets/images/fallback-img.jpg"}
                       alt={relatedProduct.nameThai || relatedProduct.nameEnglish || "Product"}

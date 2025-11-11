@@ -3,12 +3,12 @@
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/lib/database/supabase/client";
 import {
-  MapPinIcon,
+  // MapPinIcon,
   MagnifyingGlassIcon,
   FunnelIcon,
 } from "@heroicons/react/24/outline";
-import { Link } from '@/navigation';
-import { Button } from "@heroui/react";
+// import { Link } from '@/navigation';
+// import { Button } from "@heroui/react";
 import { PageHeader } from "@/components/shared";
 import { GymCard } from "@/components/shared";
 import type { Gym } from "@/types/app.types";

@@ -19,6 +19,9 @@ export interface Gym {
   longitude?: number | null;
   google_place_id?: string | null;
   services?: string[];
+  opening_hours?: string | null;
+  price?: string | null;
+  usage_details?: string | null;
   status?: string;
   created_at?: string;
   updated_at?: string;

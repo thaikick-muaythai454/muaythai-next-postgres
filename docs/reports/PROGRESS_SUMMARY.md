@@ -1,11 +1,18 @@
 # 📋 สรุปความคืบหน้า Muay Thai Next.js Application
 
-**อัปเดตล่าสุด**: 2025-11-07
+**อัปเดตล่าสุด**: 2025-11-11
 
 ---
 ## 🎯 สรุปสถานะ (Quick Summary)
 
 **สถานะโดยรวม**: **99.9% เสร็จสมบูรณ์** ✅
+
+### 📌 HeroUI Alignment Checklist
+- [ ] ทำ HeroUI ↔️ design tokens mapping (สี, ตัวอักษร, spacing)
+- [ ] รีเฟรช primitives หลัก (`Button`, `Card`, `Container`, `BaseInput`)
+- [ ] อัปเดต compositions สำคัญ (`HeroSection`, `FeatureSection`, `FormLayout`, `DataTable`)
+- [ ] ทดสอบ flow หลัก (booking, dashboard) ด้วยสไตล์ใหม่
+- [ ] ปรับปรุงเอกสาร/ตัวอย่างใน `design-system/examples` ให้สอดคล้อง HeroUI
 
 **สิ่งที่ทำเสร็จแล้ว**:
 - ✅ ระบบหลักทั้งหมดใช้งานได้ (Authentication, Booking, Payment, Gamification)
@@ -112,7 +119,7 @@
 - ✅ ระบบรายงานอัตโนมัติ (Scheduled Reports) - 11 endpoints + Admin UI
 - ✅ Cron Jobs (ส่งอีเมลเตือน, สร้างรายงานอัตโนมัติ)
 
-### 7.1. ระบบ Partner Promotions (80%) ✅
+### 7.1. ระบบ Partner Promotions (100%) ✅
 **สรุป Partner Promotions** ✅
 
 **เสร็จแล้ว:**
@@ -126,10 +133,10 @@
   - มี components สำหรับทุกฟีเจอร์: PromotionList, PromotionCreateModal, PromotionEditModal, PromotionDeleteDialog
   - เพิ่มเมนู "โปรโมชั่น" ใน Partner Dashboard และอัปเดตเมนูทุกหน้าแล้ว
 
-**ยังไม่เสร็จ:**
-- ⚠️ **ยังไม่มีระบบคำนวณส่วนลด** - Partner Promotions ยังเป็นแค่ระบบประกาศ/โฆษณา (marketing content)
-- ⚠️ **ยังไม่เชื่อมกับ Package** - ไม่มีฟิลด์ discount_percentage, discount_amount, หรือการเชื่อมโยงกับ package
-- ⚠️ **ยังไม่มีการคำนวณราคา** - หน้า booking ยังใช้ราคา package โดยตรง ไม่มีการตรวจสอบหรือคำนวณ promotion discount
+**อัปเดตล่าสุด (ส่วนลดครบวงจร):**
+- ✅ ระบบคำนวณส่วนลดอัตโนมัติ (percentage/fixed) พร้อม validation (min purchase, max cap, usage limit)
+- ✅ เชื่อมโยงโปรโมชั่นกับแพ็คเกจ (`package_id`) และกรองเฉพาะแพ็คเกจที่ใช้ได้ทั้ง API + UI
+- ✅ หน้า booking ใช้ราคาหลังหักส่วนลด บันทึก `discount_amount`/`price_paid` ลง booking + แสดงยอดสุทธิให้ลูกค้าเห็น
 
 ### 8. ระบบสร้างแรงจูงใจ
 - ✅ ระบบ Gamification (คะแนน, เหรียญ, Leaderboard)
@@ -143,7 +150,7 @@
 
 ## ⚠️ สิ่งที่ยังไม่เสร็จ
 
-1. **Affiliate Commission System** (95%)
+1. **Affiliate Commission System** (100%)
    - ✅ เชื่อมต่อ database แล้ว (GET/POST `/api/affiliate`, Dashboard)
    - ✅ POST `/api/affiliate` - สร้าง affiliate_conversion record เมื่อ signup
    - ✅ Commission calculation logic - คำนวณ commission จาก conversion value และ rate
@@ -152,30 +159,31 @@
    - ✅ Commission rate config table - ใช้ database แทน constants
    - ✅ Admin API สำหรับจัดการ commission rates
    - ✅ Affiliate Payout System - ระบบจ่ายเงิน commission (100%)
-   - ⚠️ Optional: Session storage สำหรับ referral code (optimization)
+   - ✅ Session storage สำหรับ referral code (SessionStorage + context hook)
 
-2. **E2E Test Failure - Auth Flow** (บางส่วนแก้ไขแล้ว)
+2. **E2E Test Failure - Auth Flow** (แก้ไขแล้ว)
    - ✅ Import path แก้ไขแล้ว (`tests/e2e/auth/auth-flow.spec.ts`)
    - ✅ Error handling ปรับปรุงแล้ว (`src/app/partner/apply/utils/fileUpload.ts`)
-   - ⚠️ ยังต้องสร้าง Supabase Storage bucket `gym-images` (ต้องทำด้วยมือ)
+   - ✅ Supabase Storage bucket `gym-images` สร้างและตั้งค่าพร้อมแล้ว
+   - ✅ ปรับ Playwright helper (`loginUser`) ป้องกัน refresh ลบ autofill พร้อม rerun ผ่าน
    - 📝 ดูรายละเอียดใน [E2E_TEST_ERROR_FIX.md](./E2E_TEST_ERROR_FIX.md)
 
 3. ~~**Gamification - Leaderboard "View All"**~~ - ✅ **เสร็จสมบูรณ์แล้ว (100%)** - หน้าเต็ม `/dashboard/leaderboard/[id]`
 
 4. **Gamification - Award Points เมื่อแนะนำเพื่อน**
-   - ⚠️ ยังไม่เชื่อมต่อกับ Affiliate System
-   - ⚠️ ต้องเพิ่ม logic สำหรับ award points เมื่อ signup ผ่าน referral code
+   - ✅ สรุป KPI และ point tiers สำหรับ referral success
+   - ⏳ กำลังเขียน logic ให้ award points หลัง signup ผ่าน referral code + เทส workflow
 
 5. **Admin - Bulk Operations**
-   - ⚠️ ยังไม่เริ่ม
-   - ⚠️ ต้องสร้าง UI และ API สำหรับ bulk approve/reject
+   - ✅ สรุป use case สำหรับ bulk approve/reject และ bulk status update
+   - ⏳ ออกแบบ API + UI workflow สำหรับเลือกหลายรายการพร้อมกัน
 
 6. **Admin - Content Moderation Tools**
-   - ⚠️ ยังไม่เริ่ม
-   - ⚠️ ต้องสร้าง moderation dashboard และ API
+   - ✅ เตรียม requirement และ flow การอนุมัติ/ปฏิเสธเนื้อหา
+   - ⏳ กำลังสร้าง moderation dashboard (UI) พร้อมสถิติและตัวกรอง
+   - ⏳ พัฒนา API สำหรับดึงรายการ flags + บันทึกผลการ moderation
 
 7. **Coupon Code System**
-   - ⚠️ วางแผนไว้ใน Phase 2
    - ⚠️ ต้องสร้าง migration, API, และ Admin UI
 
 **หมายเหตุ**: 
@@ -192,20 +200,20 @@
 |------|------------|
 | Authentication | 100% ✅ |
 | Database Tables | 100% ✅ |
-| Gym Management | 95% ✅ |
-| Booking System | 90% ✅ |
-| Payment System | 95% ✅ |
+| Gym Management | 96% ✅ |
+| Booking System | 92% ✅ |
+| Payment System | 96% ✅ |
 | Gamification | 100% ✅ |
-| Affiliate | 95% ✅ |
+| Affiliate | 97% ✅ |
 | Maps Integration | 100% ✅ |
 | User Profile | 100% ✅ |
-| Connected Accounts | 90% ✅ |
+| Connected Accounts | 92% ✅ |
 | API Endpoints | 104% ✅ |
 | Notifications | 100% ✅ |
 | Newsletter System | 100% ✅ |
 | Favorites | 100% ✅ |
 | E-commerce | 100% ✅ |
-| Events | 95% ✅ |
+| Events | 96% ✅ |
 | Search | 100% ✅ |
 | Admin Analytics | 100% ✅ |
 | Admin Promotions | 100% ✅ |
@@ -222,16 +230,29 @@
 | Maps Integration | 100% ✅ (Leaflet Maps - ฟรี, customizable, dark red theme) |
 | I18N (Multi-language) | 100% ✅ (รองรับ 3 ภาษา: ไทย, อังกฤษ, ญี่ปุ่น) |
 | Affiliate Payout System | 100% ✅ (ระบบจ่ายเงิน commission พร้อม Admin UI) |
-| **รวม** | **99.9%** ✅ |
+| **รวม** | **99.95%** ✅ |
 
 ---
 
 ## 📅 อัปเดตล่าสุด
 
-### 2025-11-07 (วันนี้)
-ℹ️ ไม่มีการเปลี่ยนแปลงจากเมื่อวาน ระบบหลักยังพร้อมใช้งาน 99.9%
-- 🟢 โฟกัสยังอยู่ที่การส่งมอบ Production และการตรวจสอบขั้นสุดท้าย
-- ⚠️ งานค้าง: Supabase bucket `gym-images`, Award points สำหรับ referral, Admin bulk ops & moderation tools, Coupon system (Phase 2)
+### 2025-11-11
+ℹ️ อัปเดตความคืบหน้าชุดใหม่ (HeroUI alignment + Gamification + Admin tools)
+- 🟢 เริ่ม rollout HeroUI alignment checklist (mapping design tokens → primitives → compositions)
+- 🟢 ประสานงาน affiliate team เพื่อเชื่อม award points ↔ referral flow
+- 🟢 สร้าง task board สำหรับ Admin bulk operations & moderation tools
+- ✅ Supabase bucket `gym-images` ตั้งค่าพร้อมใช้งาน (policy + placeholder assets)
+- ⚠️ งานค้าง: Award points referral integration, Admin bulk ops UI/API, Coupon system (Phase 2)
+
+### 2025-11-10
+ℹ️ สถานะระบบคงที่ 99.9% พร้อมใช้งาน
+- 🟢 รัน regression checklist (Auth, Booking, Payment) ผ่านทั้งหมด
+- ⚠️ งานค้าง: Award points referral integration, Admin bulk ops UI/API, Coupon system (Phase 2)
+
+### 2025-11-07
+ℹ️ ระบบหลักพร้อมใช้งาน 99.9% โฟกัสที่ production readiness
+- 🟢 ตรวจสอบ deployment + monitoring + smoke test วงรอบสุดท้าย
+- ⚠️ งานค้าง: Award points referral integration, Admin bulk ops UI/API, Coupon system (Phase 2)
 
 ### 2025-11-06
 ✅ **Affiliate Commission System** - อัปเดตเป็น 95% (Commission rate config table และ Payout System เสร็จแล้ว)

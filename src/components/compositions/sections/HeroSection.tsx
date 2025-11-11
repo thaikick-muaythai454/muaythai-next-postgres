@@ -19,7 +19,7 @@ export function HeroSection({
     <section
       className={`
         relative py-20 lg:py-32 overflow-hidden
-        ${backgroundImage ? 'bg-cover bg-center' : 'bg-gradient-to-br from-zinc-950 via-zinc-900 to-black'}
+        ${backgroundImage ? 'bg-cover bg-center' : 'bg-linear-to-br from-zinc-950 via-zinc-900 to-black'}
         ${className}
       `}
       style={{

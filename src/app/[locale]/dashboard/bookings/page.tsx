@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/database/supabase/client";
 import { RoleGuard } from "@/components/features/auth";
-import { DashboardLayout, type MenuItem } from "@/components/shared";
+import { DashboardLayout, dashboardMenuItems } from "@/components/shared";
 import {
   Card,
   CardBody,
@@ -19,10 +19,7 @@ import {
   Tab,
 } from "@heroui/react";
 import {
-  UserIcon,
   CalendarIcon,
-  HeartIcon,
-  BanknotesIcon,
   CheckCircleIcon,
   ClockIcon,
   XCircleIcon,
@@ -80,17 +77,6 @@ function BookingsContent() {
     }
     loadData();
   }, [supabase]);
-
-  const menuItems: MenuItem[] = [
-    { label: "การจองของฉัน", href: "/dashboard/bookings", icon: CalendarIcon },
-    { label: "รายการโปรด", href: "/dashboard/favorites", icon: HeartIcon },
-    {
-      label: "ประวัติการเงิน",
-      href: "/dashboard/transactions",
-      icon: BanknotesIcon,
-    },
-    { label: "โปรไฟล์", href: "/dashboard/profile", icon: UserIcon },
-  ];
 
   const getStatusChip = (status: string) => {
     const statusConfig: Record<
@@ -173,7 +159,7 @@ function BookingsContent() {
   if (isLoading) {
     return (
       <DashboardLayout
-        menuItems={menuItems}
+        menuItems={dashboardMenuItems}
         headerTitle="การจองของฉัน"
         headerSubtitle="จัดการและดูประวัติการจองทั้งหมด"
         roleLabel="ผู้ใช้ทั่วไป"
@@ -182,7 +168,7 @@ function BookingsContent() {
         showPartnerButton={true}
       >
         <div className="flex justify-center items-center py-20">
-          <div className="border-4 border-red-600 border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
+          <div className="border-4 border-primary border-t-transparent rounded-full w-12 h-12 animate-spin"></div>
         </div>
       </DashboardLayout>
     );
@@ -190,7 +176,7 @@ function BookingsContent() {
 
   return (
     <DashboardLayout
-      menuItems={menuItems}
+      menuItems={dashboardMenuItems}
       headerTitle="การจองของฉัน"
       headerSubtitle="จัดการและดูประวัติการจองทั้งหมด"
       roleLabel="ผู้ใช้ทั่วไป"
@@ -228,13 +214,13 @@ function BookingsContent() {
         ].map(({ label, value, icon: Icon, color }) => (
           <Card
             key={label}
-            className="bg-zinc-900 backdrop-blur-sm border-none rounded-lg border border-zinc-600"
+            className="bg-zinc-900 backdrop-blur-sm border-none rounded-lg"
           >
-            <CardBody className="flex flex-row items-center justify-between">
+            <CardBody className="flex flex-row items-center justify-between border border-zinc-700 rounded-lg">
               <div>
                 <p className="text-sm text-default-500">{label}</p>
-                <p className="mt-1 text-2xl font-semibold text-default-900">
-                  {value}
+                <p className="mt-1 text-2xl font-semibold text-white">
+                  {Math.max(0, value ?? 0)}
                 </p>
               </div>
               <span className={`${color}`}>
@@ -248,13 +234,21 @@ function BookingsContent() {
       {/* Bookings Table */}
       <section>
         <Card className="backdrop-blur-sm border-none rounded-lg">
-          <CardBody>
+          <CardBody className="p-0">
             <Tabs
-              aria-label="Options"
+              aria-label="Bookings filter tabs"
               selectedKey={selectedTab}
-              onSelectionChange={(key) => setSelectedTab(key as string)}
-              className=""
-              color="danger"
+              onSelectionChange={(key) => setSelectedTab(String(key))}
+              disableAnimation
+              classNames={{
+                base: "w-full",
+                tabList:
+                  "bg-zinc-900/60 border border-zinc-700 rounded-lg p-1 gap-1 overflow-x-auto !p-0.5",
+                tab: "px-4 py-2 text-sm rounded-md text-default-400 transition-all data-[hover-unselected=true]:bg-zinc-800/60 data-[selected=true]:bg-red-600 data-[selected=true]:text-white",
+                tabContent:
+                  "font-normal group-data-[selected=true]:font-medium group-data-[selected=true]:text-white",
+                cursor: "hidden",
+              }}
             >
               <Tab key="all" title="ทั้งหมด" />
               <Tab key="pending" title="รอดำเนินการ" />
@@ -266,7 +260,10 @@ function BookingsContent() {
             <Table
               aria-label="Bookings table"
               classNames={{
-                wrapper: "bg-transparent",
+                wrapper:
+                  "bg-zinc-900/60 border border-zinc-700 rounded-lg gap-1 overflow-x-auto text-sm mt-4",
+                thead: "bg-transparent",
+                th: "bg-transparent text-white border-b border-zinc-700 p-0 font-medium",
               }}
             >
               <TableHeader>
@@ -280,7 +277,10 @@ function BookingsContent() {
                 <TableColumn>ยอดเงิน</TableColumn>
                 <TableColumn>การกระทำ</TableColumn>
               </TableHeader>
-              <TableBody emptyContent="ไม่พบข้อมูลการจอง">
+              <TableBody
+                emptyContent="ไม่พบข้อมูลการจอง"
+                className="text-white"
+              >
                 {filteredBookings.map((booking) => (
                   <TableRow key={booking.id}>
                     <TableCell className="font-mono text-sm">

@@ -19,12 +19,12 @@ import {
   BanknotesIcon,
   CurrencyDollarIcon,
   Cog6ToothIcon,
-  HomeIcon,
+  // HomeIcon,
   UsersIcon,
   StarIcon,
   TrophyIcon,
-  ArrowTrendingUpIcon,
-  ArrowTrendingDownIcon,
+  // ArrowTrendingUpIcon,
+  // ArrowTrendingDownIcon,
   MegaphoneIcon,
 } from '@heroicons/react/24/outline';
 import { Toaster, toast } from 'react-hot-toast';
@@ -288,7 +288,7 @@ function PartnerAnalyticsContent() {
 
       {/* Revenue Card */}
       <section className="mb-8">
-        <Card className="bg-gradient-to-br from-success-500 to-success-700 border-none">
+        <Card className="bg-linear-to-br from-success-500 to-success-700 border-none">
           <CardBody>
             <div className="flex justify-between items-center">
               <div>
@@ -336,7 +336,7 @@ function PartnerAnalyticsContent() {
                     >
                       <div className="relative w-full h-full flex items-end">
                         <div
-                          className="w-full bg-gradient-to-t from-success-500 to-success-400 rounded-t-lg transition-all duration-300 hover:opacity-80"
+                          className="w-full bg-linear-to-t from-success-500 to-success-400 rounded-t-lg transition-all duration-300 hover:opacity-80"
                           style={{ height: `${item.percentage}%` }}
                           title={`${item.label}: ฿${item.value.toLocaleString()}`}
                         />

@@ -334,7 +334,7 @@ function UpdatePasswordForm() {
         {errors.general && (
           <div className="bg-red-500/20 p-4 border border-red-500 rounded-lg">
             <div className="flex items-center gap-3">
-              <ExclamationTriangleIcon className="flex-shrink-0 w-6 h-6 text-red-400" />
+              <ExclamationTriangleIcon className="shrink-0 w-6 h-6 text-red-400" />
               <p className="text-red-400 text-sm">{errors.general}</p>
             </div>
           </div>
@@ -344,7 +344,7 @@ function UpdatePasswordForm() {
         {message === 'password_reset_success' && (
           <div className="bg-green-500/20 p-4 border border-green-500 rounded-lg">
             <div className="flex items-center gap-3">
-              <CheckCircleIcon className="flex-shrink-0 w-6 h-6 text-green-400" />
+              <CheckCircleIcon className="shrink-0 w-6 h-6 text-green-400" />
               <p className="text-green-400 text-sm">
                 ✅ ลิงก์รีเซ็ตรหัสผ่านถูกต้อง กรุณากรอกรหัสผ่านใหม่
               </p>

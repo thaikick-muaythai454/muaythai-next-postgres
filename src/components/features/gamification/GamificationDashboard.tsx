@@ -1,19 +1,28 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { GamificationDashboard as GamificationDashboardType } from '@/types/gamification.types';
-import LevelDisplay from './LevelDisplay';
-import BadgeCollection from './BadgeCollection';
-import ChallengeList from './ChallengeList';
-import LeaderboardWidget from './LeaderboardWidget';
-import StreakDisplay from './StreakDisplay';
-import PointsHistory from './PointsHistory';
+import { useState, useEffect } from "react";
+import { GamificationDashboard as GamificationDashboardType } from "@/types/gamification.types";
+import LevelDisplay from "./LevelDisplay";
+import BadgeCollection from "./BadgeCollection";
+import ChallengeList from "./ChallengeList";
+import LeaderboardWidget from "./LeaderboardWidget";
+import StreakDisplay from "./StreakDisplay";
+import PointsHistory from "./PointsHistory";
+import Link from "next/link";
 
 interface GamificationDashboardProps {
   className?: string;
 }
 
-const Section = ({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) => (
+const Section = ({
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon: string;
+  children: React.ReactNode;
+}) => (
   <div className="bg-zinc-950/50 backdrop-blur-sm border border-zinc-800/50 rounded-lg shadow-md p-6">
     <h2 className="text-xl font-semibold mb-4 flex items-center text-white">
       {icon} {title}
@@ -22,26 +31,33 @@ const Section = ({ title, icon, children }: { title: string; icon: string; child
   </div>
 );
 
-export default function GamificationDashboard({ className = '' }: GamificationDashboardProps) {
-  const [dashboard, setDashboard] = useState<GamificationDashboardType | null>(null);
+export default function GamificationDashboard({
+  className = "",
+}: GamificationDashboardProps) {
+  const [dashboard, setDashboard] = useState<GamificationDashboardType | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchDashboard = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/gamification/dashboard');
+      const response = await fetch("/api/gamification/dashboard");
       const result = await response.json();
-      if (!response.ok) throw new Error(result.error || 'Failed to fetch dashboard');
+      if (!response.ok)
+        throw new Error(result.error || "Failed to fetch dashboard");
       setDashboard(result.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchDashboard(); }, []);
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
   if (loading) {
     return (
@@ -56,8 +72,18 @@ export default function GamificationDashboard({ className = '' }: GamificationDa
     return (
       <div className={`text-center p-8 ${className}`}>
         <div className="text-red-600 mb-4">
-          <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          <svg
+            className="mx-auto h-12 w-12"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"
+            />
           </svg>
         </div>
         <h3 className="text-lg font-medium text-white mb-2">เกิดข้อผิดพลาด</h3>
@@ -65,7 +91,8 @@ export default function GamificationDashboard({ className = '' }: GamificationDa
         <button
           onClick={fetchDashboard}
           className="bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-         aria-label="Button">
+          aria-label="Button"
+        >
           ลองใหม่
         </button>
       </div>
@@ -82,10 +109,33 @@ export default function GamificationDashboard({ className = '' }: GamificationDa
 
   return (
     <div className={`space-y-6 ${className}`}>
+      <div className="flex justify-end">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center px-4 py-2 mb-2 bg-blue-700 text-white rounded-lg hover:bg-blue-800 transition-colors font-medium"
+        >
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          กลับไปหน้า Dashboard
+        </Link>
+      </div>
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-900/80 to-purple-900/80 rounded-lg p-6 text-white border border-blue-700/30 backdrop-blur-sm">
+      <div className="bg-linear-to-r from-blue-900/80 to-purple-900/80 rounded-lg p-6 text-white border border-blue-700/30 backdrop-blur-sm">
         <h1 className="text-2xl font-bold mb-2">🏆 ระบบ Gamification</h1>
-        <p className="text-blue-200">สะสมคะแนน รับเหรียญ และแข่งขันกับเพื่อนๆ</p>
+        <p className="text-blue-200">
+          สะสมคะแนน รับเหรียญ และแข่งขันกับเพื่อนๆ
+        </p>
       </div>
 
       {/* Level and Points Display */}
@@ -117,7 +167,10 @@ export default function GamificationDashboard({ className = '' }: GamificationDa
         <Section title="ตารางคะแนน" icon="🏆">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {dashboard.leaderboards.map((leaderboard) => (
-              <LeaderboardWidget key={leaderboard.leaderboard.id} leaderboard={leaderboard} />
+              <LeaderboardWidget
+                key={leaderboard.leaderboard.id}
+                leaderboard={leaderboard}
+              />
             ))}
           </div>
         </Section>

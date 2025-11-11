@@ -51,7 +51,7 @@ export function FeatureSection({
               {/* Icon or Image */}
               {(feature.icon || feature.image) && (
                 <div
-                  className={`${layout === "list" ? "flex-shrink-0" : "mb-4"}`}
+                  className={`${layout === "list" ? "shrink-0" : "mb-4"}`}
                 >
                   {feature.image ? (
                     <Image

@@ -5,6 +5,13 @@ import { Card, CardBody, CardHeader, Switch, Button } from '@heroui/react';
 import { BellIcon, CheckIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 
+const switchClassNames = {
+  base: 'group flex w-full items-center justify-between gap-4 rounded-xl border border-zinc-800/60 bg-zinc-900/60 px-4 py-3 transition hover:border-zinc-700 hover:bg-zinc-900/80',
+  wrapper: 'flex h-7 w-12 shrink-0 items-center rounded-full border border-transparent bg-zinc-800 transition-all group-data-[selected=true]:bg-emerald-500',
+  thumb: 'pointer-events-none h-5 w-5 shrink-0 translate-x-1 rounded-full bg-white shadow-md transition-transform duration-200 group-data-[selected=true]:translate-x-6',
+  label: 'flex flex-col text-left text-sm leading-tight',
+};
+
 export function NotificationPreferencesPanel() {
   const [preferences, setPreferences] = useState({
     email_enabled: true,
@@ -84,6 +91,7 @@ export function NotificationPreferencesPanel() {
           <Switch
             isSelected={preferences.email_enabled}
             onValueChange={(value) => setPreferences({ ...preferences, email_enabled: value })}
+            classNames={switchClassNames}
           >
             <div className="flex flex-col">
               <span className="text-white">เปิดใช้งานอีเมล</span>
@@ -94,6 +102,7 @@ export function NotificationPreferencesPanel() {
           <Switch
             isSelected={preferences.in_app_enabled}
             onValueChange={(value) => setPreferences({ ...preferences, in_app_enabled: value })}
+            classNames={switchClassNames}
           >
             <div className="flex flex-col">
               <span className="text-white">เปิดใช้งานในแอป</span>
@@ -109,6 +118,7 @@ export function NotificationPreferencesPanel() {
           <Switch
             isSelected={preferences.booking_confirmation}
             onValueChange={(value) => setPreferences({ ...preferences, booking_confirmation: value })}
+            classNames={switchClassNames}
           >
             <div className="flex flex-col">
               <span className="text-white">ยืนยันการจอง</span>
@@ -119,6 +129,7 @@ export function NotificationPreferencesPanel() {
           <Switch
             isSelected={preferences.booking_reminder}
             onValueChange={(value) => setPreferences({ ...preferences, booking_reminder: value })}
+            classNames={switchClassNames}
           >
             <div className="flex flex-col">
               <span className="text-white">เตือนก่อนเข้าชั้นเรียน</span>
@@ -129,6 +140,7 @@ export function NotificationPreferencesPanel() {
           <Switch
             isSelected={preferences.gamification_updates}
             onValueChange={(value) => setPreferences({ ...preferences, gamification_updates: value })}
+            classNames={switchClassNames}
           >
             <div className="flex flex-col">
               <span className="text-white">อัปเดต Gamification</span>
@@ -139,6 +151,7 @@ export function NotificationPreferencesPanel() {
           <Switch
             isSelected={preferences.promotions_news}
             onValueChange={(value) => setPreferences({ ...preferences, promotions_news: value })}
+            classNames={switchClassNames}
           >
             <div className="flex flex-col">
               <span className="text-white">โปรโมชั่นและข่าวสาร</span>
@@ -149,6 +162,7 @@ export function NotificationPreferencesPanel() {
           <Switch
             isSelected={preferences.partner_messages}
             onValueChange={(value) => setPreferences({ ...preferences, partner_messages: value })}
+            classNames={switchClassNames}
           >
             <div className="flex flex-col">
               <span className="text-white">ข้อความจาก Partner</span>

@@ -178,7 +178,7 @@ function BookingSuccessContent() {
           {/* Gym Info */}
           <div className="mb-6">
             <div className="flex items-start gap-3 mb-4">
-              <MapPinIcon className="flex-shrink-0 mt-1 w-5 h-5 text-red-500" />
+              <MapPinIcon className="shrink-0 mt-1 w-5 h-5 text-red-500" />
               <div>
                 <p className="mb-1 text-zinc-400 text-sm">ค่ายมวย</p>
                 <p className="font-semibold text-xl">{gymName}</p>
@@ -209,7 +209,7 @@ function BookingSuccessContent() {
           {/* Dates */}
           <div className="gap-6 grid sm:grid-cols-2 mb-6">
             <div className="flex items-start gap-3">
-              <CalendarIcon className="flex-shrink-0 mt-1 w-5 h-5 text-zinc-400" />
+              <CalendarIcon className="shrink-0 mt-1 w-5 h-5 text-zinc-400" />
               <div>
                 <p className="mb-1 text-zinc-400 text-xs uppercase tracking-wide">วันเริ่มต้น</p>
                 <p className="font-semibold text-white">
@@ -224,7 +224,7 @@ function BookingSuccessContent() {
 
             {booking.end_date && (
               <div className="flex items-start gap-3">
-                <CalendarIcon className="flex-shrink-0 mt-1 w-5 h-5 text-zinc-400" />
+                <CalendarIcon className="shrink-0 mt-1 w-5 h-5 text-zinc-400" />
                 <div>
                   <p className="mb-1 text-zinc-400 text-xs uppercase tracking-wide">วันสิ้นสุด</p>
                   <p className="font-semibold text-white">
@@ -269,7 +269,7 @@ function BookingSuccessContent() {
         {/* Payment Info */}
         <div className="bg-yellow-600/10 mb-8 p-6 border border-yellow-600/30 rounded-xl">
           <div className="flex items-start gap-3">
-            <CreditCardIcon className="flex-shrink-0 mt-1 w-6 h-6 text-yellow-400" />
+            <CreditCardIcon className="shrink-0 mt-1 w-6 h-6 text-yellow-400" />
             <div>
               <h3 className="mb-2 font-semibold text-yellow-400 text-lg">
                 ขั้นตอนต่อไป: การชำระเงิน

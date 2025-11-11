@@ -27,7 +27,7 @@ export { ProductCard } from './cards/ProductCard';
 
 // === LAYOUT COMPONENTS ===
 // Application Layouts
-export { DashboardLayout, AuthLayout, LayoutWrapper, Header, Footer, SidebarContent } from '@/components/compositions/layouts';
+export { DashboardLayout, AuthLayout, LayoutWrapper, Header, Footer, SidebarContent, dashboardMenuItems } from '@/components/compositions/layouts';
 
 // Primitive Layout Components (from design system)
 export { Container, Flex, Grid, Stack } from '@/components/design-system/primitives';

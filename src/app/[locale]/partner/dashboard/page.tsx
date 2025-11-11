@@ -464,7 +464,7 @@ function PartnerDashboardContent() {
         <div className="mx-auto max-w-4xl">
           <div className="space-y-6">
             {/* Status Header */}
-            <div className="bg-gradient-to-br from-yellow-900/20 to-zinc-800 p-8 border border-yellow-600 rounded-2xl text-center">
+            <div className="bg-linear-to-br from-yellow-900/20 to-zinc-800 p-8 border border-yellow-600 rounded-2xl text-center">
               <div className="flex justify-center mb-4">
                 <ClockIcon className="w-20 h-20 text-yellow-500 animate-pulse" />
               </div>
@@ -795,7 +795,7 @@ function PartnerDashboardContent() {
                       <ul className="space-y-1">
                         {pkg.features.map((feature, idx) => (
                           <li key={idx} className="flex items-center gap-2 text-zinc-300 text-xs">
-                            <CheckIcon className="flex-shrink-0 w-3 h-3 text-green-500" />
+                            <CheckIcon className="shrink-0 w-3 h-3 text-green-500" />
                             <span>{feature}</span>
                           </li>
                         ))}
@@ -843,7 +843,7 @@ function PartnerDashboardContent() {
             <h3 className="mb-4 font-semibold text-zinc-300 text-lg">แพ็คเกจรายเดือน</h3>
             <div className="gap-4 grid md:grid-cols-2 lg:grid-cols-3">
               {subscriptionPackages.map((pkg) => (
-                <Card key={pkg.id} className="bg-gradient-to-br from-zinc-800 to-zinc-950 border border-zinc-700">
+                <Card key={pkg.id} className="bg-linear-to-br from-zinc-800 to-zinc-950 border border-zinc-700">
                   <CardHeader className="flex justify-between items-start">
                     <div className="flex-1">
                       <div className="inline-flex justify-center items-center bg-purple-600 mb-2 px-3 py-1 rounded-full font-semibold text-xs">
@@ -880,7 +880,7 @@ function PartnerDashboardContent() {
                       <ul className="space-y-1">
                         {pkg.features.map((feature, idx) => (
                           <li key={idx} className="flex items-center gap-2 text-zinc-300 text-xs">
-                            <CheckIcon className="flex-shrink-0 w-3 h-3 text-green-500" />
+                            <CheckIcon className="shrink-0 w-3 h-3 text-green-500" />
                             <span>{feature}</span>
                           </li>
                         ))}

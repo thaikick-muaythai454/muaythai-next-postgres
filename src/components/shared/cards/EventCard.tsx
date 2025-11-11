@@ -57,15 +57,15 @@ export function EventCard({ event, viewMode }: EventCardProps) {
             </h3>
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-zinc-300 text-sm">
-                <MapPinIcon className="flex-shrink-0 w-4 h-4 text-red-500" />
+                <MapPinIcon className="shrink-0 w-4 h-4 text-red-500" />
                 <span>{event.location}</span>
               </div>
               <div className="flex items-center gap-2 text-zinc-300 text-sm">
-                <CalendarIcon className="flex-shrink-0 w-4 h-4 text-blue-500" />
+                <CalendarIcon className="shrink-0 w-4 h-4 text-blue-500" />
                 <span>{formattedDate || dateStr}</span>
               </div>
               <div className="flex items-center gap-2 text-zinc-300 text-sm">
-                <ClockIcon className="flex-shrink-0 w-4 h-4 text-green-500" />
+                <ClockIcon className="shrink-0 w-4 h-4 text-green-500" />
                 <span>{formattedTime || ""}</span>
               </div>
             </div>
@@ -117,15 +117,15 @@ export function EventCard({ event, viewMode }: EventCardProps) {
 
         <div className="space-y-2 mb-4">
           <div className="flex items-start gap-2 text-zinc-300 text-sm">
-            <MapPinIcon className="flex-shrink-0 mt-0.5 w-4 h-4 text-red-500" />
+            <MapPinIcon className="shrink-0 mt-0.5 w-4 h-4 text-red-500" />
             <span className="line-clamp-1">{event.location}</span>
           </div>
           <div className="flex items-center gap-2 text-zinc-300 text-sm">
-            <CalendarIcon className="flex-shrink-0 w-4 h-4 text-blue-500" />
+            <CalendarIcon className="shrink-0 w-4 h-4 text-blue-500" />
             <span className="line-clamp-1">{formattedDate || dateStr}</span>
           </div>
           <div className="flex items-center gap-2 text-zinc-300 text-sm">
-            <ClockIcon className="flex-shrink-0 w-4 h-4 text-green-500" />
+            <ClockIcon className="shrink-0 w-4 h-4 text-green-500" />
             <span>{formattedTime || ""}</span>
           </div>
         </div>

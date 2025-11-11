@@ -155,7 +155,7 @@ function PartnerTransactionsContent() {
     >
       <section className="mb-8">
         <div className="gap-6 grid grid-cols-1 md:grid-cols-3">
-          <Card className="bg-gradient-to-br from-success-500 to-success-700 border-none">
+          <Card className="bg-linear-to-br from-success-500 to-success-700 border-none">
             <CardBody>
               {gym?.gym_name && (
                 <p className="mb-1 text-white/60 text-xs uppercase tracking-wide">

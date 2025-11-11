@@ -53,7 +53,7 @@ export function FormField({
               className="flex items-center gap-1 mt-2 text-sm text-red-400"
               data-testid={`${testId}-error`}
             >
-              <ExclamationCircleIcon className="w-4 h-4 flex-shrink-0" />
+              <ExclamationCircleIcon className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
@@ -99,7 +99,7 @@ export function FormField({
           className="flex items-center gap-1 text-sm text-red-400"
           data-testid={`${testId}-error`}
         >
-          <ExclamationCircleIcon className="w-4 h-4 flex-shrink-0" />
+          <ExclamationCircleIcon className="w-4 h-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}

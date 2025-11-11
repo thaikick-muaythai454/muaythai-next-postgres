@@ -30,7 +30,7 @@ export default function PaymentErrorDisplay({
         : 'bg-brand-primary/10 border-red-600/50'
     }`}>
       <div className="flex items-start gap-4">
-        <div className="flex-shrink-0">
+        <div className="shrink-0">
           {error.retryable ? (
             <ExclamationTriangleIcon className="w-8 h-8 text-yellow-400" />
           ) : (

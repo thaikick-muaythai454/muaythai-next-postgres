@@ -470,7 +470,7 @@ export async function retryFailedPayment(
     .eq('id', data.payment_id);
 
   // Create new payment record for retry
-  const { error: newPaymentError } = await supabase
+  const { data: retryPaymentRecord, error: newPaymentError } = await supabase
     .from('payments')
     .insert({
       user_id: payment.user_id,
@@ -493,8 +493,8 @@ export async function retryFailedPayment(
     .select()
     .single();
 
-  if (newPaymentError) {
-    throw new Error(`Failed to create retry payment record: ${newPaymentError.message}`);
+  if (newPaymentError || !retryPaymentRecord) {
+    throw new Error(`Failed to create retry payment record: ${newPaymentError?.message}`);
   }
 
   // Get order number from original payment's order
@@ -503,6 +503,27 @@ export async function retryFailedPayment(
     .select('id, order_number')
     .eq('payment_id', payment.id)
     .maybeSingle();
+
+  try {
+    await supabase
+      .from('notifications')
+      .insert({
+        user_id: payment.user_id,
+        type: 'payment_retry',
+        title: 'กำลังลองชำระเงินอีกครั้ง',
+        message: order?.order_number
+          ? `ระบบได้พยายามชำระเงินอีกครั้งสำหรับคำสั่งซื้อ ${order.order_number}`
+          : 'ระบบได้พยายามชำระเงินอีกครั้ง กรุณาตรวจสอบสถานะในหน้าธุรกรรม',
+        link_url: '/dashboard/transactions',
+        metadata: {
+          payment_id: retryPaymentRecord.id,
+          original_payment_id: payment.id,
+          retry_count: retryCount,
+        },
+      });
+  } catch (notificationError) {
+    console.warn('Failed to create payment retry notification:', notificationError);
+  }
 
   return {
     clientSecret: paymentIntent.client_secret!,

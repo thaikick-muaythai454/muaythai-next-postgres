@@ -271,36 +271,25 @@ npx playwright test tests/e2e/affiliate --project=chromium
 
 ### 2.4 Login Existing Users Tests
 - [ ] **Login Existing Users**
-  - [ ] Login with existing user credentials ⚠️
-  - [ ] Verify dashboard access ⚠️
-  - [ ] Test logout functionality ⚠️
+  - [x] Login with existing user credentials ⚠️
+  - [x] Verify dashboard access ⚠️
+  - [x] Test logout functionality ⚠️
 
-**สถานะ**: ⚠️ **Playwright Browsers ติดตั้งแล้ว แต่ WebServer Timeout**  
+**สถานะ**: ⚠️ **ขั้นตอน Manual ผ่าน แต่ Automated Playwright ยังล้มเหลว**  
 **ผลการทดสอบ**: 
-- ⚠️ Tests ทั้งหมดไม่สามารถรันได้ (WebServer timeout - server ใช้เวลานานในการ start)
+- ✅ Manual: Login/Logout และเข้าถึง dashboard ได้ครบทุก role (regular, partner, admin)
+- ⚠️ Automated: Playwright ติด `page.waitForURL` timeout (ยังอยู่หน้า `/th/login` พร้อม error แสดง “อีเมล, Username หรือรหัสผ่านไม่ถูกต้อง”)
+- ⚠️ ตรวจสอบแล้วว่ากรอก credential ถูกต้อง → ต้องวิเคราะห์สาเหตุเพิ่มเติม (เช่น locale redirect, session handling, หรือ test data mismatch)
 
 **คำสั่ง**: 
 ```bash
-# ✅ Playwright browsers ติดตั้งแล้ว
-
-# วิธีที่ 1: รัน server แยกก่อน แล้วรัน tests
-# Terminal 1:
-npm run dev
-
-# Terminal 2 (รอให้ server พร้อมก่อน):
-npm run test:e2e tests/e2e/login-existing-users.spec.ts
-
-# วิธีที่ 2: เพิ่ม timeout ใน playwright.config.ts
-# แก้ไข webServer.timeout จาก 120000 เป็น 180000 (3 นาที)
+npx playwright test tests/e2e/auth/login-existing-users.spec.ts --project=chromium
 ```
 
 **หมายเหตุสำคัญ**: 
-- ✅ **Playwright browsers ติดตั้งแล้ว** (`npx playwright install`)
-- ⚠️ **WebServer Timeout Issue**: Server ใช้เวลานานในการ start (> 120 วินาที)
-- **วิธีแก้ไข**:
-  1. รัน `npm run dev` แยกใน terminal แล้วรัน tests
-  2. หรือเพิ่ม `webServer.timeout` ใน `playwright.config.ts` เป็น 180000 (3 นาที)
-- จำนวน E2E Tests: 28 tests (รวมทั้งหมด)
+- ✅ ยืนยันด้วยมือแล้วว่าระบบใช้งานได้
+- ⚠️ จำเป็นต้อง debug Playwright helper `loginUser` หรือเตรียม test data ให้ตรงกับระบบปัจจุบัน
+- 🔄 แนะนำให้จับวิดีโอ/screenshot จากโฟลเดอร์ `test-results/` มาประกอบการ debug
 
 ---
 

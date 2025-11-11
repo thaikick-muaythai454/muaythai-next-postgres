@@ -76,20 +76,24 @@ function DataTableImpl<T = Record<string, unknown>>({
 
   return (
     <div
-      className={`overflow-hidden border border-zinc-700 rounded-xl ${className}`}
+      className={`
+        overflow-hidden rounded-2xl border border-zinc-700/70 bg-zinc-900/70
+        shadow-2xl ring-1 ring-zinc-500/20 backdrop-blur-md
+        ${className}
+      `}
       data-testid={testId}
       {...props}
     >
       <div className="overflow-x-auto">
         <table className="w-full">
           {/* Header */}
-          <thead className="bg-zinc-900 border-b border-zinc-700">
+          <thead className="bg-zinc-900/80 border-b border-zinc-700/80">
             <tr>
               {columns.map((column) => (
                 <th
                   key={column.key}
                   className={`
-                    px-6 py-4 text-left text-sm font-semibold text-white
+                    px-6 py-4 text-left text-sm font-semibold text-zinc-100
                     ${column.align === 'center' ? 'text-center' : ''}
                     ${column.align === 'right' ? 'text-right' : ''}
                     ${column.sortable ? 'cursor-pointer hover:bg-zinc-800' : ''}
@@ -125,12 +129,13 @@ function DataTableImpl<T = Record<string, unknown>>({
           </thead>
 
           {/* Body */}
-          <tbody className="bg-zinc-950 divide-y divide-zinc-700">
+          <tbody className="bg-zinc-950/80 divide-y divide-zinc-700/70">
             {sortedData.map((record, index) => (
               <tr
                 key={index}
                 className={`
-                  hover:bg-zinc-900 transition-colors
+                  group transition-colors duration-200
+                  hover:bg-zinc-800/40 hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.05)]
                   ${onRowClick ? 'cursor-pointer' : ''}
                 `}
                 onClick={onRowClick ? () => onRowClick(record, index) : undefined}
@@ -141,6 +146,8 @@ function DataTableImpl<T = Record<string, unknown>>({
                     key={column.key}
                     className={`
                       px-6 py-4 text-sm text-zinc-300
+                      transition-colors duration-200
+                      group-hover:text-zinc-100
                       ${column.align === 'center' ? 'text-center' : ''}
                       ${column.align === 'right' ? 'text-right' : ''}
                     `}

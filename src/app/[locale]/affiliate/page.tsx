@@ -143,17 +143,17 @@ export default function AffiliatePage() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
+      <div className="min-h-screen bg-linear-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
         </div>
         <div className="container mx-auto px-4 py-16 relative z-10 flex flex-col items-center justify-center">
           <div className="text-center max-w-2xl mx-auto">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full mb-6 shadow-lg shadow-red-500/30">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-red-500 to-orange-500 rounded-full mb-6 shadow-lg shadow-red-500/30">
               <SparklesIcon className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-white via-zinc-100 to-zinc-300 bg-clip-text text-transparent">
+            <h1 className="text-5xl font-bold mb-4 bg-linear-to-r from-white via-zinc-100 to-zinc-300 bg-clip-text text-transparent">
               Affiliate Program
             </h1>
             <p className="text-zinc-300 text-xl mb-8">
@@ -175,7 +175,7 @@ export default function AffiliatePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
+      <div className="min-h-screen bg-linear-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
         <div className="container mx-auto px-4 py-16 relative z-10">
           <div className="text-center py-20">
             <Loading variant="spinner" size="lg" text="กำลังโหลดข้อมูล..." centered />
@@ -199,7 +199,7 @@ export default function AffiliatePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -208,14 +208,14 @@ export default function AffiliatePage() {
       <div className="container mx-auto px-4 py-8 relative z-10 max-w-7xl">
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Sidebar - Fixed Narrow */}
-          <div className="lg:w-80 lg:flex-shrink-0">
+          <div className="lg:w-80 lg:shrink-0">
             <div className="lg:sticky lg:top-24">
               <div className="bg-zinc-800/60 backdrop-blur-sm border border-zinc-700/50 rounded-xl p-6">
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-500 to-orange-500 rounded-full mb-4 shadow-lg shadow-red-500/30">
+                  <div className="inline-flex items-center justify-center w-16 h-16 bg-linear-to-br from-red-500 to-orange-500 rounded-full mb-4 shadow-lg shadow-red-500/30">
                     <GiftIcon className="w-8 h-8 text-white" />
                   </div>
-                  <h1 className="text-2xl font-bold mb-3 bg-gradient-to-r from-white via-zinc-100 to-zinc-300 bg-clip-text text-transparent">
+                  <h1 className="text-2xl font-bold mb-3 bg-linear-to-r from-white via-zinc-100 to-zinc-300 bg-clip-text text-transparent">
                     Affiliate Program
                   </h1>
                   <p className="text-zinc-300 text-sm mb-4 leading-relaxed">
@@ -279,7 +279,7 @@ export default function AffiliatePage() {
             <Card className="bg-zinc-800/60 border-zinc-700/50 backdrop-blur-sm hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300">
               <CardHeader className="pb-3">
                 <h2 className="text-lg font-semibold flex items-center text-white">
-                  <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg mr-3">
+                  <div className="p-2 bg-linear-to-br from-blue-500 to-blue-600 rounded-lg mr-3">
                     <LinkIcon className="w-4 h-4 text-white" />
                   </div>
                   ลิงก์แนะนำของคุณ
@@ -387,7 +387,7 @@ export default function AffiliatePage() {
                 <Card className="bg-zinc-800/60 border-zinc-700/50 backdrop-blur-sm hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300">
                   <CardHeader className="pb-2">
                     <h2 className="text-lg font-semibold flex items-center text-white">
-                      <div className="p-1.5 bg-gradient-to-br from-green-500 to-green-600 rounded-lg mr-2">
+                      <div className="p-1.5 bg-linear-to-br from-green-500 to-green-600 rounded-lg mr-2">
                         <ShareIcon className="w-4 h-4 text-white" />
                       </div>
                       วิธีการทำงาน & สิทธิประโยชน์
@@ -411,7 +411,7 @@ export default function AffiliatePage() {
                       ))}
                     </div>
 
-                    <div className="bg-gradient-to-br from-zinc-700/50 to-zinc-800/50 p-3 rounded-lg border border-zinc-600/50">
+                    <div className="bg-linear-to-br from-zinc-700/50 to-zinc-800/50 p-3 rounded-lg border border-zinc-600/50">
                       <h3 className="font-semibold mb-2 text-white flex items-center gap-2 text-sm">
                         <span>🎁</span>
                         สิทธิประโยชน์
@@ -423,7 +423,7 @@ export default function AffiliatePage() {
                           'เข้าถึงสิทธิพิเศษสำหรับ Affiliate'
                         ].map((benefit, index) => (
                           <li key={index} className="flex items-start gap-2">
-                            <CheckCircleIcon className="w-3 h-3 text-green-400 mt-0.5 flex-shrink-0" />
+                            <CheckCircleIcon className="w-3 h-3 text-green-400 mt-0.5 shrink-0" />
                             <span>{benefit}</span>
                           </li>
                         ))}
@@ -448,7 +448,7 @@ export default function AffiliatePage() {
               <Card className="bg-zinc-800/60 border-zinc-700/50 backdrop-blur-sm hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300">
                 <CardHeader className="pb-2">
                   <h2 className="text-lg font-semibold text-white flex items-center">
-                    <div className="p-1.5 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg mr-2">
+                    <div className="p-1.5 bg-linear-to-br from-purple-500 to-purple-600 rounded-lg mr-2">
                       <ChartBarIcon className="w-4 h-4 text-white" />
                     </div>
                     ประวัติการแนะนำ
@@ -483,7 +483,7 @@ export default function AffiliatePage() {
                             </TableCell>
                             <TableCell>
                               <div className="flex items-center gap-1.5">
-                                <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
+                                <div className="w-6 h-6 bg-linear-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-[10px] font-bold">
                                   {referral.referred_user_email.charAt(0).toUpperCase()}
                                 </div>
                                 <span className="max-w-[80px] truncate text-xs">{referral.referred_user_email}</span>
@@ -521,7 +521,7 @@ export default function AffiliatePage() {
               <Card className="bg-zinc-800/60 border-zinc-700/50 backdrop-blur-sm hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300">
                 <CardHeader className="pb-2">
                   <h2 className="text-lg font-semibold text-white flex items-center">
-                    <div className="p-1.5 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg mr-2">
+                    <div className="p-1.5 bg-linear-to-br from-orange-500 to-orange-600 rounded-lg mr-2">
                       <TrophyIcon className="w-4 h-4 text-white" />
                     </div>
                     สรุปผลงาน
@@ -529,7 +529,7 @@ export default function AffiliatePage() {
                 </CardHeader>
                 <CardBody className="space-y-4">
                   {/* Performance Summary */}
-                  <div className="bg-gradient-to-br from-zinc-700/50 to-zinc-800/50 p-3 rounded-lg border border-zinc-600/50">
+                  <div className="bg-linear-to-br from-zinc-700/50 to-zinc-800/50 p-3 rounded-lg border border-zinc-600/50">
                     <h3 className="font-semibold mb-2 text-white flex items-center gap-2 text-sm">
                       <span>📊</span>
                       ผลงานของคุณ
@@ -553,7 +553,7 @@ export default function AffiliatePage() {
                   </div>
 
                   {/* Tips Section */}
-                  <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-3 rounded-lg border border-purple-500/30">
+                  <div className="bg-linear-to-br from-purple-500/20 to-pink-500/20 p-3 rounded-lg border border-purple-500/30">
                     <h3 className="font-semibold mb-2 text-white flex items-center gap-2 text-sm">
                       <span>💡</span>
                       เคล็ดลับ Affiliate
@@ -574,7 +574,7 @@ export default function AffiliatePage() {
                   </div>
 
                   {/* Motivation Box */}
-                  <div className="bg-gradient-to-br from-red-500/20 to-orange-500/20 p-3 rounded-lg border border-red-500/30">
+                  <div className="bg-linear-to-br from-red-500/20 to-orange-500/20 p-3 rounded-lg border border-red-500/30">
                     <div className="flex items-center gap-2 mb-1">
                       <FireIcon className="w-4 h-4 text-orange-400" />
                       <p className="font-semibold text-white text-xs">กำลังใจ</p>

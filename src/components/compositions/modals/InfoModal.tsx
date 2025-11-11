@@ -62,7 +62,7 @@ export function InfoModal({
       testId={testId}
     >
       <div
-        className={`p-6 rounded-lg border bg-gradient-to-br ${getVariantStyles()}`}
+        className={`p-6 rounded-lg border bg-linear-to-br ${getVariantStyles()}`}
       >
         {/* Icon and Message */}
         <div className="text-center mb-6">

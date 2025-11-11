@@ -48,7 +48,7 @@ export function GymCard({ gym }: GymCardProps) {
         {/* Location */}
         {gym.address && (
           <div className="flex items-start gap-2 mb-4 text-zinc-300">
-            <MapPinIcon className="flex-shrink-0 mt-0.5 w-5 h-5 text-red-500" />
+            <MapPinIcon className="shrink-0 mt-0.5 w-5 h-5 text-red-500" />
             <span className="text-sm line-clamp-2">{gym.address}</span>
           </div>
         )}

@@ -49,7 +49,7 @@ function UnsubscribeContent() {
   }, [token]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-zinc-900 via-zinc-800 to-zinc-900 p-4">
       <Card className="max-w-md w-full bg-zinc-950/50 backdrop-blur-sm border border-zinc-700">
         <CardBody className="p-8 text-center space-y-6">
           {status === 'loading' && (
@@ -97,7 +97,7 @@ function UnsubscribeContent() {
 export default function NewsletterUnsubscribePage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-zinc-900 via-zinc-800 to-zinc-900 p-4">
         <Card className="max-w-md w-full bg-zinc-950/50 backdrop-blur-sm border border-zinc-700">
           <CardBody className="p-8 text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-red-600 mx-auto"></div>

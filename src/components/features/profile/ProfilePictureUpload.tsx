@@ -75,9 +75,9 @@ export function ProfilePictureUpload({ currentAvatarUrl, onUploadSuccess }: Prof
       toast.success('อัปโหลดรูปโปรไฟล์สำเร็จ!');
       onUploadSuccess(data.data.avatar_url);
       setPreviewUrl(data.data.avatar_url);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Upload error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการอัปโหลด');
+      toast.error(error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการอัปโหลด');
       setPreviewUrl(currentAvatarUrl || null);
     } finally {
       setIsUploading(false);
@@ -101,9 +101,9 @@ export function ProfilePictureUpload({ currentAvatarUrl, onUploadSuccess }: Prof
       toast.success('ลบรูปโปรไฟล์สำเร็จ!');
       setPreviewUrl(null);
       onUploadSuccess('');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Delete error:', error);
-      toast.error(error.message || 'เกิดข้อผิดพลาดในการลบ');
+      toast.error(error instanceof Error ? error.message : 'เกิดข้อผิดพลาดในการลบ');
     }
   };
 
@@ -114,7 +114,7 @@ export function ProfilePictureUpload({ currentAvatarUrl, onUploadSuccess }: Prof
           src={previewUrl || undefined}
           size="lg"
           classNames={{
-            base: "bg-gradient-to-br from-blue-600 to-blue-700 w-32 h-32 ring-4 ring-zinc-700 ring-offset-2 ring-offset-zinc-900",
+            base: "bg-linear-to-br from-blue-600 to-blue-700 w-32 h-32 ring-4 ring-zinc-700 ring-offset-2 ring-offset-zinc-900",
           }}
         />
         {isUploading && (

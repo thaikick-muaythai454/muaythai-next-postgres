@@ -308,8 +308,8 @@ function HeroSection() {
         className="z-0 absolute inset-0 bg-cover bg-center bg-fixed"
         style={{ backgroundImage: "url('/assets/images/bg-main.jpg')" }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/70 to-black/90" />
-        <div className="absolute inset-0 bg-gradient-to-r from-red-900/20 to-transparent" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/70 to-black/90" />
+        <div className="absolute inset-0 bg-linear-to-r from-red-900/20 to-transparent" />
       </div>
       <div className="z-10 relative">
         <FadeInUp delay={200}>
@@ -333,7 +333,7 @@ function HeroSection() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               href="#apply"
-              className="group inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-red-500/25"
+              className="group inline-flex items-center gap-2 bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-8 py-4 rounded-lg font-bold text-lg transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-red-500/25"
             >
               สมัครเข้าร่วมโปรแกรม
               <ArrowRightIcon className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
@@ -354,7 +354,7 @@ function HeroSection() {
 function BenefitsSection() {
   return (
     <section className="py-16 relative">
-      <div className="absolute inset-0 bg-gradient-to-b from-zinc-900 via-zinc-900 to-zinc-950" />
+      <div className="absolute inset-0 bg-linear-to-b from-zinc-900 via-zinc-900 to-zinc-950" />
       <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
         <FadeInUp>
           <div className="mb-16 text-center">
@@ -375,8 +375,8 @@ function BenefitsSection() {
         <StaggeredFadeIn className="gap-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
           {BENEFITS.map(({ icon: Icon, title, description }) => (
             <FloatingCard key={title} className="group">
-              <div className="flex flex-col items-center bg-gradient-to-b from-zinc-800 to-zinc-900 shadow-xl p-8 rounded-2xl text-center border border-zinc-700 group-hover:border-red-500/50 transition-all duration-300 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="flex flex-col items-center bg-linear-to-b from-zinc-800 to-zinc-900 shadow-xl p-8 rounded-2xl text-center border border-zinc-700 group-hover:border-red-500/50 transition-all duration-300 relative overflow-hidden">
+                <div className="absolute inset-0 bg-linear-to-br from-red-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="relative z-10">
                   <div className="mb-6 p-4 bg-red-500/10 rounded-full group-hover:bg-red-500/20 transition-colors duration-300 w-16 h-16 flex items-center justify-center mx-auto">
                     <Icon className="w-10 h-10 text-red-500" />
@@ -403,7 +403,7 @@ function TiersSection() {
       id="tiers"
       className="bg-zinc-950 py-16 relative overflow-hidden"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-red-900/5 via-transparent to-yellow-900/5" />
+      <div className="absolute inset-0 bg-linear-to-br from-red-900/5 via-transparent to-yellow-900/5" />
       <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
         <FadeInUp>
           <div className="mb-16 text-center">
@@ -425,7 +425,7 @@ function TiersSection() {
           {TIERS.map((tier, index) => (
             <FloatingCard key={tier.name} className="group">
               <div
-                className={`bg-gradient-to-b from-zinc-900 to-zinc-800 rounded-2xl p-8 flex flex-col shadow-2xl border transition-all duration-300 relative overflow-hidden ${
+                className={`bg-linear-to-b from-zinc-900 to-zinc-800 rounded-2xl p-8 flex flex-col shadow-2xl border transition-all duration-300 relative overflow-hidden ${
                   index === 1
                     ? "border border-red-500 scale-105 shadow-red-500/25 flex items-center justify-center"
                     : "border-zinc-700 group-hover:border-red-500/50"
@@ -434,7 +434,7 @@ function TiersSection() {
                 <div className="w-full relative z-10">
                   {index === 1 && (
                     <div className="mb-6 text-center">
-                      <span className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500 to-red-600 px-4 py-2 rounded-full font-bold text-sm shadow-lg">
+                      <span className="inline-flex items-center gap-2 bg-linear-to-r from-red-500 to-red-600 px-4 py-2 rounded-full font-bold text-sm shadow-lg">
                         <StarIcon className="w-4 h-4" />
                         ยอดนิยม
                       </span>
@@ -465,7 +465,7 @@ function TiersSection() {
                     href={tier.href}
                     className={`group/btn w-full text-center font-bold py-4 px-6 rounded-lg transition-all duration-300 transform ${
                       index === 1
-                        ? "bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-red-500/25 border border-red-500 flex items-center justify-center w-full"
+                        ? "bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 shadow-lg hover:shadow-red-500/25 border border-red-500 flex items-center justify-center w-full"
                         : "bg-zinc-700 hover:bg-brand-primary hover:shadow-lg border flex items-center justify-center"
                     }`}
                   >
@@ -514,11 +514,11 @@ function TimelineSection() {
               <FadeInUp key={item.step} delay={index * 200}>
                 <li className="mb-8 ml-10 group">
                   <div className="relative">
-                    <span className="-left-5 absolute flex justify-center items-center bg-gradient-to-br from-red-500 to-red-600 rounded-full ring-8 ring-zinc-900 w-12 h-12 font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
+                    <span className="-left-5 absolute flex justify-center items-center bg-linear-to-br from-red-500 to-red-600 rounded-full ring-8 ring-zinc-900 w-12 h-12 font-bold shadow-lg group-hover:scale-110 transition-transform duration-300">
                       {item.step}
                     </span>
                     
-                    <div className="bg-gradient-to-br from-zinc-800 to-zinc-900 rounded-xl border border-zinc-700 group-hover:border-red-500/50 transition-all duration-300 group-hover:shadow-xl overflow-hidden">
+                    <div className="bg-linear-to-br from-zinc-800 to-zinc-900 rounded-xl border border-zinc-700 group-hover:border-red-500/50 transition-all duration-300 group-hover:shadow-xl overflow-hidden">
                       <div className="p-[24px_24px_24px_48px]">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-3">
@@ -579,7 +579,7 @@ function TimelineSection() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-8 py-3 rounded-lg font-bold transition-all duration-300 transform hover:scale-105"
+                  className="inline-flex items-center gap-2 bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-8 py-3 rounded-lg font-bold transition-all duration-300 transform hover:scale-105"
                 >
                   <span>เริ่มสมัครเลย</span>
                   <ArrowRightIcon className="w-5 h-5" />
@@ -602,7 +602,7 @@ function TimelineSection() {
 function TestimonialsSection() {
   return (
     <section className="bg-zinc-950 py-16 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-900/5 via-transparent to-blue-900/5" />
+      <div className="absolute inset-0 bg-linear-to-br from-purple-900/5 via-transparent to-blue-900/5" />
       <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
         <FadeInUp>
           <div className="mb-16 text-center">
@@ -623,8 +623,8 @@ function TestimonialsSection() {
         <StaggeredFadeIn className="gap-8 grid grid-cols-1 lg:grid-cols-3">
           {TESTIMONIALS.map(({ name, role, quote, avatar }) => (
             <FloatingCard key={name} className="group">
-              <div className="flex flex-col bg-gradient-to-b from-zinc-900 to-zinc-800 shadow-xl p-8 rounded-2xl border border-zinc-700 group-hover:border-purple-500/50 transition-all duration-300 relative overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="flex flex-col bg-linear-to-b from-zinc-900 to-zinc-800 shadow-xl p-8 rounded-2xl border border-zinc-700 group-hover:border-purple-500/50 transition-all duration-300 relative overflow-hidden">
+                <div className="absolute inset-0 bg-linear-to-br from-purple-500/5 to-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 <div className="relative z-10">
                   <div className="mb-6 flex justify-center">
                     <div className="p-3 bg-purple-500/10 rounded-full group-hover:bg-purple-500/20 transition-colors duration-300">
@@ -694,7 +694,7 @@ function FAQSection() {
           </div>
         </FadeInUp>
         <StaggeredFadeIn>
-          <div className="bg-gradient-to-b from-zinc-800 to-zinc-900 rounded-2xl p-6 border border-zinc-700">
+          <div className="bg-linear-to-b from-zinc-800 to-zinc-900 rounded-2xl p-6 border border-zinc-700">
             {FAQS.map((faq, idx) => (
               <FaqItem key={idx} faq={faq} />
             ))}
@@ -709,7 +709,7 @@ function CallToActionSection() {
   return (
     <section className="relative py-16 sm:py-24 overflow-hidden">
       <div className="absolute inset-0 bg-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
       <div className="mx-auto px-4 sm:px-6 lg:px-8 max-w-4xl text-center relative z-10">
         <FadeInUp delay={200}>
           <div className="mb-8">
@@ -736,7 +736,7 @@ function CallToActionSection() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Link
               href="/signup"
-              className="group inline-flex items-center gap-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-10 py-5 rounded-lg font-bold text-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-red-500/25"
+              className="group inline-flex items-center gap-3 bg-linear-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 px-10 py-5 rounded-lg font-bold text-xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl shadow-red-500/25"
             >
               <TrophyIcon className="w-6 h-6 group-hover:rotate-12 transition-transform" />
               สมัครเลย

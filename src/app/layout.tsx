@@ -2,6 +2,7 @@ import { Bai_Jamjuree } from "next/font/google";
 import "./globals.css";
 
 import "@heroui/theme";
+import { Providers } from "./providers";
 
 const baiJamjuree = Bai_Jamjuree({
   variable: "--font-bai-jamjuree",
@@ -25,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="th" className={`${baiJamjuree.variable} antialiased`} suppressHydrationWarning>
       <body className="bg-zinc-950 text-white" suppressHydrationWarning>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

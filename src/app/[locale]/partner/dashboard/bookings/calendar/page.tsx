@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, type MenuItem } from '@/components/shared';
@@ -32,6 +32,7 @@ import {
 } from '@heroicons/react/24/outline';
 import type { Booking } from '@/types';
 
+// Use CalendarBooking consistently
 interface CalendarBooking extends Booking {
   date: string;
   timeSlot?: string;
@@ -40,12 +41,34 @@ interface CalendarBooking extends Booking {
 function BookingCalendarView() {
   const supabase = createClient();
   const [user, setUser] = useState<{ email?: string } | null>(null);
-  const [gym, setGym] = useState<{ id: string; gym_name: string } | null>(null);
-  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [_gym, setGym] = useState<{ id: string; gym_name: string } | null>(null);
+  const [bookings, setBookings] = useState<CalendarBooking[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+  const [selectedBooking, setSelectedBooking] = useState<CalendarBooking | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const loadBookings = useCallback(async (gymId: string) => {
+    const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+
+    const { data: bookingsData } = await supabase
+      .from('bookings')
+      .select('*')
+      .eq('gym_id', gymId)
+      .gte('start_date', startOfMonth.toISOString().split('T')[0])
+      .lte('start_date', endOfMonth.toISOString().split('T')[0])
+      .order('start_date', { ascending: true });
+
+    if (bookingsData) {
+      setBookings(
+        bookingsData.map((booking) => ({
+          ...booking,
+          date: booking.start_date,
+        }))
+      );
+    }
+  }, [currentMonth, supabase]);
 
   useEffect(() => {
     async function loadData() {
@@ -69,24 +92,7 @@ function BookingCalendarView() {
       setIsLoading(false);
     }
     loadData();
-  }, [supabase, currentMonth]);
-
-  const loadBookings = async (gymId: string) => {
-    const startOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
-    const endOfMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
-
-    const { data: bookingsData } = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('gym_id', gymId)
-      .gte('start_date', startOfMonth.toISOString().split('T')[0])
-      .lte('start_date', endOfMonth.toISOString().split('T')[0])
-      .order('start_date', { ascending: true });
-
-    if (bookingsData) {
-      setBookings(bookingsData);
-    }
-  };
+  }, [loadBookings, supabase]);
 
   const menuItems: MenuItem[] = [
     { label: 'แดชบอร์ด', href: '/partner/dashboard', icon: HomeIcon },
@@ -123,10 +129,10 @@ function BookingCalendarView() {
     return days;
   };
 
-  const getBookingsForDate = (date: Date) => {
+  const getBookingsForDate = (date: Date): CalendarBooking[] => {
     if (!date) return [];
     const dateStr = date.toISOString().split('T')[0];
-    return bookings.filter(b => b.start_date === dateStr);
+    return bookings.filter(b => b.date === dateStr);
   };
 
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -156,7 +162,7 @@ function BookingCalendarView() {
     }
   };
 
-  const handleBookingClick = (booking: Booking) => {
+  const handleBookingClick = (booking: CalendarBooking) => {
     setSelectedBooking(booking);
     onOpen();
   };
@@ -238,8 +244,8 @@ function BookingCalendarView() {
 
               {/* Calendar days */}
               {days.map((date, index) => {
-                const dayBookings = date ? getBookingsForDate(date) : [];
-                const isToday = date && 
+                const dayBookings: CalendarBooking[] = date ? getBookingsForDate(date) : [];
+                const isToday = date &&
                   date.toDateString() === new Date().toDateString();
 
                 return (

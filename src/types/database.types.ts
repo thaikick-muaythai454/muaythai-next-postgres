@@ -80,6 +80,8 @@ export interface Booking {
   
   // Pricing snapshot
   price_paid: number;
+  discount_amount?: number | null;
+  promotion_id?: string | null;
   package_name: string;
   package_type: 'one_time' | 'package';
   duration_months?: number | null;

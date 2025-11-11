@@ -132,7 +132,7 @@ const DismissButton: React.FC<{ onDismiss: () => void; size: ComponentSize }> = 
       className={cn(
         'text-red-400 hover:text-red-600 transition-colors',
         'focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 rounded',
-        'ml-auto flex-shrink-0'
+        'ml-auto shrink-0'
       )}
       aria-label="Dismiss error"
     >

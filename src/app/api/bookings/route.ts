@@ -11,6 +11,8 @@ import { NextRequest } from 'next/server';
 import { getBookings, createBooking } from '@/services';
 import { awardPoints, updateUserStreak } from '@/services/gamification.service';
 import { sendBookingConfirmationEmail } from '@/lib/email/resend';
+import { getAffiliateUserIdForReferredUser } from '@/lib/utils/affiliate.server';
+import { calculateCommissionAmount, getCommissionRate } from '@/lib/constants/affiliate';
 
 /**
  * GET /api/bookings
@@ -86,12 +88,14 @@ export async function POST(request: NextRequest) {
       promotion_id,
       discount_amount,
       price_paid,
+      payment_id,
     } = body;
 
     const booking = await createBooking({
       user_id: user.id,
       gym_id,
       package_id,
+      payment_id: payment_id || null,
       customer_name,
       customer_email,
       customer_phone,
@@ -102,6 +106,114 @@ export async function POST(request: NextRequest) {
       discount_amount: discount_amount || null,
       price_paid: price_paid,
     });
+
+    if (payment_id && booking) {
+      try {
+        if (!booking.payment_id) {
+          await supabase
+            .from('bookings')
+            .update({
+              payment_id,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', booking.id);
+
+          booking.payment_id = payment_id;
+        }
+
+        const { data: paymentRecord } = await supabase
+          .from('payments')
+          .select('id, metadata')
+          .eq('stripe_payment_intent_id', payment_id)
+          .maybeSingle();
+
+        if (paymentRecord) {
+          const updatedPaymentMetadata = {
+            ...(paymentRecord.metadata as Record<string, unknown> | null ?? {}),
+            bookingId: booking.id,
+          };
+
+          await supabase
+            .from('payments')
+            .update({
+              metadata: updatedPaymentMetadata,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', paymentRecord.id);
+
+          const { data: orderRecord } = await supabase
+            .from('orders')
+            .select('id, metadata')
+            .eq('payment_id', paymentRecord.id)
+            .maybeSingle();
+
+          if (orderRecord) {
+            const updatedOrderMetadata = {
+              ...(orderRecord.metadata as Record<string, unknown> | null ?? {}),
+              bookingId: booking.id,
+            };
+
+            await supabase
+              .from('orders')
+              .update({
+                metadata: updatedOrderMetadata,
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', orderRecord.id);
+          }
+        }
+      } catch (linkError) {
+        console.warn('Failed to link booking with payment metadata:', linkError);
+      }
+    }
+
+    try {
+      const affiliateUserId = await getAffiliateUserIdForReferredUser(user.id);
+
+      if (affiliateUserId && booking) {
+        const commissionRate = await getCommissionRate('booking');
+        const commissionAmount = calculateCommissionAmount(
+          booking.price_paid ?? price_paid ?? 0,
+          commissionRate
+        );
+
+        const { data: existingConversion } = await supabase
+          .from('affiliate_conversions')
+          .select('id')
+          .eq('affiliate_user_id', affiliateUserId)
+          .eq('referred_user_id', user.id)
+          .eq('conversion_type', 'booking')
+          .eq('reference_id', booking.id)
+          .eq('reference_type', 'booking')
+          .maybeSingle();
+
+        if (!existingConversion) {
+          await supabase
+            .from('affiliate_conversions')
+            .insert({
+              affiliate_user_id: affiliateUserId,
+              referred_user_id: user.id,
+              conversion_type: 'booking',
+              conversion_value: booking.price_paid ?? price_paid ?? 0,
+              commission_rate: commissionRate,
+              commission_amount: commissionAmount,
+              status: 'pending',
+              reference_id: booking.id,
+              reference_type: 'booking',
+              referral_source: 'direct',
+              metadata: {
+                gym_id,
+                package_id,
+                package_type: booking.package_type,
+                package_name: booking.package_name,
+                booking_number: booking.booking_number,
+              },
+            });
+        }
+      }
+    } catch (affiliateError) {
+      console.warn('Affiliate conversion error (booking still successful):', affiliateError);
+    }
 
     // Send booking confirmation email
     try {

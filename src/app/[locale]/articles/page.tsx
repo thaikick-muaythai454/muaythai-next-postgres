@@ -132,7 +132,7 @@ function ArticlesContent() {
             <div className="relative bg-zinc-800/50 backdrop-blur-sm p-1 rounded-2xl border border-zinc-700 shadow-xl">
               {/* Active tab indicator */}
               <div
-                className={`absolute top-1 bottom-1 w-[calc(50%_-_4px)] bg-gradient-to-r from-red-500 to-red-600 rounded-xl transition-all duration-300 ease-out shadow-lg ${
+                className={`absolute top-1 bottom-1 w-[calc(50%_-_4px)] bg-linear-to-r from-red-500 to-red-600 rounded-xl transition-all duration-300 ease-out shadow-lg ${
                   activeTab === "news" ? "translate-x-full" : "translate-x-0"
                 }`}
               />
@@ -205,7 +205,7 @@ function ArticlesContent() {
                   onClick={() => setSelectedCategory(category)}
                   className={`group relative px-4 py-2 rounded-full font-medium text-xs transition-all duration-300 ${
                     selectedCategory === category
-                      ? "bg-gradient-to-r from-red-500 to-red-600 shadow-lg shadow-red-500/25"
+                      ? "bg-linear-to-r from-red-500 to-red-600 shadow-lg shadow-red-500/25"
                       : "bg-zinc-800/60 text-zinc-300 hover:bg-zinc-700/60 hover:text-white border border-zinc-600/50 hover:border-zinc-500"
                   }`}
                 >
@@ -258,7 +258,7 @@ function ArticlesContent() {
                   sizes='100%'
                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
                 <div className="absolute top-3 right-3">
                   <span className="bg-brand-primary px-3 py-1 rounded-full font-semibold text-xs">
                     {article.category}

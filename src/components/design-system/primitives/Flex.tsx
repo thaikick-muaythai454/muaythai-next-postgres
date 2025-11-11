@@ -174,11 +174,11 @@ const getGrowClasses = (grow: number): string => {
  */
 const getShrinkClasses = (shrink: number): string => {
   const shrinkMap: Record<number, string> = {
-    0: "flex-shrink-0",
-    1: "flex-shrink",
+    0: "shrink-0",
+    1: "shrink",
   };
 
-  return shrinkMap[shrink] || "flex-shrink";
+  return shrinkMap[shrink] || "shrink";
 };
 
 /**

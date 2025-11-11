@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { LayoutWrapper, ErrorBoundary } from "@/components/shared";
 import { GoogleAnalytics } from "@/components/shared/analytics/GoogleAnalytics";
 import { LocaleSetter } from "@/components/shared/LocaleSetter";
-import { Providers } from "../providers";
 import { FixedBackground } from "@/components/shared/ui";
 import AssetLoader from "@/components/shared/ui/AssetLoader";
 import GamificationNotification from "@/components/features/gamification/GamificationNotification";
@@ -45,12 +44,10 @@ export default async function LocaleLayout({
       <AssetLoader>
         <FixedBackground />
         <NextIntlClientProvider messages={messages}>
-          <Providers>
-            <LayoutWrapper>
-              <ErrorBoundary>{children}</ErrorBoundary>
-              <GamificationNotification />
-            </LayoutWrapper>
-          </Providers>
+          <LayoutWrapper>
+            <ErrorBoundary>{children}</ErrorBoundary>
+            <GamificationNotification />
+          </LayoutWrapper>
         </NextIntlClientProvider>
         <GoogleAnalytics />
       </AssetLoader>

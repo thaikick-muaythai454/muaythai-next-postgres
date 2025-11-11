@@ -69,7 +69,7 @@ export default function AdminConfirmDialog({
         <p className="text-white">{message}</p>
         {warningMessage && (
           <div className="flex items-start gap-2 bg-warning/10 p-3 border-warning border-l-4 rounded">
-            <ExclamationTriangleIcon className="flex-shrink-0 mt-0.5 w-5 h-5 text-warning" />
+            <ExclamationTriangleIcon className="shrink-0 mt-0.5 w-5 h-5 text-warning" />
             <p className="text-default-300 text-sm">{warningMessage}</p>
           </div>
         )}

@@ -20,7 +20,7 @@ export function GamificationCard({
   const getVariantClasses = () => {
     switch (variant) {
       case 'gradient':
-        return 'bg-gradient-to-br from-blue-950/50 to-purple-950/50 border border-blue-700/30';
+        return 'bg-linear-to-br from-blue-950/50 to-purple-950/50 border border-blue-700/30';
       case 'bordered':
         return 'bg-zinc-950/50 border-2 border-zinc-700 hover:border-blue-600/50 backdrop-blur-sm';
       case 'elevated':

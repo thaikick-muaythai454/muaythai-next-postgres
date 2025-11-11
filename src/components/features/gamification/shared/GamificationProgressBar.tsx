@@ -24,11 +24,11 @@ export function GamificationProgressBar({
   const getBarClasses = () => {
     switch (variant) {
       case 'gradient':
-        return 'bg-gradient-to-r from-blue-500 to-purple-500';
+        return 'bg-linear-to-r from-blue-500 to-purple-500';
       case 'streak':
-        return 'bg-gradient-to-r from-orange-400 to-red-500';
+        return 'bg-linear-to-r from-orange-400 to-red-500';
       case 'level':
-        return 'bg-gradient-to-r from-green-400 to-blue-500';
+        return 'bg-linear-to-r from-green-400 to-blue-500';
       default:
         return 'bg-blue-600';
     }

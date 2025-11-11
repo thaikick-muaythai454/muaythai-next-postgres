@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { awardPoints, updateUserStreak } from '@/services/gamification.service';
 import { sendBookingConfirmationEmail } from '@/lib/email/resend';
-import { getAffiliateUserIdForReferredUser } from '@/lib/utils/affiliate';
+import { getAffiliateUserIdForReferredUser } from '@/lib/utils/affiliate.server';
 
 export async function POST(request: NextRequest) {
   try {

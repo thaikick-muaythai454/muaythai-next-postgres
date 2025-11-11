@@ -15,7 +15,7 @@ export function CTASection({
 }: CTASectionProps) {
   const backgroundClasses = {
     default: 'bg-zinc-900',
-    gradient: 'bg-gradient-to-r from-red-900 to-red-700',
+    gradient: 'bg-linear-to-r from-red-900 to-red-700',
     pattern: 'bg-zinc-900 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-900/30 via-zinc-900 to-zinc-950',
   };
 

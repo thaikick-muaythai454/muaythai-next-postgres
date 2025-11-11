@@ -178,7 +178,7 @@ export default function AffiliateDashboardPage() {
   };
 
   const PageWrapper = ({ children }: { children: React.ReactNode }) => (
-    <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-zinc-900 via-zinc-800 to-zinc-900 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-red-500/10 rounded-full blur-3xl animate-pulse"></div>
@@ -238,10 +238,10 @@ export default function AffiliateDashboardPage() {
     <PageWrapper>
       {/* Header Section */}
       <div className="text-center mb-12 animate-fade-in">
-        <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-500 to-orange-500 rounded-full mb-6 shadow-lg shadow-red-500/30">
+        <div className="inline-flex items-center justify-center w-20 h-20 bg-linear-to-br from-red-500 to-orange-500 rounded-full mb-6 shadow-lg shadow-red-500/30">
           <SparklesIcon className="w-10 h-10 text-white" />
         </div>
-        <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-white via-zinc-100 to-zinc-300 bg-clip-text text-transparent">
+        <h1 className="text-5xl font-bold mb-4 bg-linear-to-r from-white via-zinc-100 to-zinc-300 bg-clip-text text-transparent">
           Affiliate Dashboard
         </h1>
         <p className="text-zinc-300 text-xl max-w-3xl mx-auto">
@@ -279,7 +279,7 @@ export default function AffiliateDashboardPage() {
         <Card className="bg-zinc-800/60 border-zinc-700/50 backdrop-blur-sm hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300">
           <CardHeader className="pb-3">
             <h2 className="text-xl font-semibold flex items-center text-white">
-              <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg mr-3">
+              <div className="p-2 bg-linear-to-br from-blue-500 to-blue-600 rounded-lg mr-3">
                 <LinkIcon className="w-5 h-5 text-white" />
               </div>
               ลิงก์แนะนำของคุณ
@@ -345,7 +345,7 @@ export default function AffiliateDashboardPage() {
         <Card className="bg-zinc-800/60 border-zinc-700/50 backdrop-blur-sm hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300">
           <CardHeader className="pb-3">
             <h2 className="text-xl font-semibold flex items-center text-white">
-              <div className="p-2 bg-gradient-to-br from-green-500 to-green-600 rounded-lg mr-3">
+              <div className="p-2 bg-linear-to-br from-green-500 to-green-600 rounded-lg mr-3">
                 <ChartBarIcon className="w-5 h-5 text-white" />
               </div>
               สถิติประสิทธิภาพ
@@ -391,7 +391,7 @@ export default function AffiliateDashboardPage() {
                 {stats.topReferralSource}
               </Chip>
             </div>
-            <div className="bg-gradient-to-br from-zinc-700/50 to-zinc-800/50 p-5 rounded-lg border border-zinc-600/50">
+            <div className="bg-linear-to-br from-zinc-700/50 to-zinc-800/50 p-5 rounded-lg border border-zinc-600/50">
               <h3 className="font-semibold mb-4 text-white flex items-center gap-2">
                 <span className="text-xl">🎯</span>
                 เป้าหมายประจำเดือน
@@ -423,7 +423,7 @@ export default function AffiliateDashboardPage() {
       <Card className="bg-zinc-800/60 border-zinc-700/50 backdrop-blur-sm hover:shadow-xl hover:shadow-red-500/10 transition-all duration-300 mt-8">
         <CardHeader className="pb-3">
           <h2 className="text-xl font-semibold text-white flex items-center">
-            <div className="p-2 bg-gradient-to-br from-purple-500 to-purple-600 rounded-lg mr-3">
+            <div className="p-2 bg-linear-to-br from-purple-500 to-purple-600 rounded-lg mr-3">
               <UserPlusIcon className="w-5 h-5 text-white" />
             </div>
             ประวัติการแนะนำ
@@ -459,7 +459,7 @@ export default function AffiliateDashboardPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                          <div className="w-8 h-8 bg-linear-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xs font-bold">
                             {referral.referred_user_email.charAt(0).toUpperCase()}
                           </div>
                           <span className="max-w-[200px] truncate">{referral.referred_user_email}</span>

@@ -188,7 +188,7 @@ export default function ArticleDetailPage({
             className="object-cover"
             priority
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
           <div className="absolute bottom-4 left-4 right-4">
             <div className="bg-black/50 backdrop-blur-sm rounded-lg p-4">
               <h2 className=" font-bold text-xl mb-2">
@@ -257,7 +257,7 @@ export default function ArticleDetailPage({
                       sizes='100%'
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent" />
                     <div className="absolute top-2 right-2">
                       <span className="bg-brand-primary px-2 py-1 rounded-full font-semibold text-xs">
                         {related.category}

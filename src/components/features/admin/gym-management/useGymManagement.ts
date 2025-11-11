@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { toast } from 'react-hot-toast';
 import { createClient } from '@/lib/database/supabase/client';
 import { makeApiCall, filterBySearch, filterByStatus } from '../shared/adminUtils';
 import type { Gym } from '@/types';
@@ -13,6 +14,7 @@ export function useGymManagement() {
   const [selectedTab, setSelectedTab] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Load gyms from Supabase
   const loadGyms = useCallback(async () => {
@@ -95,6 +97,67 @@ export function useGymManagement() {
       TOAST_MESSAGES.DELETE_SUCCESS
     );
 
+  const exportGyms = useCallback(async () => {
+    if (!filteredGyms.length) {
+      toast.error('ไม่มีข้อมูลสำหรับส่งออก');
+      return;
+    }
+
+    const escapeCsvValue = (value: unknown) => {
+      if (value === null || value === undefined) {
+        return '""';
+      }
+      const stringValue = String(value).replace(/"/g, '""');
+      return `"${stringValue}"`;
+    };
+
+    setIsExporting(true);
+
+    try {
+      const headers = [
+        'ชื่อยิม',
+        'ผู้ติดต่อ',
+        'โทรศัพท์',
+        'อีเมล',
+        'สถานที่',
+        'สถานะ',
+        'วันที่สร้าง',
+      ];
+
+      const rows = filteredGyms.map((gym) => [
+        escapeCsvValue(gym.gym_name),
+        escapeCsvValue(gym.contact_name),
+        escapeCsvValue(gym.phone),
+        escapeCsvValue(gym.email),
+        escapeCsvValue(gym.location),
+        escapeCsvValue(gym.status),
+        escapeCsvValue(
+          gym.created_at ? new Date(gym.created_at).toLocaleString('th-TH') : '-'
+        ),
+      ]);
+
+      const csvContent = [headers.map(escapeCsvValue).join(','), ...rows.map((row) => row.join(','))].join('\n');
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const timestamp = new Date().toISOString().split('T')[0];
+      link.setAttribute('download', `gym-management-${timestamp}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success('ส่งออกข้อมูลยิมสำเร็จ');
+    } catch (error) {
+      console.error('Error exporting gyms:', error);
+      toast.error('ไม่สามารถส่งออกข้อมูลได้');
+    } finally {
+      setIsExporting(false);
+    }
+  }, [filteredGyms]);
+
   return {
     // State
     gyms,
@@ -104,6 +167,7 @@ export function useGymManagement() {
     selectedTab,
     isLoading,
     isProcessing,
+    isExporting,
 
     // Setters
     setSelectedGym,
@@ -116,5 +180,6 @@ export function useGymManagement() {
     handleReject,
     handleEdit,
     handleDelete,
+    exportGyms,
   };
 }
