@@ -348,8 +348,8 @@ export const Flex = React.forwardRef<HTMLDivElement, FlexProps>(
       basisClasses,
 
       // Fill dimensions
-      fillHeight && "h-full",
-      fillWidth && "w-full",
+      ...(fillHeight ? ["h-full"] : []),
+      ...(fillWidth ? ["w-full"] : []),
 
       // Custom classes
       className

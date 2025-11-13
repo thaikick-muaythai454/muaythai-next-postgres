@@ -160,7 +160,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
             loading 
           }),
           "duration-200", // Use consistent duration from design tokens
-          isDisabled && "opacity-50 cursor-not-allowed",
+          isDisabled ? "opacity-50 cursor-not-allowed" : "",
           className
         )}
         onClick={isInteractive ? handleClick : undefined}
@@ -205,7 +205,7 @@ export const CardHeader = React.forwardRef<HTMLDivElement, CardHeaderProps>(
       ref={ref}
       className={cn(
         "px-6 py-4",
-        bordered && "border-b border-zinc-700",
+        bordered ? "border-b border-zinc-700" : "",
         className
       )}
       {...props}
@@ -265,7 +265,7 @@ export const CardFooter = React.forwardRef<HTMLDivElement, CardFooterProps>(
       ref={ref}
       className={cn(
         "px-6 py-4",
-        bordered && "border-t border-zinc-700",
+        bordered ? "border-t border-zinc-700" : "",
         className
       )}
       {...props}

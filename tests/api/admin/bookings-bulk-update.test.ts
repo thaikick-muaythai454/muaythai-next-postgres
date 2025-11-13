@@ -150,6 +150,8 @@ describe('POST /api/admin/bookings/bulk-update', () => {
   });
 
   it('returns 500 when update fails', async () => {
+    const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+    
     const authStub = createAuthClient('admin');
     const bookingsStub = createBookingsClient({ shouldFail: true });
     createClientMock.mockResolvedValueOnce(authStub).mockResolvedValueOnce(bookingsStub as never);
@@ -166,5 +168,8 @@ describe('POST /api/admin/bookings/bulk-update', () => {
     expect(response.status).toBe(500);
     const body = await response.json();
     expect(body.success).toBe(false);
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Bulk update bookings error:', expect.any(Error));
+    
+    consoleErrorSpy.mockRestore();
   });
 });

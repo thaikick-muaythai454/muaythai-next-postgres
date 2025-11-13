@@ -13,7 +13,7 @@ const config: Config = {
   plugins: [
     heroui(),
     // Custom plugin to add brand-primary utility classes
-    plugin(function ({ addUtilities }) {
+    plugin(function ({ addUtilities }: { addUtilities: (utilities: Record<string, Record<string, string>>) => void }) {
       addUtilities({
         ".bg-brand-primary": {
           "background-color": "#D72323",

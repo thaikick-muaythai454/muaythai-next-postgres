@@ -81,7 +81,7 @@ export const LoadingSpinner = ({
 export const Loading = forwardRef<HTMLDivElement, LoadingProps>(
   (
     {
-      variant = "spinner",
+      // variant = "spinner",
       size = "md",
       text,
       centered = false,
@@ -95,7 +95,7 @@ export const Loading = forwardRef<HTMLDivElement, LoadingProps>(
   ) => {
     const loadingContent = (
       <div
-        className={cn("flex items-center gap-3", centered && "justify-center")}
+        className={cn("flex items-center gap-3", centered ? "justify-center" : "")}
       >
         <LoadingSpinner size={size} color={color} />
         {text && (
@@ -129,7 +129,7 @@ export const Loading = forwardRef<HTMLDivElement, LoadingProps>(
         ref={ref}
         className={cn(
           "flex items-center",
-          centered && "justify-center",
+          centered ? "justify-center" : "",
           className
         )}
         data-testid={testId}

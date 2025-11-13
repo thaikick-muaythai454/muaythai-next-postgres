@@ -27,11 +27,15 @@ export async function signUp(credentials: SignUpCredentials) {
   const supabase = createClient();
   const locale = getCurrentLocale();
   
+  // Include locale in callback URL so redirect preserves locale
+  const callbackUrl = new URL(`${window.location.origin}/api/auth/callback`);
+  callbackUrl.searchParams.set('next', `/${locale}/dashboard`);
+  
   const { data, error } = await supabase.auth.signUp({
     email: credentials.email,
     password: credentials.password,
     options: {
-      emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+      emailRedirectTo: callbackUrl.toString(),
     },
   });
 
@@ -110,10 +114,14 @@ async function signInWithOAuthProvider(provider: OAuthProvider) {
   const supabase = createClient();
   const locale = getCurrentLocale();
 
+  // Include locale in callback URL so redirect preserves locale
+  const callbackUrl = new URL(`${window.location.origin}/api/auth/callback`);
+  callbackUrl.searchParams.set('next', `/${locale}/dashboard`);
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${window.location.origin}/api/auth/callback`,
+      redirectTo: callbackUrl.toString(),
     },
   });
 
@@ -147,10 +155,14 @@ async function linkOAuthAccount(provider: Exclude<OAuthProvider, 'apple'>) {
   const supabase = createClient();
   const locale = getCurrentLocale();
 
+  // Include locale in callback URL so redirect preserves locale
+  const callbackUrl = new URL(`${window.location.origin}/api/auth/callback`);
+  callbackUrl.searchParams.set('next', `/${locale}/dashboard/profile`);
+
   const { data, error } = await supabase.auth.linkIdentity({
     provider,
     options: {
-      redirectTo: `${window.location.origin}/api/auth/callback`,
+      redirectTo: callbackUrl.toString(),
     },
   });
 

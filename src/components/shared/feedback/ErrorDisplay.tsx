@@ -277,12 +277,20 @@ export const ErrorDisplay = React.forwardRef<HTMLDivElement, ErrorDisplayProps>(
               {renderIcon()}
               <div className="mt-4">
                 {title && (
-                  <h1 className={cn('font-bold text-gray-900 dark:text-gray-100 mb-2', {
-                    'text-lg': size === 'sm',
-                    'text-xl': size === 'md',
-                    'text-2xl': size === 'lg',
-                    'text-3xl': size === 'xl',
-                  })}>
+                  <h1
+                    className={cn(
+                      'font-bold text-gray-900 dark:text-gray-100 mb-2',
+                      size === 'sm'
+                        ? 'text-lg'
+                        : size === 'md'
+                        ? 'text-xl'
+                        : size === 'lg'
+                        ? 'text-2xl'
+                        : size === 'xl'
+                        ? 'text-3xl'
+                        : ''
+                    )}
+                  >
                     {title}
                   </h1>
                 )}
