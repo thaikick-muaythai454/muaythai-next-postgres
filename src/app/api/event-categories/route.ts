@@ -67,8 +67,8 @@ export async function GET(request: NextRequest) {
  */
 const createCategoryHandler = withAdminAuth(async (
   request,
-  context,
-  user
+  _context,
+  _user
 ) => {
   try {
     const supabase = await createClient();

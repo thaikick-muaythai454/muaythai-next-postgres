@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Link } from '@/navigation';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { createClient } from "@/lib/database/supabase/client";
 import {
   ExclamationTriangleIcon,
@@ -42,6 +42,8 @@ export default function ResetPasswordPage() {
   // Supabase client instance
   const supabase = createClient();
   const locale = useLocale();
+  const t = useTranslations('auth.forgotPassword');
+  const tErrors = useTranslations('auth.forgotPassword.errors');
 
   // Form state
   const [formData, setFormData] = useState<ResetPasswordFormData>({
@@ -62,9 +64,9 @@ export default function ResetPasswordPage() {
 
     // Email validation
     if (!formData.email.trim()) {
-      newErrors.email = "กรุณากรอกอีเมล";
+      newErrors.email = tErrors('emailRequired');
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "รูปแบบอีเมลไม่ถูกต้อง";
+      newErrors.email = tErrors('emailInvalid');
     }
 
     setErrors(newErrors);
@@ -120,12 +122,21 @@ export default function ResetPasswordPage() {
       if (error) {
         // Handle errors
         if (error.message.includes("rate limit")) {
+          // Format rate limit message based on locale
+          let rateLimitMessage = error.message;
+          if (locale === 'th') {
+            rateLimitMessage = "คุณส่งคำขอบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่";
+          } else if (locale === 'jp') {
+            rateLimitMessage = "リクエストが多すぎます。しばらく待ってからもう一度お試しください";
+          } else {
+            rateLimitMessage = "Too many requests. Please wait a moment and try again";
+          }
           setErrors({
-            general: "คุณส่งคำขอบ่อยเกินไป กรุณารอสักครู่แล้วลองใหม่",
+            general: rateLimitMessage,
           });
         } else {
           setErrors({
-            general: `เกิดข้อผิดพลาด: ${error.message}`,
+            general: `${tErrors('errorPrefix')}${error.message}`,
           });
         }
         return;
@@ -135,7 +146,7 @@ export default function ResetPasswordPage() {
       setIsSuccess(true);
     } catch {
       setErrors({
-        general: "เกิดข้อผิดพลาดในการเชื่อมต่อ กรุณาลองใหม่อีกครั้ง",
+        general: tErrors('connectionError'),
       });
     } finally {
       setIsLoading(false);
@@ -148,22 +159,20 @@ export default function ResetPasswordPage() {
   if (isSuccess) {
     return (
       <AuthLayout
-        title="ส่งอีเมลสำเร็จ!"
-        subtitle="เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณ"
+        title={t('success.title')}
+        subtitle={t('success.subtitle')}
       >
         <div className="text-center">
           <div className="flex justify-center mb-6">
             <CheckCircleIcon className="w-24 h-24 text-green-500" />
           </div>
           <p className="mb-2 text-zinc-300 text-lg">
-            เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยัง
+            {t('success.message')}
           </p>
           <p className="mb-6 font-mono text-white">{formData.email}</p>
           <div className="bg-blue-500/20 mb-6 p-4 border border-blue-500 rounded-lg">
-            <p className="text-blue-400 text-sm">
-              💡 กรุณาตรวจสอบอีเมลและคลิกลิงก์เพื่อรีเซ็ตรหัสผ่าน
-              <br />
-              (ตรวจสอบในโฟลเดอร์ Spam หากไม่พบ)
+            <p className="text-blue-400 text-sm whitespace-pre-line">
+              {t('success.tip')}
             </p>
           </div>
           <Button
@@ -172,7 +181,7 @@ export default function ResetPasswordPage() {
             size="lg"
           >
             <Link href="/login">
-              กลับไปยังหน้าเข้าสู่ระบบ
+              {t('backToLogin')}
             </Link>
           </Button>
         </div>
@@ -182,8 +191,8 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthLayout
-      title="รีเซ็ตรหัสผ่าน"
-      subtitle="กรอกอีเมลของคุณเพื่อรับลิงก์รีเซ็ตรหัสผ่าน"
+      title={t('title')}
+      subtitle={t('subtitle')}
     >
       <form onSubmit={handleSubmit} className="space-y-6 pr-6">
         {/* General Error Message */}
@@ -199,7 +208,7 @@ export default function ResetPasswordPage() {
         {/* Info Message */}
         <div className="bg-zinc-700 p-4 border border-zinc-600 rounded-lg">
           <p className="text-zinc-300 text-sm">
-            📧 กรอกอีเมลที่คุณใช้สมัครสมาชิก เราจะส่งลิงก์สำหรับรีเซ็ตรหัสผ่านไปให้
+            {t('infoMessage')}
           </p>
         </div>
 
@@ -209,7 +218,7 @@ export default function ResetPasswordPage() {
             htmlFor="email"
             className="block mb-2 font-medium text-zinc-300 text-sm"
           >
-            อีเมล
+            {t('emailLabel')}
           </label>
           <div className="relative">
             <input
@@ -221,7 +230,7 @@ export default function ResetPasswordPage() {
                   className={`w-full bg-zinc-700 border ${
                     errors.email ? "border-red-500" : "border-zinc-600"
                   } rounded-lg px-4 py-2.5 placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono text-sm`}
-              placeholder="your@email.com"
+              placeholder={t('emailPlaceholder')}
               autoComplete="email"
             />
           </div>
@@ -238,11 +247,11 @@ export default function ResetPasswordPage() {
           type="submit"
           disabled={isLoading}
           loading={isLoading}
-          loadingText="กำลังส่งอีเมล..."
+          loadingText={t('loadingText')}
           fullWidth
           size="lg"
         >
-          ส่งลิงก์รีเซ็ตรหัสผ่าน
+          {t('button')}
         </Button>
       </form>
 
@@ -254,7 +263,7 @@ export default function ResetPasswordPage() {
           leftIcon={<ArrowLeftIcon className="w-4 h-4" />}
         >
           <Link href="/login">
-            กลับไปยังหน้าเข้าสู่ระบบ
+            {t('backToLogin')}
           </Link>
         </Button>
       </div>
@@ -262,12 +271,12 @@ export default function ResetPasswordPage() {
       {/* Help Text */}
       <div className="text-center mt-4">
         <p className="text-zinc-500 text-sm">
-          ยังไม่มีบัญชี?{" "}
+          {t('noAccount')}{" "}
           <Link
             href="/signup"
             className="text-red-500 hover:text-red-400 transition-colors"
           >
-            สมัครสมาชิก
+            {t('signupLink')}
           </Link>
         </p>
       </div>

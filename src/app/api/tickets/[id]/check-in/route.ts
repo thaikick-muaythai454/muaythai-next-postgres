@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 import { withAdminAuth } from '@/lib/api/withAdminAuth';
 
@@ -55,7 +55,7 @@ const checkInHandler = withAdminAuth<{ id: string }>(async (
     }
 
     // Verify order is paid/confirmed
-    const order = ticket.orders as any;
+    const order = ticket.orders as { status: string };
     if (!order || (order.status !== 'confirmed' && order.status !== 'completed')) {
       return NextResponse.json(
         { success: false, error: 'Ticket order is not confirmed or paid' },

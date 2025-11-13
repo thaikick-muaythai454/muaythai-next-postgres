@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
     const date = searchParams.get('date');
 
     // Get regular availability
-    const { data: regularAvailability, error: regularError } = await supabase
+    const { data: regularAvailability } = await supabase
       .from('gym_availability')
       .select('*')
       .eq('gym_id', gym.id)

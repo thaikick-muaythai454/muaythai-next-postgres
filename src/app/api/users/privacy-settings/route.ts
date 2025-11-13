@@ -84,7 +84,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (body.profile_visibility !== undefined) {
       const validVisibilities = ['public', 'private', 'friends_only'];

@@ -133,7 +133,7 @@ function ArticlesContent() {
             <div className="relative bg-zinc-800/50 backdrop-blur-sm p-1 rounded-2xl border border-zinc-700 shadow-xl">
               {/* Active tab indicator */}
               <div
-                className={`absolute top-1 bottom-1 w-[calc(50%_-_4px)] bg-linear-to-r from-red-500 to-red-600 rounded-xl transition-all duration-300 ease-out shadow-lg ${
+                className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-linear-to-r from-red-500 to-red-600 rounded-xl transition-all duration-300 ease-out shadow-lg ${
                   activeTab === "news" ? "translate-x-full" : "translate-x-0"
                 }`}
               />

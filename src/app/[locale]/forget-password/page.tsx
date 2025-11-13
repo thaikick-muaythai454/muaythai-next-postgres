@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { Link } from '@/navigation';
-import { useLocale } from 'next-intl';
+import { Link } from "@/navigation";
+import { useLocale, useTranslations } from "next-intl";
 import { createClient } from "@/lib/database/supabase/client";
 import {
   ExclamationTriangleIcon,
@@ -22,23 +22,27 @@ interface FormErrors {
   general?: string;
 }
 
+const INITIAL_FORM_DATA: ForgetPasswordFormData = { email: "" };
+
 function ForgetPasswordPageContent() {
   const supabase = createClient();
   const locale = useLocale();
-  const [formData, setFormData] = useState<ForgetPasswordFormData>({
-    email: "",
-  });
+  const t = useTranslations("auth.forgotPassword");
+  const tErrors = useTranslations("auth.forgotPassword.errors");
+
+  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
   const [errors, setErrors] = useState<FormErrors>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const validateForm = (): boolean => {
+    const { email } = formData;
     const newErrors: FormErrors = {};
 
-    if (!formData.email.trim()) {
-      newErrors.email = "กรุณากรอกอีเมล";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "รูปแบบอีเมลไม่ถูกต้อง";
+    if (!email.trim()) {
+      newErrors.email = tErrors("emailRequired");
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      newErrors.email = tErrors("emailInvalid");
     }
 
     setErrors(newErrors);
@@ -47,7 +51,7 @@ function ForgetPasswordPageContent() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -55,27 +59,81 @@ function ForgetPasswordPageContent() {
 
     if (errors[name as keyof FormErrors]) {
       setErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name as keyof FormErrors];
-        return newErrors;
+        const updatedErrors = { ...prev };
+        delete updatedErrors[name as keyof FormErrors];
+        return updatedErrors;
       });
+    }
+  };
+
+  const handleRateLimitMessage = (rateLimitError: { message: string; retryAfter?: number }): string => {
+    let message = rateLimitError.message;
+    if (rateLimitError.retryAfter) {
+      const minutes = Math.floor(rateLimitError.retryAfter / 60);
+      const seconds = rateLimitError.retryAfter % 60;
+      if (locale === "th") {
+        message = `${rateLimitError.message} กรุณารอ ${minutes > 0 ? `${minutes} นาที` : ""}${seconds > 0 ? ` ${seconds} วินาที` : ""} แล้วลองใหม่อีกครั้ง`;
+      } else if (locale === "jp") {
+        message = `${rateLimitError.message} ${minutes > 0 ? `${minutes}分` : ""}${seconds > 0 ? ` ${seconds}秒` : ""}待ってからもう一度お試しください`;
+      } else {
+        message = `${rateLimitError.message} Please wait ${minutes > 0 ? `${minutes} minute${minutes > 1 ? "s" : ""}` : ""}${seconds > 0 ? ` ${seconds} second${seconds > 1 ? "s" : ""}` : ""} and try again`;
+      }
+    }
+    return message;
+  };
+
+  const trySmtpFallback = async (email: string) => {
+    const smtpResponse = await fetch("/api/auth/smtp-reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+
+    if (smtpResponse.status === 429) {
+      const { checkRateLimitError } = await import(
+        "@/lib/utils/rate-limit-error"
+      );
+      const rateLimitError = await checkRateLimitError(smtpResponse);
+      if (rateLimitError) {
+        setErrors({ general: handleRateLimitMessage(rateLimitError) });
+        return false;
+      }
+    }
+    if (smtpResponse.ok) {
+      setIsSuccess(true);
+      return true;
+    } else {
+      const smtpData = await smtpResponse.json();
+      setErrors({
+        general: smtpData.error || tErrors("sendEmailFailed"),
+      });
+      return false;
+    }
+  };
+
+  const supabaseErrorToMessage = (message: string): string => {
+    switch (true) {
+      case /Invalid email/.test(message):
+        return tErrors("emailInvalidFormat");
+      case /User not found/.test(message):
+        return tErrors("userNotFound");
+      case /fetch|Failed to fetch/.test(message):
+        return tErrors("connectionError");
+      default:
+        return `${tErrors("errorPrefix")}${message}`;
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+    if (!validateForm()) return;
 
     setIsLoading(true);
     setErrors({});
 
     try {
-      if (!supabase) {
-        throw new Error('Supabase client is not initialized');
-      }
+      if (!supabase) throw new Error("Supabase client is not initialized");
 
       const { error } = await supabase.auth.resetPasswordForEmail(
         formData.email,
@@ -85,130 +143,57 @@ function ForgetPasswordPageContent() {
       );
 
       if (error) {
-        // Check for rate limit or email sending issues
-        if (error.message.includes("rate limit") || error.message.includes("confirmation email") || error.message.includes("429")) {
+        const message = error.message;
+
+        // Fallback and rate-limit detection
+        if (
+          message.includes("rate limit") ||
+          message.includes("confirmation email") ||
+          message.includes("429")
+        ) {
           console.log("⚠️ Using SMTP fallback for password reset");
-          
-          // Use SMTP fallback via API
-          const smtpResponse = await fetch("/api/auth/smtp-reset-password", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              email: formData.email,
-            }),
-          });
-
-          // Check for rate limit error (HTTP 429)
-          if (smtpResponse.status === 429) {
-            const { checkRateLimitError, formatRateLimitMessageThai } = await import('@/lib/utils/rate-limit-error');
-            const rateLimitError = await checkRateLimitError(smtpResponse);
-            
-            if (rateLimitError) {
-              setErrors({
-                general: formatRateLimitMessageThai(rateLimitError),
-              });
-              return;
-            }
-          }
-
-          if (smtpResponse.ok) {
-            setIsSuccess(true);
-            return;
-          } else {
-            const smtpData = await smtpResponse.json();
-            setErrors({
-              general: smtpData.error || "ไม่สามารถส่งอีเมลรีเซ็ตรหัสผ่านได้ กรุณาลองใหม่อีกครั้ง",
-            });
-            return;
-          }
-        } else if (error.message.includes("Invalid email")) {
-          setErrors({
-            general: "อีเมลไม่ถูกต้อง กรุณาตรวจสอบอีกครั้ง",
-          });
-        } else if (error.message.includes("User not found")) {
-          setErrors({
-            general: "ไม่พบผู้ใช้ที่ใช้อีเมลนี้ กรุณาตรวจสอบอีเมลหรือสมัครสมาชิกใหม่",
-          });
-        } else if (error.message.includes("fetch") || error.message.includes("Failed to fetch")) {
-          setErrors({
-            general: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต",
-          });
+          await trySmtpFallback(formData.email);
+          return;
         } else {
-          setErrors({
-            general: `เกิดข้อผิดพลาด: ${error.message}`,
-          });
+          setErrors({ general: supabaseErrorToMessage(message) });
+          return;
         }
-        return;
       }
 
       setIsSuccess(true);
-    } catch (error) {
-      if (error instanceof Error) {
-        if (error.message.includes('Failed to fetch')) {
-          setErrors({
-            general: "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ กรุณาตรวจสอบการเชื่อมต่ออินเทอร์เน็ต",
-          });
-        } else if (error.message.includes('Missing Supabase environment variables')) {
-          setErrors({
-            general: "การตั้งค่าระบบไม่ถูกต้อง กรุณาติดต่อผู้ดูแลระบบ",
-          });
-        } else {
-          setErrors({
-            general: `เกิดข้อผิดพลาด: ${error.message}`,
-          });
-        }
-      } else {
-        setErrors({
-          general: "เกิดข้อผิดพลาดที่ไม่ทราบสาเหตุ กรุณาลองใหม่อีกครั้ง",
-        });
-      }
+    } catch (err: unknown) {
+      setErrors({ general: tErrors("unknownError") });
     } finally {
       setIsLoading(false);
     }
   };
 
+  // --- Render Success Feedback ---
   if (isSuccess) {
     return (
-      <AuthLayout
-        title="ส่งอีเมลสำเร็จ!"
-        subtitle="เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยังอีเมลของคุณ"
-      >
+      <AuthLayout title={t("success.title")} subtitle={t("success.subtitle")}>
         <div className="text-center">
           <div className="flex justify-center mb-6">
             <CheckCircleIcon className="w-20 h-20 text-green-500" />
           </div>
-          <p className="mb-2 text-zinc-300 text-base">
-            เราได้ส่งลิงก์รีเซ็ตรหัสผ่านไปยัง
-          </p>
+          <p className="mb-2 text-zinc-300 text-base">{t("success.message")}</p>
           <p className="mb-6 font-mono text-sm">{formData.email}</p>
           <div className="bg-blue-500/20 mb-6 p-4 border border-blue-500 rounded-lg">
-            <p className="text-blue-400 text-sm">
-              💡 กรุณาตรวจสอบอีเมลและคลิกลิงก์เพื่อรีเซ็ตรหัสผ่าน
-              <br />
-              (ตรวจสอบในโฟลเดอร์ Spam หากไม่พบ)
+            <p className="text-blue-400 text-sm whitespace-pre-line">
+              {t("success.tip")}
             </p>
           </div>
-          <Button
-            asChild
-            variant="primary"
-            size="lg"
-          >
-            <Link href="/login">
-              กลับไปยังหน้าเข้าสู่ระบบ
-            </Link>
+          <Button asChild variant="primary" size="lg">
+            <Link href="/login">{t("backToLogin")}</Link>
           </Button>
         </div>
       </AuthLayout>
     );
   }
 
+  // --- Render Main Form ---
   return (
-      <AuthLayout
-        title="ลืมรหัสผ่าน"
-        subtitle="ไม่ต้องกังวล เราจะช่วยคุณรีเซ็ตรหัสผ่าน"
-      >
+    <AuthLayout title={t("title")} subtitle={t("subtitle")}>
       <form onSubmit={handleSubmit} className="space-y-6 pr-6">
         {errors.general && (
           <div className="bg-red-500/20 p-4 border border-red-500/70 shadow-red-500/20 rounded-lg">
@@ -218,19 +203,15 @@ function ForgetPasswordPageContent() {
             </div>
           </div>
         )}
-
         <div className="bg-zinc-700 p-4 border border-zinc-600/50 hover:border-zinc-500/70 rounded-lg">
-          <p className="text-zinc-300 text-sm">
-            📧 กรอกอีเมลที่คุณใช้สมัครสมาชิก เราจะส่งลิงก์สำหรับรีเซ็ตรหัสผ่านไปให้
-          </p>
+          <p className="text-zinc-300 text-sm">{t("infoMessage")}</p>
         </div>
-
         <div>
           <label
             htmlFor="email"
             className="block mb-2 font-medium text-zinc-300 text-sm"
           >
-            อีเมล
+            {t("emailLabel")}
           </label>
           <div className="relative">
             <input
@@ -239,10 +220,12 @@ function ForgetPasswordPageContent() {
               name="email"
               value={formData.email}
               onChange={handleInputChange}
-                  className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
-                    errors.email ? "border-red-500/70 shadow-red-500/20" : "border-zinc-600/50 hover:border-zinc-500/70"
-                  } rounded-xl px-4 py-3 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono text-sm`}
-              placeholder="your@email.com"
+              className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
+                errors.email
+                  ? "border-red-500/70 shadow-red-500/20"
+                  : "border-zinc-600/50 hover:border-zinc-500/70"
+              } rounded-xl px-4 py-3 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono text-sm`}
+              placeholder={t("emailPlaceholder")}
               autoComplete="email"
             />
           </div>
@@ -253,39 +236,34 @@ function ForgetPasswordPageContent() {
             </p>
           )}
         </div>
-
         <Button
           type="submit"
           disabled={isLoading}
           loading={isLoading}
-          loadingText="กำลังส่งอีเมล..."
+          loadingText={t("loadingText")}
           fullWidth
           size="lg"
         >
-          ส่งลิงก์รีเซ็ตรหัสผ่าน
+          {t("button")}
         </Button>
       </form>
-
       <div className="mt-6 text-center">
         <Button
           asChild
           variant="link"
           leftIcon={<ArrowLeftIcon className="w-4 h-4" />}
         >
-          <Link href="/login">
-            กลับไปยังหน้าเข้าสู่ระบบ
-          </Link>
+          <Link href="/login">{t("backToLogin")}</Link>
         </Button>
       </div>
-
       <div className="text-center mt-4">
         <p className="text-zinc-500 text-sm">
-          ยังไม่มีบัญชี?{" "}
+          {t("noAccount")}{" "}
           <Link
             href="/signup"
             className="text-red-500 hover:text-red-400 transition-colors"
           >
-            สมัครสมาชิก
+            {t("signupLink")}
           </Link>
         </p>
       </div>
@@ -293,18 +271,23 @@ function ForgetPasswordPageContent() {
   );
 }
 
-export default function ForgetPasswordPage() {
+function LoadingFallback() {
+  const t = useTranslations("common.messages");
   return (
-    <Suspense fallback={
-      <div className="min-h-[calc(100vh_-_132px)] flex items-center justify-center py-8">
-        <div className="w-full max-w-md">
-          <div className="bg-zinc-950 shadow-2xl p-6 rounded-2xl text-center space-y-4">
-            <Loading centered size="lg" />
-            <p className="text-zinc-300">กำลังโหลด...</p>
-          </div>
+    <div className="min-h-[calc(100vh-132px)] flex items-center justify-center py-8">
+      <div className="w-full max-w-md">
+        <div className="bg-zinc-950 shadow-2xl p-6 rounded-2xl text-center space-y-4">
+          <Loading centered size="lg" />
+          <p className="text-zinc-300">{t("loading")}</p>
         </div>
       </div>
-    }>
+    </div>
+  );
+}
+
+export default function ForgetPasswordPage() {
+  return (
+    <Suspense fallback={<LoadingFallback />}>
       <ForgetPasswordPageContent />
     </Suspense>
   );

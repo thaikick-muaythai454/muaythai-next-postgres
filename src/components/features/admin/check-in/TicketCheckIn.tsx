@@ -60,9 +60,9 @@ export function TicketCheckIn({ ticketId, onCheckInSuccess }: TicketCheckInProps
       setTicketData(data.data);
       onCheckInSuccess?.();
       setIsOpen(false);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Check-in error:", error);
-      toast.error(error.message || "เกิดข้อผิดพลาดในการเช็คอิน");
+      toast.error((error as Error).message || "เกิดข้อผิดพลาดในการเช็คอิน");
     } finally {
       setIsLoading(false);
     }

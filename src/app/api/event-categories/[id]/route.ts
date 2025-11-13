@@ -56,7 +56,7 @@ export async function GET(
 const updateCategoryHandler = withAdminAuth<{ id: string }>(async (
   request,
   context,
-  user
+  _user
 ) => {
   try {
     const supabase = await createClient();
@@ -155,7 +155,7 @@ const updateCategoryHandler = withAdminAuth<{ id: string }>(async (
 const deleteCategoryHandler = withAdminAuth<{ id: string }>(async (
   request,
   context,
-  user
+  _user
 ) => {
   try {
     const supabase = await createClient();

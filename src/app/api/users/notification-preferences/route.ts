@@ -75,7 +75,7 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const updateData: any = {};
+    const updateData: Record<string, unknown> = {};
 
     if (body.email_enabled !== undefined) updateData.email_enabled = body.email_enabled;
     if (body.in_app_enabled !== undefined) updateData.in_app_enabled = body.in_app_enabled;

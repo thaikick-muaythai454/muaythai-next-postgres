@@ -89,8 +89,32 @@
     },
     "forgotPassword": {
       "title": "Forgot Password",
-      "subtitle": "Enter your email to reset password",
-      "button": "Send Reset Link"
+      "subtitle": "Don't worry, we'll help you reset your password",
+      "button": "Send Reset Link",
+      "emailLabel": "Email",
+      "emailPlaceholder": "your@email.com",
+      "infoMessage": "📧 Enter the email you used to sign up, and we'll send you a password reset link",
+      "backToLogin": "Back to Login",
+      "noAccount": "Don't have an account?",
+      "signupLink": "Sign up",
+      "loadingText": "Sending email...",
+      "success": {
+        "title": "Email Sent Successfully!",
+        "subtitle": "We've sent a password reset link to your email",
+        "message": "We've sent a password reset link to",
+        "tip": "💡 Please check your email and click the link to reset your password\n(Check your Spam folder if you don't see it)"
+      },
+      "errors": {
+        "emailRequired": "Please enter your email",
+        "emailInvalid": "Invalid email format",
+        "emailInvalidFormat": "Invalid email. Please check again",
+        "userNotFound": "No user found with this email. Please check your email or sign up",
+        "connectionError": "Unable to connect to server. Please check your internet connection",
+        "sendEmailFailed": "Unable to send password reset email. Please try again",
+        "configError": "System configuration is incorrect. Please contact the administrator",
+        "unknownError": "An unknown error occurred. Please try again",
+        "errorPrefix": "Error: "
+      }
     }
   },
   "dashboard": {

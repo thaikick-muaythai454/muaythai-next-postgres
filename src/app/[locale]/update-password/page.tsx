@@ -106,7 +106,7 @@ function UpdatePasswordForm() {
     };
 
     checkAuthentication();
-  }, [supabase, router, searchParams]);
+  }, [supabase, router, searchParams, locale]);
 
   /**
    * Get password strength indicator

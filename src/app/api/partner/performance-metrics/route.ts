@@ -147,7 +147,7 @@ export async function GET(request: NextRequest) {
     });
 
     // 5. Package Performance
-    const { data: packageStats, error: packageError } = await supabase
+    const { data: packageStats } = await supabase
       .from('bookings')
       .select('package_name, package_type, price_paid, payment_status')
       .eq('gym_id', gym.id)

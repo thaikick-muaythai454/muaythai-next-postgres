@@ -67,7 +67,7 @@ function TicketCheckoutContent() {
     createPaymentIntent();
   }, [eventId, amount, createPaymentIntent]);
 
-  const handlePaymentSuccess = (paymentIntentId: string) => {
+  const handlePaymentSuccess = (_paymentIntentId: string) => {
     router.push(`/tickets/booking-success?orderId=${orderId}&orderNumber=${orderNumber}`);
   };
 
