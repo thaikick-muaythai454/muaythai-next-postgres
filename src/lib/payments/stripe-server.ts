@@ -20,7 +20,8 @@ export const stripe: Stripe | null = new Proxy({} as Stripe, {
       const key = getStripeSecretKey();
       stripeInstance = key
         ? new Stripe(key, {
-            apiVersion: '2025-09-30.clover',
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            apiVersion: '2025-10-29.clover' as any, // Latest API version - types may not be updated yet
             typescript: true,
           })
         : null;
