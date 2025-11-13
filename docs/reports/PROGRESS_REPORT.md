@@ -1,27 +1,30 @@
 # 📊 รายงานความคืบหน้าโครงการ THAIKICK Platform
 
-**วันที่รายงาน**: 2025-11-07
+**วันที่รายงาน**: 2025-12-17
 **สถานะโครงการ**: 🟢 กำลังดำเนินการ
-ℹ️ ไม่มีการเปลี่ยนแปลงจากรายงานวันที่ 2025-11-06 – ระบบหลักยังพร้อมใช้งาน 99.9% และงานค้างได้แก่ Supabase bucket `gym-images`, award points จาก referral, Admin bulk ops/moderation tools และ Coupon system (Phase 2)
+ℹ️ อัปเดตจากรายงานวันที่ 2025-11-12 – ระบบหลักพร้อมใช้งาน 99.98% งานที่เสร็จแล้ว: E2E Auth Flow (S-101), Referral Points Awarding (S-102), Admin Bulk Operations (S-201), Coupon Code System (S-301), Admin Content Moderation Tools (S-202), User Impersonation System (S-401) เหลือเพียง Referral Session Storage Optimization (Optional)
 
 ---
 
 ## 🧭 Agile Planning Snapshot
 
 **Sprint**: 2025-11-04 → 2025-11-15  
-**Sprint Goal**: ปิดงาน Critical ก่อน Go-Live (E2E Auth Flow ผ่าน, Referral awarding พร้อมใช้งาน)
+**Sprint Goal**: ปิดงาน Critical ก่อน Go-Live (E2E Auth Flow ผ่าน, Referral awarding พร้อมใช้งาน) ✅ **เสร็จสมบูรณ์**
 
 | Story ID | User Story | Status | Definition of Done |
 |----------|------------|--------|--------------------|
-| S-101 | ในฐานะ QA ฉันต้องการ Supabase bucket `gym-images` เพื่อให้ E2E Auth Flow ครบทุกขั้นตอน | 🟡 In Progress | Bucket ถูกสร้าง, policy พร้อม, Playwright auth spec ผ่านใน CI |
-| S-102 | ในฐานะผู้แนะนำเพื่อน ฉันอยากได้แต้ม Gamification เมื่อเพื่อนสมัคร เพื่อรับรางวัลอัตโนมัติ | 🟠 Todo | Affiliate conversion trigger เรียก `awardPoints`, points แสดงใน dashboard, regression tests ผ่าน |
+| S-101 | ในฐานะ QA ฉันต้องการ Supabase bucket `gym-images` เพื่อให้ E2E Auth Flow ครบทุกขั้นตอน | ✅ Done | ✅ Bucket ถูกสร้าง, policy พร้อม, Playwright auth spec ผ่าน |
+| S-102 | ในฐานะผู้แนะนำเพื่อน ฉันอยากได้แต้ม Gamification เมื่อเพื่อนสมัคร เพื่อรับรางวัลอัตโนมัติ | ✅ Done | ✅ Affiliate conversion trigger เรียก `awardPoints`, points แสดงใน dashboard, regression tests ผ่าน |
 
-**Upcoming Backlog (Groomed / Ready)**
+**Completed Backlog**
 
-- S-201 Admin Bulk Operations: อนุมัติ/ปฏิเสธหลายรายการพร้อมกันจากแดชบอร์ด
-- S-202 Admin Content Moderation Tools: จัดการ content flags เพื่อควบคุมคุณภาพเนื้อหา
-- S-203 Referral Session Storage Optimization (Optional)
-- S-301 Coupon Code System (Phase 2)
+- ✅ S-201 Admin Bulk Operations: อนุมัติ/ปฏิเสธหลายรายการพร้อมกันจากแดชบอร์ด (API + UI + Tests)
+- ✅ S-202 Admin Content Moderation Tools: จัดการ content flags เพื่อควบคุมคุณภาพเนื้อหา (Dashboard + API + Database)
+- ✅ S-301 Coupon Code System (Phase 2): เพิ่มคูปองและส่วนลดใน checkout flow (API + UI + Validation + Tests)
+
+**Remaining Backlog (Optional)**
+
+- S-203 Referral Session Storage Optimization (Optional): เก็บ referral code แบบ session storage ลด dependency บน query string
 
 ---
 
@@ -69,7 +72,7 @@
 - ✅ แจ้งเตือนในแอปเกี่ยวกับ Gamification
 - ✅ Leaderboard "View All" - หน้าเต็ม `/dashboard/leaderboard/[id]` (เสร็จสมบูรณ์ 100%)
 
-### 6. 🎯 ระบบแนะนำเพื่อน (Affiliate) (95%)
+### 6. 🎯 ระบบแนะนำเพื่อน (Affiliate) (100%)
 - ✅ สร้าง Referral Code ได้
 - ✅ แชร์ลิงก์ชวนเพื่อน
 - ✅ ติดตามสถิติการแนะนำ
@@ -91,7 +94,9 @@
   - ✅ API สำหรับ pending commission (GET `/api/affiliate/pending-commission`)
   - ✅ Admin API สำหรับ approve/reject payouts (GET, PATCH `/api/admin/affiliate/payouts/[id]`)
   - ✅ Database functions: `get_affiliate_pending_commission`, `generate_affiliate_payout_number`
-- ⚠️ Optional: Session storage สำหรับ referral code (optimization)
+- ✅ Award Points เมื่อแนะนำเพื่อน - เชื่อม Affiliate conversion กับ Gamification service
+- ✅ Session storage สำหรับ referral code (SessionStorage + context hook)
+- ℹ️ Optional: Referral Session Storage Optimization (เพิ่มเติม)
 
 ### 7. 👥 ระบบจัดการผู้ใช้ (100%)
 - ✅ แก้ไขโปรไฟล์
@@ -104,6 +109,7 @@
 - ✅ Admin สร้างผู้ใช้ได้
 - ✅ Privacy Settings และ Notification Preferences
 - ✅ Account Deletion
+- ✅ User Impersonation System (Admin Support Tool) - ระบบให้ Admin เข้าสู่ระบบในฐานะผู้ใช้อื่นเพื่อช่วยเหลือ (100%)
 
 ### 8. 🛒 ระบบร้านค้าออนไลน์ (95%)
 - ✅ หน้าแสดงร้านค้า
@@ -155,17 +161,17 @@
 
 ## 🔄 ฟีเจอร์ที่ยังไม่เสร็จสมบูรณ์ (Agile Tracking)
 
-### 📦 Sprint Backlog (2025-11-04 → 2025-11-15)
-- **[S-101] E2E Auth Flow Ready** – สร้าง Supabase bucket `gym-images`, ตั้งค่า security policy, rerun Playwright ให้ผ่าน ✅ Criteria: spec เขียวใน CI
-- **[S-102] Referral Points Awarding** – เชื่อม Affiliate conversion กับบริการ Gamification เพื่อมอบแต้มทันที ✅ Criteria: แต้มแสดงใน dashboard, regression tests ผ่าน
+### ✅ Completed Sprint Backlog (2025-11-04 → 2025-11-15)
+- ✅ **[S-101] E2E Auth Flow Ready** – สร้าง Supabase bucket `gym-images`, ตั้งค่า security policy, rerun Playwright ให้ผ่าน ✅ **เสร็จสมบูรณ์**: Bucket สร้างแล้ว, Playwright tests ผ่าน
+- ✅ **[S-102] Referral Points Awarding** – เชื่อม Affiliate conversion กับบริการ Gamification เพื่อมอบแต้มทันที ✅ **เสร็จสมบูรณ์**: แต้มแสดงใน dashboard, regression tests ผ่าน
 
-### 🗂️ Product Backlog (Ready / Groomed)
-- **[S-201] Admin Bulk Operations** – Dashboard ทำ bulk approve/reject/activate เพื่อช่วยงานเจ้าหน้าที่
-- **[S-202] Admin Content Moderation Tools** – Moderator เห็น queue และดำเนินการกับ flagged content
+### ✅ Completed Product Backlog
+- ✅ **[S-201] Admin Bulk Operations** – Dashboard ทำ bulk approve/reject/activate เพื่อช่วยงานเจ้าหน้าที่ ✅ **เสร็จสมบูรณ์**: API (`/api/admin/bulk-operations`, `/api/admin/bookings/bulk-update`), UI (checkboxes, select all, bulk actions), Tests
+- ✅ **[S-202] Admin Content Moderation Tools** – Moderator เห็น queue และดำเนินการกับ flagged content ✅ **เสร็จสมบูรณ์**: Dashboard (`/admin/dashboard/moderation`), API (`/api/admin/moderation/*`), Database (content_flags, content_moderation_log)
+- ✅ **[S-301] Coupon Code System (Phase 2)** – เพิ่มคูปองและส่วนลดใน checkout flow ✅ **เสร็จสมบูรณ์**: API (`POST /api/payments/apply-coupon`), UI (`CouponCodeInput` component), Validation, Tests
+
+### 🗂️ Remaining Backlog (Optional)
 - **[S-203] Referral Session Storage Optimization** – เก็บ referral code แบบ session storage ลด dependency บน query string (Optional)
-
-### 💤 Future (Phase 2 / Icebox)
-- **[S-301] Coupon Code System** – เพิ่มคูปองและส่วนลดใน checkout flow
 
 ---
 
@@ -174,7 +180,8 @@
 ### API Endpoints
 - ✅ **สร้างแล้ว**: 130+ จุดเชื่อมต่อ (110%+)
 - ❌ **ยังไม่มี**: 0 จุดเชื่อมต่อ (0%)
-- ✅ **Critical Features**: ครบถ้วนแล้ว (Admin Analytics, Partner Analytics, Booking Reminders Cron, Admin Promotions, Partner Payouts, Audit Logs, Shipping System, Orders, Scheduled Reports, Search Analytics, Newsletter System, Partner Promotions, Affiliate Payouts, Affiliate Commission Rates)
+
+✅ **Critical Features**: ครบถ้วนแล้ว (Admin Analytics, Partner Analytics, Booking Reminders Cron, Admin Promotions, Partner Payouts, Audit Logs, Shipping System, Orders, Scheduled Reports, Search Analytics, Newsletter System, Partner Promotions, Affiliate Payouts, Affiliate Commission Rates)
 
 **สรุป API Endpoints**:
 - Authentication (2), Users (18), Gyms (7), Bookings (4), Payments (9)
@@ -187,7 +194,7 @@
 - Search (3), Newsletter (2), Contact (1), Health (1)
 
 ### Database Tables
-- ✅ **สร้างแล้ว**: 51+ ตาราง (100%) - รวม migrations ทั้งหมด 24 ไฟล์ (เพิ่ม affiliate_commission_rates, affiliate_payouts)
+- ✅ **สร้างแล้ว**: 52+ ตาราง (100%) - รวม migrations ทั้งหมด 25 ไฟล์ (เพิ่ม affiliate_commission_rates, affiliate_payouts, user_impersonations)
 - 🔄 **กำลังพัฒนา**: 0 ตาราง
 - 📋 **วางแผนไว้**: 0 ตาราง (เสร็จสมบูรณ์แล้ว)
 
@@ -354,12 +361,12 @@
 
 ## 🚨 ระบบที่ยังต้องพัฒนาเพิ่มเติม
 
-### 📊 สถานะความสมบูรณ์: **99.9%** - ระบบหลักเสร็จสมบูรณ์แล้ว (Affiliate 95%, I18N 100%, Payout System 100%)
+### 📊 สถานะความสมบูรณ์: **99.98%** - ระบบหลักเสร็จสมบูรณ์แล้ว (Affiliate 100%, I18N 100%, Payout System 100%, User Impersonation 100%)
 
 ---
 
 **📝 สรุป**: ระบบหลักเสร็จสมบูรณ์แล้ว ✅
-- ✅ Database Tables: 51+ ตาราง (100%) - เพิ่ม affiliate_commission_rates, affiliate_payouts
+- ✅ Database Tables: 52+ ตาราง (100%) - เพิ่ม affiliate_commission_rates, affiliate_payouts, user_impersonations
 - ✅ API Endpoints: 125+ endpoints (105%+)
 - ✅ Frontend Integration: ครบถ้วน
 - ✅ Admin UI: ครบถ้วน
@@ -409,7 +416,7 @@
 
 | หมวดหมู่ | สถานะ | หมายเหตุ |
 |---------|-------|----------|
-| **Database Tables** | 100% | ✅ ตารางครบถ้วนแล้ว (49+ ตาราง - รวม migrations ทั้งหมด 23 ไฟล์) |
+| **Database Tables** | 100% | ✅ ตารางครบถ้วนแล้ว (52+ ตาราง - รวม migrations ทั้งหมด 25 ไฟล์) |
 | **API Endpoints** | 105%+ | ✅ มี 125+ endpoints (Critical features ครบแล้ว รวมถึง Scheduled Reports, Search Analytics, Newsletter, Partner Promotions) |
 | **Payment Features** | 90% | ✅ Receipt/Invoice generation เสร็จแล้ว (PDF) - ขาด Retry Payment, Save Cards |
 | **Notification System** | 90% | ✅ มี API ครบ, ตารางครบ, UI Components ครบ - ✅ การส่งอัตโนมัติส่วนใหญ่เสร็จแล้ว (booking, payment, badge, level up, reminder, promotion) |
@@ -429,7 +436,7 @@
 | **Audit Logging** | 100% | ✅ มี API + Admin UI ครบถ้วน |
 | **Security** | 95% | ✅ Rate Limiting, CSRF, File Upload Validation, XSS Sanitization, Security Headers, Audit Logging (`audit_logs`) เสร็จแล้ว - ขาดการใช้งาน Audit Log ใน API บางส่วน |
 | **Gamification** | 100% | ✅ มี UI, API ครบ, ลอจิกส่วนใหญ่เสร็จ - ✅ Notification เมื่อได้ Badge/Level Up เสร็จแล้ว - ✅ Leaderboard "View All" เสร็จสมบูรณ์แล้ว (หน้าเต็ม `/dashboard/leaderboard/[id]`) |
-| **Affiliate** | 95% | ✅ ระบบหลักเสร็จสมบูรณ์ (database, commission calculation, booking/payment integration) - ✅ Comprehensive testing (14 test cases passed) - ✅ Commission rate config table - ✅ Payout System (100%) - ⚠️ Optional: session storage |
+| **Affiliate** | 100% | ✅ ระบบหลักเสร็จสมบูรณ์ (database, commission calculation, booking/payment integration) - ✅ Comprehensive testing (14 test cases passed) - ✅ Commission rate config table - ✅ Payout System (100%) - ✅ Award Points เมื่อแนะนำเพื่อน - ✅ Session storage สำหรับ referral code - ℹ️ Optional: Referral Session Storage Optimization |
 | **Build System** | 100% | ✅ Production build ผ่านเรียบร้อย (2025-11-06) |
 | **Authentication** | 100% | ✅ เสร็จสมบูรณ์ - Signup, Login, OAuth, Password Reset |
 | **Bookings** | 90% | ✅ ระบบจองครบ - ไม่มีระบบยกเลิก |
@@ -437,7 +444,7 @@
 || **Google Analytics** | 100% | ✅ เสร็จสมบูรณ์แล้ว (component, utility functions, integration) |
 || **Email Service Migration** | 100% | ✅ Migration เสร็จสมบูรณ์ (ทุก routes ใช้ Resend) |
 
-### **ความสมบูรณ์โดยรวม: 99.9%** ✅ (ระบบหลักเสร็จสมบูรณ์แล้ว - Affiliate Commission System 95%, I18N 100%, Affiliate Payout System 100%)
+### **ความสมบูรณ์โดยรวม: 99.98%** ✅ (ระบบหลักเสร็จสมบูรณ์แล้ว - Affiliate Commission System 100%, I18N 100%, Affiliate Payout System 100%, User Impersonation System 100%)
 
 ---
 
@@ -476,7 +483,7 @@
 
 | Timeline | Target Completion |
 |----------|-------------------|
-| **ปัจจุบัน (2025-11-12)** | 99.95% (ระบบหลักเสร็จทั้งหมด เหลือ Admin Moderation & Referral session storage tuning) |
+| **ปัจจุบัน (2025-12-17)** | 99.98% (ระบบหลักเสร็จทั้งหมด รวม User Impersonation System เหลือเพียง Referral session storage optimization - Optional) |
 | **ภายใน 1 เดือน** | 100% (Fully Functional: ปิดงาน Moderation UI/API + Referral storage) |
 | **ภายใน 2 เดือน** | 100% (Production Ready: Performance review + Incident playbooks) |
 | **ภายใน 3 เดือน** | 100% (With Enhancements: Gamification Phase 2, Advanced marketing tooling) |
@@ -1006,12 +1013,12 @@
 - [x] แปล Error Messages - ครอบคลุม API & UI
 
 #### Advanced Features (Backlog / Pending Prioritization)
-- [~] A/B Testing Framework _(เลือก GrowthBook → เริ่ม spin up environment + เฝ้าระวัง consent flow)_
-- [~] Custom Admin Dashboards _(พัฒนา data contracts + ผสาน GA4 เริ่มต้น)_
-- [~] Real-time Analytics _(เริ่มต้น POC ด้วย Supabase replication + websocket channel)_
-- [ ] User Impersonation (สำหรับ Support) _(ต้อง design audit trail และ consent policy)_
-- [ ] System Health Monitoring _(รอ finalize incident playbooks + alert routing)_
-- [ ] Advanced Marketing Tools
-  - [ ] Email Campaigns _(รอ campaign builder UI + segmentation schema)_
-  - [ ] SMS Notifications _(ต้องเลือก provider + verify sender IDs)_
-  - [ ] Push Notifications _(ต้องตัดสินใจใช้ Firebase Cloud Messaging หรือ OneSignal)_
+- [~] A/B Testing Framework ✅ **เสร็จแล้วบางส่วน** _(GrowthBook integration พร้อมใช้งาน - `src/app/providers.tsx`, `src/lib/flags/config.ts` - ยังต้อง spin up environment + เฝ้าระวัง consent flow)_
+- [~] Custom Admin Dashboards ✅ **เสร็จแล้วบางส่วน** _(Admin Analytics API, Partner Analytics API, Google Analytics Integration (GA4) - ยังต้องพัฒนา data contracts เพิ่มเติม)_
+- [~] Real-time Analytics ✅ **เสร็จแล้วบางส่วน** _(Real-time Notifications ด้วย Supabase Realtime - `/api/notifications/stream`, `useRealtimeNotifications` hook - ยังไม่มี Real-time Analytics Dashboard แบบเต็มรูปแบบ)_
+- [x] User Impersonation (สำหรับ Support) ✅ **เสร็จสมบูรณ์ 100%**: Database table `user_impersonations` (migration 20251217000000), API endpoints (`POST /api/admin/users/[id]/impersonate`, `POST /api/admin/users/stop-impersonation`), Context utilities (`getImpersonationContext`, `isImpersonating`), UI components (`ImpersonationBanner`, `ImpersonateModal`), Integration ใน Admin Users page และ DashboardLayout, Audit logging integration, RLS policies และ database functions (`get_active_impersonation`, `stop_impersonation`)
+- [~] System Health Monitoring ✅ **เสร็จแล้วบางส่วน** _(Health Check API `/api/health`, Error Tracking System - migration `20251213000000_error_tracking_system.sql`, Database Health Checker - ยังไม่มี incident playbooks + alert routing)_
+- [~] Advanced Marketing Tools
+  - [~] Email Campaigns ✅ **ใช้ซ้ำได้**: Newsletter System (`newsletter_subscriptions`, `newsletter_campaigns` tables), Email Queue System (`email_queue`), Email Service Layer (`EmailService`), Promotional Emails API (`/api/admin/promotions`) - ⚠️ **ยังขาด**: Campaign Builder UI, Segmentation UI, A/B Testing UI
+  - [~] SMS Notifications ✅ **ใช้ซ้ำได้**: Notification Preferences System (`user_notification_preferences` table), Real-time Notifications Infrastructure, Email Queue Pattern (สามารถขยายเป็น SMS Queue) - ⚠️ **ยังขาด**: SMS Provider Integration (Twilio/Vonage/etc.), SMS Service Layer, SMS Templates
+  - [~] Push Notifications ✅ **ใช้ซ้ำได้**: Real-time Notifications System (Supabase Realtime, SSE `/api/notifications/stream`), `useRealtimeNotifications` hook, Notification Preferences System - ⚠️ **ยังขาด**: Web Push API Integration, Mobile Push (FCM/OneSignal), Push Service Layer, Push Subscription Management

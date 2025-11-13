@@ -10,31 +10,50 @@ import {
   MagnifyingGlassIcon,
   PencilIcon,
   TrashIcon,
+  UserIcon,
 } from '@heroicons/react/24/outline';
+import { ImpersonateModal } from '@/components/features/admin/ImpersonateModal';
+import { useRouter } from '@/navigation';
+import { useAlert } from '@/contexts';
 import { User } from '@supabase/supabase-js';
+
+interface Profile {
+  email?: string;
+}
 
 interface UserRole {
   user_id: string;
   role: string;
   email?: string;
   created_at?: string;
+  profiles?: Profile | null;
 }
 
 function AdminUsersContent() {
   const supabase = createClient();
+  const router = useRouter();
+  const { showAlert } = useAlert();
   const [user, setUser] = useState<User | null>(null);
   const [users, setUsers] = useState<UserRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [impersonateModalOpen, setImpersonateModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<{ id: string; email?: string } | null>(null);
+  const [isImpersonating, setIsImpersonating] = useState(false);
 
   useEffect(() => {
     async function loadData() {
       const { data: { user } } = await supabase.auth.getUser();
       setUser(user);
 
-      // Fetch all users from user_roles
+      // Fetch all users from user_roles with profiles
       const { data: usersData } = await supabase
         .from('user_roles')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            email
+          )
+        `)
         .order('created_at', { ascending: false });
 
       if (usersData) {
@@ -60,6 +79,45 @@ function AdminUsersContent() {
         {config.label}
       </Chip>
     );
+  };
+
+  const handleImpersonateClick = (userId: string, email?: string) => {
+    setSelectedUser({ id: userId, email });
+    setImpersonateModalOpen(true);
+  };
+
+  const handleImpersonateConfirm = async (reason: string) => {
+    if (!selectedUser) return;
+
+    setIsImpersonating(true);
+    try {
+      const response = await fetch(`/api/admin/users/${selectedUser.id}/impersonate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ reason }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        showAlert('เข้าสู่ระบบในฐานะผู้ใช้อื่นสำเร็จ', 'success');
+        // Navigate to dashboard to apply new session
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 1000);
+      } else {
+        showAlert(data.error || 'เกิดข้อผิดพลาด', 'error');
+        setIsImpersonating(false);
+        setImpersonateModalOpen(false);
+      }
+    } catch (error) {
+      console.error('Error impersonating user:', error);
+      showAlert('เกิดข้อผิดพลาดในการเข้าสู่ระบบ', 'error');
+      setIsImpersonating(false);
+      setImpersonateModalOpen(false);
+    }
   };
 
   if (isLoading) {
@@ -168,6 +226,18 @@ function AdminUsersContent() {
                       <div className="flex gap-2">
                         <Button
                           size="sm"
+                          variant="flat"
+                          color="warning"
+                          onPress={() => handleImpersonateClick(
+                            userRole.user_id,
+                            userRole.profiles?.email
+                          )}
+                          startContent={<UserIcon className="w-4 h-4" />}
+                        >
+                          เข้าสู่ระบบ
+                        </Button>
+                        <Button
+                          size="sm"
                           isIconOnly
                           variant="flat"
                           color="primary"
@@ -191,6 +261,21 @@ function AdminUsersContent() {
           </CardBody>
         </Card>
       </section>
+
+      {/* Impersonate Modal */}
+      {selectedUser && (
+        <ImpersonateModal
+          isOpen={impersonateModalOpen}
+          onClose={() => {
+            setImpersonateModalOpen(false);
+            setSelectedUser(null);
+          }}
+          onConfirm={handleImpersonateConfirm}
+          targetUserId={selectedUser.id}
+          targetUserEmail={selectedUser.email}
+          isLoading={isImpersonating}
+        />
+      )}
     </DashboardLayout>
   );
 }

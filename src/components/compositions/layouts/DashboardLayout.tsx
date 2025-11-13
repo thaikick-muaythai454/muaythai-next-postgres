@@ -10,6 +10,13 @@ import { useAuth } from '@/contexts';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import SidebarContent from './ui/SidebarContent';
+import dynamic from 'next/dynamic';
+
+// Dynamically import ImpersonationBanner to avoid SSR issues
+const ImpersonationBanner = dynamic(
+  () => import('@/components/features/admin/ImpersonationBanner').then(mod => ({ default: mod.ImpersonationBanner })),
+  { ssr: false }
+);
 
 export interface MenuItem {
   label: string;
@@ -143,6 +150,14 @@ export default function DashboardLayout({
         {/* Content */}
         <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
           <div className="mx-auto max-w-7xl">
+            {/* Impersonation Banner - Only show for admin pages */}
+            {roleLabel === 'ผู้ดูแลระบบ' && (
+              <div className="mb-6">
+                {typeof window !== 'undefined' && (
+                  <ImpersonationBanner />
+                )}
+              </div>
+            )}
             {children}
           </div>
         </main>

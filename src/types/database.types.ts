@@ -216,7 +216,7 @@ export interface AuditLog {
   ip_address?: string | null;
   user_agent?: string | null;
   session_id?: string | null;
-  action_type: 'create' | 'update' | 'delete' | 'view' | 'login' | 'logout' | 'approve' | 'reject' | 'publish' | 'unpublish' | 'activate' | 'deactivate' | 'payment' | 'refund' | 'payout' | 'status_change' | 'permission_change' | 'role_change' | 'password_change' | 'email_change' | 'data_export' | 'data_import' | 'bulk_operation' | 'system_action';
+  action_type: 'create' | 'update' | 'delete' | 'view' | 'login' | 'logout' | 'approve' | 'reject' | 'publish' | 'unpublish' | 'activate' | 'deactivate' | 'payment' | 'refund' | 'payout' | 'status_change' | 'permission_change' | 'role_change' | 'password_change' | 'email_change' | 'data_export' | 'data_import' | 'bulk_operation' | 'system_action' | 'impersonate' | 'stop_impersonation';
   resource_type: 'user' | 'profile' | 'gym' | 'booking' | 'order' | 'payment' | 'product' | 'event' | 'article' | 'ticket' | 'package' | 'promotion' | 'affiliate_conversion' | 'partner_payout' | 'notification' | 'favorite' | 'review' | 'analytics' | 'admin_action' | 'system_config' | 'other';
   resource_id?: string | null;
   resource_name?: string | null;
