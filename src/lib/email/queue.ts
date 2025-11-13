@@ -13,6 +13,7 @@ export type EmailType =
   | 'verification'
   | 'booking_confirmation'
   | 'booking_reminder'
+  | 'event_reminder'
   | 'payment_receipt'
   | 'payment_failed'
   | 'partner_approval'
@@ -112,6 +113,11 @@ export async function addEmailToQueue(params: AddEmailToQueueParams): Promise<{ 
 
         if (emailType === 'booking_reminder' && !preferences.booking_reminder) {
           return { success: false, error: 'Booking reminder emails disabled by user' };
+        }
+
+        if (emailType === 'event_reminder' && !preferences.booking_reminder) {
+          // Use booking_reminder preference for event reminders too
+          return { success: false, error: 'Event reminder emails disabled by user' };
         }
 
         if (emailType === 'promotional' && !preferences.promotions_news) {

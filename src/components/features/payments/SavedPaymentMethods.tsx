@@ -7,6 +7,7 @@ import {
   PlusIcon,
   CheckCircleIcon,
   XCircleIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
@@ -365,8 +366,20 @@ export default function SavedPaymentMethods({
       {/* Add Payment Method Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-zinc-800 rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto">
-            <div className="mb-6">
+          <div className="bg-zinc-800 rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto relative">
+            {/* Close Button */}
+            <button
+              onClick={() => {
+                setShowAddModal(false);
+                setSetupIntentClientSecret(null);
+              }}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white transition-colors"
+              aria-label="ปิด"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+
+            <div className="mb-6 pr-8">
               <h3 className="text-xl font-semibold text-white mb-2">
                 เพิ่มบัตรเครดิตใหม่
               </h3>
@@ -398,8 +411,17 @@ export default function SavedPaymentMethods({
                 />
               </Elements>
             ) : (
-              <div className="text-center py-8">
+              <div className="text-center py-8 space-y-4">
                 <Loading centered size="lg" text="กำลังโหลด..." />
+                <button
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setSetupIntentClientSecret(null);
+                  }}
+                  className="mt-4 bg-zinc-600 hover:bg-zinc-500 px-4 py-2 rounded-lg font-medium transition-colors text-white"
+                >
+                  ยกเลิก
+                </button>
               </div>
             )}
           </div>

@@ -96,6 +96,7 @@ export async function POST(request: NextRequest) {
     const validTypes = [
       'booking_confirmation',
       'booking_reminder',
+      'event_reminder',
       'booking_cancelled',
       'payment_received',
       'payment_failed',
@@ -106,6 +107,7 @@ export async function POST(request: NextRequest) {
       'promotion',
       'system',
       'partner_message',
+      'content_flag',
     ];
 
     if (!validTypes.includes(type)) {

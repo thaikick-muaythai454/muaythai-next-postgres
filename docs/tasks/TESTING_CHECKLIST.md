@@ -2,7 +2,7 @@
 
 **วันที่สร้าง**: 2025-11-06  
 **สถานะ**: Testing In Progress  
-**อัปเดตล่าสุด**: 2025-11-06
+**อัปเดตล่าสุด**: 2025-11-13
 - TC-1.1 ✅ PASSED (5/5 tests)
 - TC-1.2 ✅ PASSED (3/3 E2E tests, 13.8s)
 - TC-1.3 ✅ PASSED (4/4 tests)
@@ -715,3 +715,63 @@
 2. Document any bugs/issues found
 3. Create automated tests for critical paths
 4. Update documentation with test results
+5. ⏳ **Event Reminder System Testing** - ทดสอบ unified cron job `/api/cron/unified` (event reminders function) และ email sending
+6. ⏳ **Event Waitlist System Testing** - ทดสอบ waitlist API (POST/GET/DELETE `/api/events/[slug]/waitlist`) และ queue management
+
+---
+
+## 📋 Event System Testing (New Features)
+
+### ✅ 12. Event Reminder System
+
+**Test Cases:**
+- [ ] **TC-12.1**: Event Reminder Cron Job Execution
+  - [ ] Cron job runs successfully
+  - [ ] Queries ticket_bookings for events starting tomorrow
+  - [ ] Sends reminder emails via EmailService
+  - [ ] Creates `event_reminder` notifications
+  - [ ] Handles errors gracefully
+
+- [ ] **TC-12.2**: Event Reminder Email Content
+  - [ ] Email contains correct event details
+  - [ ] Email contains event date and time
+  - [ ] Email contains location and address
+  - [ ] Email contains ticket count and booking reference
+  - [ ] Email contains event URL link
+
+- [ ] **TC-12.3**: Event Reminder Notification
+  - [ ] Notification created with type `event_reminder`
+  - [ ] Notification contains correct title and message
+  - [ ] Notification contains link to event page
+  - [ ] Notification metadata contains ticket_booking_id and event_id
+
+**Test Script**: Manual testing with unified cron job trigger (`/api/cron/unified`) หรือ `curl` request - Event reminders ทำงานที่เวลา 9 AM
+
+### ✅ 13. Event Waitlist System
+
+**Test Cases:**
+- [ ] **TC-13.1**: Join Waitlist (POST `/api/events/[slug]/waitlist`)
+  - [ ] User can join waitlist when tickets are sold out
+  - [ ] Validates ticket_id and ticket_count
+  - [ ] Prevents duplicate waitlist entries
+  - [ ] Returns waitlist_id and position
+  - [ ] Rejects if tickets are still available
+
+- [ ] **TC-13.2**: Get Waitlist Status (GET `/api/events/[slug]/waitlist`)
+  - [ ] Returns user's waitlist entry if exists
+  - [ ] Returns null if user not on waitlist
+  - [ ] Includes position in queue
+  - [ ] Includes event and ticket details
+
+- [ ] **TC-13.3**: Leave Waitlist (DELETE `/api/events/[slug]/waitlist`)
+  - [ ] User can leave waitlist
+  - [ ] Deletes waitlist entry successfully
+  - [ ] Validates user owns waitlist entry
+
+- [ ] **TC-13.4**: Waitlist Queue Management
+  - [ ] Queue ordered by created_at (FIFO)
+  - [ ] Position calculation correct
+  - [ ] Unique constraint prevents duplicate entries
+  - [ ] Status transitions (waiting → notified → purchased/cancelled)
+
+**Test Script**: `npm run test:api:events:waitlist` (to be created)

@@ -2,7 +2,7 @@
 
 **วันที่อัปเดต**: 2025-11-06  
 **สถานะ**: Testing In Progress  
-**อัปเดตล่าสุด**: 2025-11-06
+**อัปเดตล่าสุด**: 2025-11-13
 
 ---
 
@@ -541,12 +541,14 @@
 
 ## 🔄 Next Steps
 
-1. ✅ **แก้ไข E2E Test Failure** - Auth Flow Internal Server Error (High Priority)
+1. ✅ **แก้ไข E2E Test Failure** - Auth Flow Internal Server Error (High Priority) ✅
 2. ⏳ **Google Analytics Testing** - ตั้งค่า GA Measurement ID และทดสอบ
 3. ⏳ **Edge Cases Testing** - ทดสอบ duplicate prevention และ error handling
 4. ⏳ **Integration Tests** - สร้าง integration tests สำหรับ API endpoints
 5. ⏳ **Security Tests** - ทดสอบ security vulnerabilities
 6. ⏳ **Manual Testing** - ทดสอบด้วยมือสำหรับ critical paths
+7. ⏳ **Event Reminder System Testing** - ทดสอบ unified cron job `/api/cron/unified` (event reminders function) และ email sending
+8. ⏳ **Event Waitlist System Testing** - ทดสอบ waitlist API และ queue management
 
 ---
 

@@ -1,8 +1,8 @@
 # 📋 Test Report Checklist
 
 **โครงการ**: Muay Thai Next.js Application  
-**วันที่**: 2025-11-05  
-**เวอร์ชัน**: 0.1.0
+**วันที่**: 2025-11-13  
+**เวอร์ชัน**: 0.2.0
 
 ---
 
@@ -22,11 +22,13 @@
 **Build Status**: ✅ / ❌ / ⏳  
 **Deployment Ready**: ✅ / ❌ / ⏳
 
-**อัปเดตล่าสุด**: 2025-11-07
+**อัปเดตล่าสุด**: 2025-12-19
 - ✅ Unit Tests: 43/43 tests ผ่าน
 - ⚠️ E2E Tests: 18/28 tests ผ่าน; ❌ Auth Flow Step 6 pending fix (partner apply formไม่โหลด), 9 tests ยังไม่รัน
 - ✅ Playwright affiliate suite ผ่านครบ (4 tests)
 - ✅ Playwright admin gym management suite ผ่านครบ (9 tests)
+- ⏳ Event Reminder System Tests - ยังไม่ทดสอบ (Cron Job, Email Sending)
+- ⏳ Event Waitlist System Tests - ยังไม่ทดสอบ (API Endpoints, Queue Management)
 
 ---
 
@@ -468,13 +470,16 @@ npx playwright test tests/e2e/auth/login-existing-users.spec.ts --project=chromi
 
 ---
 
-### 4.7 Events API (6 endpoints)
+### 4.7 Events API (9 endpoints)
 - [ ] **GET /api/events**
 - [ ] **POST /api/events**
 - [ ] **GET /api/events/[id]**
 - [ ] **PUT /api/events/[id]**
 - [ ] **DELETE /api/events/[id]**
 - [ ] **POST /api/events/[id]/book**
+- [ ] **POST /api/events/[slug]/waitlist** - Join waitlist
+- [ ] **GET /api/events/[slug]/waitlist** - Get waitlist status
+- [ ] **DELETE /api/events/[slug]/waitlist** - Leave waitlist
 
 **สถานะ**: ⏳
 
@@ -523,6 +528,23 @@ npx playwright test tests/e2e/auth/login-existing-users.spec.ts --project=chromi
 ### 4.11 Newsletter API (2 endpoints)
 - [ ] **POST /api/newsletter/subscribe**
 - [ ] **POST /api/newsletter/unsubscribe**
+
+**สถานะ**: ⏳
+
+---
+
+### 4.12 Scheduled Tasks API (2 endpoints)
+- [ ] **GET/POST /api/cron/send-booking-reminders** - ส่ง Booking Reminder Emails
+  - [ ] Cron job runs successfully
+  - [ ] Queries bookings for tomorrow
+  - [ ] Sends reminder emails
+  - [ ] Creates notifications
+- [ ] **Event Reminder Emails** - ทำงานผ่าน Unified Cron Job `/api/cron/unified` (รันทุกวัน 9 AM)
+  - [ ] Unified cron job runs successfully
+  - [ ] Event reminders function executes at 9 AM
+  - [ ] Queries ticket_bookings for events starting tomorrow
+  - [ ] Sends reminder emails via EmailService
+  - [ ] Creates `event_reminder` notifications
 
 **สถานะ**: ⏳
 
@@ -649,6 +671,10 @@ npx playwright test tests/e2e/auth/login-existing-users.spec.ts --project=chromi
 - [ ] ดูรายละเอียดอีเวนต์
 - [ ] จองตั๋วอีเวนต์
 - [ ] Check-in ตั๋ว (Admin)
+- [ ] เข้ารอคิวตั๋วเมื่อขายหมด (Waitlist)
+- [ ] ดูสถานะรอคิว
+- [ ] ออกจากรอคิว
+- [ ] รับอีเมลเตือนก่อนอีเวนต์ 1 วัน
 
 ---
 
@@ -880,8 +906,13 @@ npm run test:scripts:setup        # Setup tests
 
 ## 🔄 อัปเดต
 
-**อัปเดตล่าสุด**: 2025-11-05  
-**เวอร์ชัน**: 1.0.0
+**อัปเดตล่าสุด**: 2025-12-19  
+**เวอร์ชัน**: 1.1.0
+
+### 2025-12-19
+- ✅ เพิ่ม Event Reminder System (Cron Job, EmailService, Notifications)
+- ✅ เพิ่ม Event Waitlist System (Database, API, Queue Management)
+- ⏳ ยังไม่ทดสอบ: Event Reminder System Tests, Event Waitlist System Tests
 
 ---
 

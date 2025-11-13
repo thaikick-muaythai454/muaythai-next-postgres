@@ -120,10 +120,27 @@ export async function POST(
     // Check if tickets are still available
     const availableTickets = (ticket.quantity_available || 0) - (ticket.quantity_sold || 0);
     if (availableTickets < ticket_count) {
+      // Check if tickets are completely sold out (suggest waitlist)
+      if (availableTickets === 0) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Tickets are sold out',
+            sold_out: true,
+            waitlist_available: true,
+            message: 'Tickets are sold out. Would you like to join the waitlist?'
+          },
+          { status: 400 }
+        );
+      }
+      
       return NextResponse.json(
         { 
           success: false, 
-          error: `Only ${availableTickets} tickets available. Requested: ${ticket_count}` 
+          error: `Only ${availableTickets} tickets available. Requested: ${ticket_count}`,
+          available_tickets: availableTickets,
+          waitlist_available: true,
+          message: 'Not enough tickets available. Would you like to join the waitlist?'
         },
         { status: 400 }
       );

@@ -384,6 +384,172 @@ async function sendBookingReminders(): Promise<{ success: boolean; sent: number;
 }
 
 /**
+ * Send Event Reminders
+ * Should run daily at 9 AM (same time as booking reminders)
+ */
+async function sendEventReminders(): Promise<{ success: boolean; sent: number; error?: string }> {
+  try {
+    const { createClient } = await import('@/lib/database/supabase/server');
+    const { EmailService } = await import('@/lib/email/service');
+    const supabase = await createClient();
+
+    const now = new Date();
+    const tomorrow = new Date(now);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowDate = tomorrow.toISOString().split('T')[0];
+
+    // Query ticket_bookings where event_date is tomorrow
+    const { data: ticketBookings, error: bookingsError } = await supabase
+      .from('ticket_bookings')
+      .select(`
+        id,
+        user_id,
+        event_id,
+        event_name,
+        event_name_en,
+        event_date,
+        ticket_count,
+        ticket_type,
+        booking_reference,
+        orders!inner(
+          id,
+          user_id,
+          status,
+          user_email
+        )
+      `)
+      .eq('orders.status', 'completed')
+      .gte('event_date', `${tomorrowDate}T00:00:00`)
+      .lt('event_date', `${tomorrowDate}T23:59:59`);
+
+    if (bookingsError) {
+      throw bookingsError;
+    }
+
+    if (!ticketBookings || ticketBookings.length === 0) {
+      return { success: true, sent: 0 };
+    }
+
+    // Get unique event IDs
+    const eventIds = [...new Set(ticketBookings.map(tb => tb.event_id).filter(Boolean))];
+    const { data: events } = await supabase
+      .from('events')
+      .select('id, name, name_english, event_date, location, address')
+      .in('id', eventIds);
+
+    const eventMap = new Map();
+    if (events) {
+      for (const event of events) {
+        eventMap.set(event.id, event);
+      }
+    }
+
+    // Get user details
+    const userIds = [...new Set(ticketBookings.map(tb => tb.user_id).filter(Boolean))];
+    const { data: users } = await supabase
+      .from('profiles')
+      .select('id, full_name, email')
+      .in('id', userIds);
+
+    const userMap = new Map();
+    if (users) {
+      for (const user of users) {
+        userMap.set(user.id, user);
+      }
+    }
+
+    let sent = 0;
+    let failed = 0;
+
+    for (const ticketBooking of ticketBookings) {
+      try {
+        interface OrderData {
+          id: string;
+          user_id: string;
+          status: string;
+          user_email: string;
+        }
+        // orders is returned as an array from Supabase join, get first element
+        const ordersArray = ticketBooking.orders as unknown as OrderData[] | null;
+        const order = Array.isArray(ordersArray) && ordersArray.length > 0 ? ordersArray[0] : null;
+        const userEmail = order?.user_email;
+        const userId = ticketBooking.user_id || order?.user_id;
+
+        if (!userEmail || !userId) continue;
+
+        const event = eventMap.get(ticketBooking.event_id);
+        if (!event) continue;
+
+        const user = userMap.get(userId);
+        const customerName = user?.full_name || userEmail.split('@')[0];
+
+        const eventDate = new Date(ticketBooking.event_date);
+        const eventTime = eventDate.toLocaleTimeString('th-TH', { 
+          hour: '2-digit', 
+          minute: '2-digit',
+          timeZone: 'Asia/Bangkok'
+        });
+        const eventDateStr = eventDate.toISOString().split('T')[0];
+
+        const locale = 'th';
+        const eventUrl = `/${locale}/events/${event.id}`;
+
+        await EmailService.sendEventReminder({
+          to: userEmail,
+          userId: userId,
+          ticketBookingId: ticketBooking.id,
+          customerName,
+          eventName: ticketBooking.event_name || event.name,
+          eventNameEnglish: ticketBooking.event_name_en || event.name_english,
+          eventDate: eventDateStr,
+          eventTime,
+          location: event.location,
+          address: event.address || undefined,
+          ticketCount: ticketBooking.ticket_count || 1,
+          ticketType: ticketBooking.ticket_type || undefined,
+          bookingReference: ticketBooking.booking_reference || undefined,
+          eventUrl,
+        }, { priority: 'high' });
+
+        if (userId) {
+          await supabase.from('notifications').insert({
+            user_id: userId,
+            type: 'event_reminder',
+            title: 'เตือนความจำ: อีเวนต์ของคุณจะเริ่มในอีก 1 วัน 🎫',
+            message: `อีเวนต์ ${ticketBooking.event_name || event.name} จะเริ่มในวันที่ ${tomorrowDate} ที่ ${event.location}`,
+            link_url: eventUrl,
+            metadata: {
+              ticket_booking_id: ticketBooking.id,
+              event_id: ticketBooking.event_id,
+              event_name: ticketBooking.event_name || event.name,
+              event_date: eventDateStr,
+            },
+          });
+        }
+
+        sent++;
+      } catch (error) {
+        console.error(`Failed to send reminder for ticket booking ${ticketBooking.id}:`, error);
+        failed++;
+      }
+    }
+
+    return { 
+      success: true, 
+      sent, 
+      error: failed > 0 ? `${failed} reminders failed` : undefined 
+    };
+  } catch (error) {
+    console.error('Event reminders error:', error);
+    return { 
+      success: false, 
+      sent: 0, 
+      error: error instanceof Error ? error.message : 'Unknown error' 
+    };
+  }
+}
+
+/**
  * Publish Scheduled Articles
  * Should run every time cron executes (checks for articles due to be published)
  */
@@ -569,9 +735,18 @@ async function handleUnifiedCron(request: NextRequest) {
           skipped: true,
           reason: 'Booking reminders are not sent on weekends',
         };
+        tasks.eventReminders = {
+          success: true,
+          processed: 0,
+          skipped: true,
+          reason: 'Event reminders are not sent on weekends',
+        };
       } else {
         const remindersResult = await sendBookingReminders();
         tasks.bookingReminders = remindersResult;
+        
+        const eventRemindersResult = await sendEventReminders();
+        tasks.eventReminders = eventRemindersResult;
       }
     }
 

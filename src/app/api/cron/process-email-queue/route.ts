@@ -249,6 +249,48 @@ export async function POST(request: NextRequest) {
             break;
           }
 
+          case 'event_reminder': {
+            try {
+              const reminderData = toMetadataRecord(emailItem.metadata);
+              const customerName =
+                getStringMeta(reminderData, 'customerName') || emailItem.to_email.split('@')[0];
+              const eventName = getStringMeta(reminderData, 'eventName') || 'N/A';
+              const eventNameEnglish = getStringMeta(reminderData, 'eventNameEnglish');
+              const eventDate = getStringMeta(reminderData, 'eventDate') || new Date().toISOString();
+              const eventTime = getStringMeta(reminderData, 'eventTime');
+              const location = getStringMeta(reminderData, 'location') || 'N/A';
+              const address = getStringMeta(reminderData, 'address');
+              const ticketCount = parseInt(getStringMeta(reminderData, 'ticketCount') || '1', 10);
+              const ticketType = getStringMeta(reminderData, 'ticketType');
+              const bookingReference = getStringMeta(reminderData, 'bookingReference');
+              const eventUrl = getStringMeta(reminderData, 'eventUrl');
+
+              if (useResend) {
+                const { sendEventReminderEmail: sendEventReminderEmailResend } = await import('@/lib/email/resend');
+                sendResult = normalizeResult(await sendEventReminderEmailResend({
+                  to: emailItem.to_email,
+                  customerName,
+                  eventName,
+                  eventNameEnglish,
+                  eventDate,
+                  eventTime,
+                  location,
+                  address,
+                  ticketCount,
+                  ticketType,
+                  bookingReference,
+                  eventUrl,
+                }));
+              } else if (useSmtp && isSmtpConfigured()) {
+                // SMTP support can be added later if needed
+                sendResult = { success: false, error: 'Event reminder emails via SMTP not yet implemented' };
+              }
+            } catch (error) {
+              sendResult = { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+            }
+            break;
+          }
+
           case 'payment_receipt': {
             try {
               const paymentData = toMetadataRecord(emailItem.metadata);

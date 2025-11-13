@@ -15,8 +15,10 @@ import {
   TrashIcon,
   FlagIcon,
   ExclamationTriangleIcon,
+  LinkIcon,
 } from '@heroicons/react/24/outline';
 import { User } from '@supabase/supabase-js';
+import { useRouter } from '@/navigation';
 
 interface ContentFlag {
   id: string;
@@ -34,12 +36,28 @@ interface ContentFlag {
   reviewed_by_user?: { id: string; email: string } | null;
 }
 
+interface ContentPreview {
+  id: string;
+  title?: string;
+  name?: string;
+  name_thai?: string;
+  name_english?: string;
+  slug?: string;
+  description?: string;
+  status?: string;
+  is_published?: boolean;
+  is_active?: boolean;
+}
+
 function AdminModerationContent() {
   const supabase = createClient();
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [flags, setFlags] = useState<ContentFlag[]>([]);
   const [filteredFlags, setFilteredFlags] = useState<ContentFlag[]>([]);
   const [selectedFlag, setSelectedFlag] = useState<ContentFlag | null>(null);
+  const [contentPreview, setContentPreview] = useState<ContentPreview | null>(null);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTab, setSelectedTab] = useState('pending');
   const [isLoading, setIsLoading] = useState(true);
@@ -129,6 +147,59 @@ function AdminModerationContent() {
     }
   }
 
+  async function loadContentPreview(contentType: string, contentId: string) {
+    try {
+      setIsLoadingPreview(true);
+      const tableMap: Record<string, string> = {
+        article: 'articles',
+        gym: 'gyms',
+        product: 'products',
+        event: 'events',
+      };
+
+      const table = tableMap[contentType];
+      if (!table) {
+        setContentPreview(null);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from(table)
+        .select('id, name, name_thai, name_english, slug, description, status, is_published, is_active, title')
+        .eq('id', contentId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading content preview:', error);
+        setContentPreview(null);
+      } else {
+        setContentPreview(data);
+      }
+    } catch (error) {
+      console.error('Error loading content preview:', error);
+      setContentPreview(null);
+    } finally {
+      setIsLoadingPreview(false);
+    }
+  }
+
+  function getContentUrl(contentType: string, contentId: string, slug?: string): string | null {
+    const urlMap: Record<string, (id: string, slug?: string) => string> = {
+      article: (id, slug) => slug ? `/articles/${slug}` : `/articles/${id}`,
+      gym: (id, slug) => slug ? `/gyms/${slug}` : `/gyms/${id}`,
+      product: (id, slug) => slug ? `/shop/${slug}` : `/shop/${id}`,
+      event: (id, slug) => slug ? `/events/${slug}` : `/events/${id}`,
+    };
+
+    const urlBuilder = urlMap[contentType];
+    return urlBuilder ? urlBuilder(contentId, slug) : null;
+  }
+
+  function getContentTitle(preview: ContentPreview | null): string {
+    if (!preview) return 'ไม่พบข้อมูล';
+    return preview.title || preview.name_thai || preview.name_english || preview.name || 'ไม่มีชื่อ';
+  }
+
   async function handleModerationAction(action: 'approve' | 'reject' | 'delete') {
     if (!selectedFlag) return;
 
@@ -153,6 +224,7 @@ function AdminModerationContent() {
         actionModal.onClose();
         detailModal.onClose();
         setActionReason('');
+        setContentPreview(null);
       } else {
         toast.error(result.error || 'เกิดข้อผิดพลาด');
       }
@@ -354,6 +426,7 @@ function AdminModerationContent() {
                           isIconOnly
                           onPress={() => {
                             setSelectedFlag(flag);
+                            loadContentPreview(flag.content_type, flag.content_id);
                             detailModal.onOpen();
                           }}
                         >
@@ -389,9 +462,57 @@ function AdminModerationContent() {
           <ModalBody>
             {selectedFlag && (
               <div className="space-y-4">
+                {/* Content Preview Section */}
+                <div className="p-4 bg-zinc-800/50 rounded-lg border border-zinc-700">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-sm font-medium text-zinc-400">เนื้อหาที่ถูกแจ้งเตือน</label>
+                    {contentPreview && (
+                      <Button
+                        size="sm"
+                        variant="light"
+                        onPress={() => {
+                          const url = getContentUrl(selectedFlag.content_type, selectedFlag.content_id, contentPreview.slug);
+                          if (url) {
+                            router.push(url);
+                          }
+                        }}
+                        startContent={<LinkIcon className="w-4 h-4" />}
+                      >
+                        ดูเนื้อหา
+                      </Button>
+                    )}
+                  </div>
+                  {isLoadingPreview ? (
+                    <div className="flex items-center justify-center py-4">
+                      <div className="border-2 border-zinc-600 border-t-transparent rounded-full w-6 h-6 animate-spin"></div>
+                    </div>
+                  ) : contentPreview ? (
+                    <div className="space-y-2">
+                      <p className="text-white font-semibold">{getContentTitle(contentPreview)}</p>
+                      {contentPreview.description && (
+                        <p className="text-zinc-400 text-sm line-clamp-2">{contentPreview.description}</p>
+                      )}
+                      <div className="flex gap-2 mt-2">
+                        <Chip size="sm" variant="flat" color={contentPreview.is_published !== false && contentPreview.is_active !== false ? 'success' : 'default'}>
+                          {contentPreview.is_published !== false && contentPreview.is_active !== false ? 'เผยแพร่' : 'ไม่เผยแพร่'}
+                        </Chip>
+                        {contentPreview.status && (
+                          <Chip size="sm" variant="flat">{contentPreview.status}</Chip>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-zinc-500 text-sm">ไม่สามารถโหลดข้อมูลเนื้อหาได้</p>
+                  )}
+                </div>
+
                 <div>
                   <label className="text-sm font-medium text-zinc-400">ประเภทเนื้อหา</label>
                   <p className="text-white">{selectedFlag.content_type}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-zinc-400">Content ID</label>
+                  <p className="text-white font-mono text-xs">{selectedFlag.content_id}</p>
                 </div>
                 <div>
                   <label className="text-sm font-medium text-zinc-400">ประเภทการแจ้งเตือน</label>

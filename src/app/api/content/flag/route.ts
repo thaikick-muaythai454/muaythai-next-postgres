@@ -84,6 +84,71 @@ export async function POST(request: NextRequest) {
       throw error;
     }
 
+    // Send notifications to all admin users
+    try {
+      // Get all admin users
+      const { data: adminUsers, error: adminError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin');
+
+      if (!adminError && adminUsers && adminUsers.length > 0) {
+        // Get content title/name for notification message
+        let contentTitle = `${contentType} #${contentId.substring(0, 8)}`;
+        const tableMap: Record<string, string> = {
+          article: 'articles',
+          gym: 'gyms',
+          product: 'products',
+          event: 'events',
+        };
+
+        const table = tableMap[contentType];
+        if (table) {
+          const { data: contentData } = await supabase
+            .from(table)
+            .select('name, name_thai, name_english, title')
+            .eq('id', contentId)
+            .maybeSingle();
+
+          if (contentData) {
+            contentTitle = contentData.title || contentData.name_thai || contentData.name_english || contentData.name || contentTitle;
+          }
+        }
+
+        // Create notifications for all admins
+        const notifications = adminUsers.map((admin) => ({
+          user_id: admin.user_id,
+          type: 'content_flag',
+          title: '🚩 มีเนื้อหาใหม่ที่ถูกแจ้งเตือน',
+          message: `เนื้อหา "${contentTitle}" ถูกแจ้งเตือนเป็น ${flagType}`,
+          link_url: `/admin/dashboard/moderation`,
+          metadata: {
+            flag_id: flag.id,
+            content_type: contentType,
+            content_id: contentId,
+            flag_type: flagType,
+            reported_by: user.id,
+            reason: reason || null,
+          },
+        }));
+
+        // Insert notifications in batch
+        const { error: notificationError } = await supabase
+          .from('notifications')
+          .insert(notifications);
+
+        if (notificationError) {
+          console.error('Error creating admin notifications:', notificationError);
+          // Don't fail the request if notification fails
+        } else {
+          console.log(`Sent content flag notifications to ${adminUsers.length} admin(s)`);
+        }
+      }
+    } catch (notificationErr) {
+      console.error('Error sending admin notifications:', notificationErr);
+      // Don't fail the request if notification fails
+    }
+
     return NextResponse.json({
       success: true,
       data: flag,

@@ -96,6 +96,8 @@ export function NotificationList({
       case 'booking_confirmation':
       case 'booking_reminder':
         return '📅';
+      case 'event_reminder':
+        return '🎫';
       case 'payment_received':
       case 'payment_failed':
         return '💳';

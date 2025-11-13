@@ -17,6 +17,7 @@ import { Resend } from 'resend';
 import {
   generateBookingConfirmationHtml,
   generateBookingReminderHtml,
+  generateEventReminderHtml,
   generatePaymentReceiptHtml,
   generatePaymentFailedHtml,
   generatePartnerApprovalHtml,
@@ -466,6 +467,64 @@ export async function sendBookingReminderEmail(data: BookingReminderData) {
     };
   } catch (error) {
     console.error('❌ Error sending booking reminder email:', error);
+    return { success: false, error: 'Failed to send email' };
+  }
+}
+
+/**
+ * Event reminder email data
+ */
+export interface EventReminderData {
+  to: string;
+  customerName: string;
+  eventName: string;
+  eventNameEnglish?: string;
+  eventDate: string;
+  eventTime?: string;
+  location: string;
+  address?: string;
+  ticketCount: number;
+  ticketType?: string;
+  bookingReference?: string;
+  eventUrl?: string;
+}
+
+/**
+ * Send event reminder email (1 day before)
+ */
+export async function sendEventReminderEmail(data: EventReminderData) {
+  if (!resend || !resendApiKey) {
+    console.warn('⚠️ Resend API Key not configured. Email not sent.');
+    return { success: false, error: 'Email service not configured' };
+  }
+
+  try {
+    const result = await resend.emails.send({
+      from: EMAIL_CONFIG.from,
+      to: data.to,
+      subject: `🎫 เตือนความจำ: อีเวนต์ของคุณจะเริ่มในอีก 1 วัน | MUAYTHAI Platform`,
+      html: generateEventReminderHtml({
+        customerName: data.customerName,
+        eventName: data.eventName,
+        eventNameEnglish: data.eventNameEnglish,
+        eventDate: data.eventDate,
+        eventTime: data.eventTime,
+        location: data.location,
+        address: data.address,
+        ticketCount: data.ticketCount,
+        ticketType: data.ticketType,
+        bookingReference: data.bookingReference,
+        eventUrl: data.eventUrl,
+      }),
+    });
+
+    return {
+      success: !result.error,
+      id: result.data?.id,
+      error: result.error,
+    };
+  } catch (error) {
+    console.error('❌ Error sending event reminder email:', error);
     return { success: false, error: 'Failed to send email' };
   }
 }

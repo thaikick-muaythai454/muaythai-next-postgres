@@ -12,6 +12,7 @@ import { addEmailToQueue, type EmailPriority } from './queue';
 import { 
   generateBookingConfirmationHtml,
   generateBookingReminderHtml,
+  generateEventReminderHtml,
   generatePaymentReceiptHtml,
   generatePaymentFailedHtml,
   generatePartnerApprovalHtml,
@@ -56,6 +57,23 @@ export interface BookingReminderDataWithIds {
   gymAddress?: string;
   gymPhone?: string;
   bookingUrl?: string;
+}
+
+export interface EventReminderDataWithIds {
+  to: string;
+  userId?: string;
+  ticketBookingId?: string;
+  customerName: string;
+  eventName: string;
+  eventNameEnglish?: string;
+  eventDate: string;
+  eventTime?: string;
+  location: string;
+  address?: string;
+  ticketCount: number;
+  ticketType?: string;
+  bookingReference?: string;
+  eventUrl?: string;
 }
 
 export interface PaymentReceiptDataWithIds {
@@ -231,6 +249,52 @@ export class EmailService {
       },
       relatedResourceType: 'booking',
       relatedResourceId: data.bookingId,
+    });
+
+    // CRON job will process emails automatically (/api/cron/process-email-queue runs every 5 minutes)
+    // No need to trigger processing immediately - let CRON handle it
+
+    return result;
+  }
+
+  /**
+   * Send event reminder email
+   */
+  static async sendEventReminder(
+    data: EventReminderDataWithIds,
+    options?: EmailServiceOptions
+  ): Promise<{ success: boolean; id?: string; error?: string }> {
+    const htmlContent = generateEventReminderHtml({
+      customerName: data.customerName,
+      eventName: data.eventName,
+      eventNameEnglish: data.eventNameEnglish,
+      eventDate: data.eventDate,
+      eventTime: data.eventTime,
+      location: data.location,
+      address: data.address,
+      ticketCount: data.ticketCount,
+      ticketType: data.ticketType,
+      bookingReference: data.bookingReference,
+      eventUrl: data.eventUrl,
+    });
+
+    const result = await addEmailToQueue({
+      to: data.to,
+      subject: `แจ้งเตือนอีเวนต์ - ${data.eventName} ในอีก 1 วัน 🎫`,
+      htmlContent,
+      emailType: 'event_reminder',
+      priority: options?.priority || 'high',
+      userId: data.userId,
+      scheduledAt: options?.scheduledAt,
+      maxRetries: options?.maxRetries || 3,
+      metadata: {
+        ...options?.metadata,
+        eventName: data.eventName,
+        eventDate: data.eventDate,
+        bookingReference: data.bookingReference,
+      },
+      relatedResourceType: 'ticket_booking',
+      relatedResourceId: data.ticketBookingId,
     });
 
     // CRON job will process emails automatically (/api/cron/process-email-queue runs every 5 minutes)

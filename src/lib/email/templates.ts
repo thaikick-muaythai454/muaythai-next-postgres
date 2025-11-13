@@ -374,6 +374,107 @@ export function generateBookingReminderHtml(data: {
 }
 
 /**
+ * Event Reminder Email Template
+ */
+export function generateEventReminderHtml(data: {
+  customerName: string;
+  eventName: string;
+  eventNameEnglish?: string;
+  eventDate: string;
+  eventTime?: string;
+  location: string;
+  address?: string;
+  ticketCount: number;
+  ticketType?: string;
+  bookingReference?: string;
+  eventUrl?: string;
+}): string {
+  const {
+    customerName,
+    eventName,
+    eventNameEnglish,
+    eventDate,
+    eventTime,
+    location,
+    address,
+    ticketCount,
+    ticketType,
+    bookingReference,
+    eventUrl,
+  } = data;
+
+  const content = `
+    <h2 style="color: #dc2626; margin-top: 0; font-size: 24px;">🎫 เตือนความจำ: อีเวนต์ของคุณจะเริ่มในอีก 1 วัน</h2>
+    
+    <p style="font-size: 16px; color: #374151;">สวัสดี <strong>${customerName}</strong></p>
+    
+    <p style="color: #1f2937;">เราต้องการเตือนคุณว่า อีเวนต์ที่คุณซื้อตั๋วไว้จะเริ่มในวันที่ <strong>${formatThaiDate(eventDate)}</strong>${eventTime ? ` เวลา ${eventTime} น.` : ''}</p>
+    
+    <!-- Event Details -->
+    <div style="background: #fef3c7; border-radius: 8px; padding: 24px; margin: 24px 0; border-left: 4px solid #f59e0b;">
+      <h3 style="color: #92400e; margin-top: 0; font-size: 18px;">รายละเอียดอีเวนต์</h3>
+      
+      <table style="width: 100%; border-collapse: collapse;">
+        <tr>
+          <td style="padding: 8px 0; color: #78350f; width: 40%;">ชื่ออีเวนต์:</td>
+          <td style="padding: 8px 0; color: #78350f; font-weight: 600;">${eventName}${eventNameEnglish ? ` (${eventNameEnglish})` : ''}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #78350f;">วันที่:</td>
+          <td style="padding: 8px 0; color: #78350f; font-weight: 600;">${formatThaiDate(eventDate)}${eventTime ? ` เวลา ${eventTime} น.` : ''}</td>
+        </tr>
+        <tr>
+          <td style="padding: 8px 0; color: #78350f;">สถานที่:</td>
+          <td style="padding: 8px 0; color: #78350f;">${location}</td>
+        </tr>
+        ${address ? `
+        <tr>
+          <td style="padding: 8px 0; color: #78350f;">ที่อยู่:</td>
+          <td style="padding: 8px 0; color: #78350f;">${address}</td>
+        </tr>
+        ` : ''}
+        <tr>
+          <td style="padding: 8px 0; color: #78350f;">จำนวนตั๋ว:</td>
+          <td style="padding: 8px 0; color: #78350f;">${ticketCount} ใบ${ticketType ? ` (${ticketType})` : ''}</td>
+        </tr>
+        ${bookingReference ? `
+        <tr>
+          <td style="padding: 8px 0; color: #78350f;">หมายเลขการจอง:</td>
+          <td style="padding: 8px 0; color: #78350f; font-weight: 600;">${bookingReference}</td>
+        </tr>
+        ` : ''}
+      </table>
+    </div>
+    
+    <div style="background: #dbeafe; border: 1px solid #3b82f6; border-radius: 8px; padding: 16px; margin: 24px 0;">
+      <p style="margin: 0; color: #1e40af; font-size: 14px;">
+        <strong>💡 คำแนะนำ:</strong>
+      </p>
+      <ul style="margin: 8px 0 0 0; padding-left: 20px; color: #1e40af; font-size: 14px;">
+        <li>เตรียม QR Code หรือหมายเลขการจองเพื่อเช็คอิน</li>
+        <li>มาให้ตรงเวลาเพื่อให้การเช็คอินเป็นไปอย่างรวดเร็ว</li>
+        <li>ตรวจสอบสถานที่และเส้นทางล่วงหน้า</li>
+        <li>หากมีคำถามกรุณาติดต่อเราที่ <a href="mailto:support@muaythai.com" style="color: #1e40af;">support@muaythai.com</a></li>
+      </ul>
+    </div>
+    
+    ${eventUrl ? `
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${eventUrl}" style="display: inline-block; background: #dc2626; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+        ดูรายละเอียดอีเวนต์
+      </a>
+    </div>
+    ` : ''}
+    
+    <p style="color: #6b7280; font-size: 14px; margin-top: 30px;">
+      หากต้องการยกเลิกหรือเปลี่ยนแปลงการจอง กรุณาติดต่อเราทันทีที่ <a href="mailto:support@muaythai.com" style="color: #dc2626;">support@muaythai.com</a>
+    </p>
+  `;
+
+  return getBaseEmailTemplate(content);
+}
+
+/**
  * Payment Failed Email Template
  */
 export function generatePaymentFailedHtml(data: {
