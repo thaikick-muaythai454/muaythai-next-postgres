@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Link } from '@/navigation';
+import { useLocale } from 'next-intl';
 import { createClient } from "@/lib/database/supabase/client";
 import {
   ExclamationTriangleIcon,
@@ -40,6 +41,7 @@ interface FormErrors {
 export default function ResetPasswordPage() {
   // Supabase client instance
   const supabase = createClient();
+  const locale = useLocale();
 
   // Form state
   const [formData, setFormData] = useState<ResetPasswordFormData>({
@@ -111,7 +113,7 @@ export default function ResetPasswordPage() {
       const { error } = await supabase.auth.resetPasswordForEmail(
         formData.email,
         {
-          redirectTo: `${window.location.origin}/auth/callback?type=recovery&next=/update-password`,
+          redirectTo: `${window.location.origin}/${locale}/auth/callback?type=recovery&next=/update-password`,
         }
       );
 

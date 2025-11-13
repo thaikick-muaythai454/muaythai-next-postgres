@@ -7,16 +7,31 @@ import { createClient } from '@/lib/database/supabase/client';
 import type { SignUpCredentials, SignInCredentials } from '@/types';
 
 /**
+ * Helper function to get current locale from pathname
+ * Falls back to 'th' if locale cannot be determined
+ */
+function getCurrentLocale(): string {
+  if (typeof window === 'undefined') {
+    return 'th'; // Default locale for SSR
+  }
+  
+  const pathname = window.location.pathname;
+  const localeMatch = pathname.match(/^\/(th|en|jp)(\/|$)/);
+  return localeMatch ? localeMatch[1] : 'th';
+}
+
+/**
  * ลงทะเบียนผู้ใช้ใหม่
  */
 export async function signUp(credentials: SignUpCredentials) {
   const supabase = createClient();
+  const locale = getCurrentLocale();
   
   const { data, error } = await supabase.auth.signUp({
     email: credentials.email,
     password: credentials.password,
     options: {
-      emailRedirectTo: `${window.location.origin}/examples/auth`,
+      emailRedirectTo: `${window.location.origin}/${locale}/auth/callback`,
     },
   });
 
@@ -93,11 +108,12 @@ type OAuthProvider = 'google' | 'facebook' | 'apple';
  */
 async function signInWithOAuthProvider(provider: OAuthProvider) {
   const supabase = createClient();
+  const locale = getCurrentLocale();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: `${window.location.origin}/${locale}/auth/callback`,
     },
   });
 
@@ -129,11 +145,12 @@ export async function signInWithFacebook() {
  */
 async function linkOAuthAccount(provider: Exclude<OAuthProvider, 'apple'>) {
   const supabase = createClient();
+  const locale = getCurrentLocale();
 
   const { data, error } = await supabase.auth.linkIdentity({
     provider,
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: `${window.location.origin}/${locale}/auth/callback`,
     },
   });
 

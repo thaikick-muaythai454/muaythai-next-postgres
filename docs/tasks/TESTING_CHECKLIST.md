@@ -558,13 +558,20 @@
 ### ✅ 9. Event Tracking
 
 **Test Cases:**
-- [ ] **TC-9.1**: User Signup Event
-  - [ ] Call `trackUserSignup(userId, method)`
-  - [ ] Event sent to GA with:
-    - `event_name: 'user_signup'`
-    - `user_id`: userId
-    - `signup_method`: method (email/google)
-  - [ ] Verify in GA Real-Time events *(ใช้ `window.trackUserSignup()` ได้แล้วหลัง deploy analytics helpers)*
+- [x] **TC-9.1**: User Signup Event
+  - [x] Call `trackUserSignup(userId, method)` *(implemented in signup page)*
+  - [x] Event sent to GA with:
+    - `event_name: 'sign_up'` (standard GA4 event) *(verified in unit tests)*
+    - `user_id`: userId *(verified in unit tests)*
+    - `method`: method (email/google) *(verified in unit tests)*
+  - [x] Unit tests created *(tests/unit/analytics/track-user-signup.test.ts - 10 tests passing)*
+  - [ ] Verify in GA Real-Time events *(see docs/guild/GA_REALTIME_VERIFICATION.md for detailed instructions)*
+    - [ ] Open GA Real-Time dashboard → Reports → Real-time
+    - [ ] Perform signup in browser
+    - [ ] Verify `sign_up` event appears in Real-Time events
+    - [ ] Verify event parameters: `user_id` and `method` are correct
+    - [ ] Alternative: Use browser DevTools Network tab to verify requests to google-analytics.com
+    - [ ] Helper script: `node scripts/test-ga-signup-event.js`
 
 - [ ] **TC-9.2**: User Login Event
   - [ ] Call `trackUserLogin(userId, method)`
