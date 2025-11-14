@@ -967,11 +967,35 @@
   - [x] UI: Upload, Organize, Set Featured Image (`/partner/dashboard/gallery`)
   - [x] Image optimization + CDN (client-side optimization before upload, Supabase Storage with CDN)
   
-- [ ] **Reviews Management UI** - ดูและตอบกลับรีวิว
-  - [ ] UI: `/partner/dashboard/reviews`
-  - [ ] Integration: Google Reviews API
-  - [ ] Reply to Reviews (if supported)
-  - [ ] Review Analytics
+- [x] **Reviews Management UI** - ดูและตอบกลับรีวิว ✅
+  - [x] Database: `gym_reviews`, `review_replies`, `review_flags`, `review_helpful_votes`, `review_analytics`, `google_reviews_sync` ✅
+  - [x] API Routes: `/api/partner/reviews/*` (GET, POST, PATCH, DELETE) ✅
+  - [x] API: `/api/partner/reviews/[id]/reply` (POST, PATCH, DELETE) - Reply management ✅
+  - [x] API: `/api/partner/reviews/analytics` - Review analytics and statistics ✅
+  - [x] API: `/api/partner/reviews/stats` - Review stats (pending, needs response, etc.) ✅
+  - [x] UI Components: ReviewCard, ReviewList, ReviewStats, ReviewAnalytics ✅
+  - [x] UI: `/partner/dashboard/reviews` (4 tabs: All, Pending, Needs Response, Analytics) ✅
+  - [x] Features:
+    - [x] Display reviews with user details and ratings ✅
+    - [x] Reply to reviews (create, edit, delete) ✅
+    - [x] Filter and sort reviews (by rating, status, date) ✅
+    - [x] Review statistics and analytics dashboard ✅
+    - [x] Rating distribution visualization ✅
+    - [x] Response rate tracking ✅
+    - [x] Average response time calculation ✅
+    - [x] Top and recent reviews display ✅
+    - [x] Review moderation system (approve, reject, hide) ✅
+    - [x] Flag/report system for inappropriate reviews ✅
+    - [x] Helpful votes on reviews ✅
+    - [x] Verified visit badges for booking-linked reviews ✅
+  - [x] Integration: Google Reviews API (Documentation + Placeholder) ✅
+    - [x] Documentation: `GOOGLE_REVIEWS_INTEGRATION.md` ✅
+    - [x] API: `/api/partner/reviews/google/connect` - OAuth connection ✅
+    - [x] API: `/api/partner/reviews/google/sync` - Manual sync trigger ✅
+    - [ ] Full implementation (requires Google Business Profile API credentials)
+  - [x] i18n: Complete translations (EN, TH, JP) ✅
+  - [x] RLS Policies: Proper access control for partners and admins ✅
+  - [x] Triggers: Auto-update analytics, response flags, helpful counts ✅
 
 **📝 หมายเหตุ**: Messages System เสร็จแล้ว! ✅ Features ที่ขาดเป็น Optional - ระบบหลักพร้อมใช้งานแล้ว (90%)
 

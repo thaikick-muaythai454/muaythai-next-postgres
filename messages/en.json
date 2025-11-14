@@ -142,5 +142,144 @@
     "passwordTooShort": "Password must be at least {min} characters",
     "passwordMismatch": "Passwords do not match",
     "invalidPhone": "Invalid phone number"
+  },
+  "reviews": {
+    "title": "Reviews Management",
+    "subtitle": "Manage and respond to customer reviews",
+    "tabs": {
+      "all": "All Reviews",
+      "pending": "Pending",
+      "needsResponse": "Needs Response",
+      "analytics": "Analytics"
+    },
+    "stats": {
+      "totalReviews": "Total Reviews",
+      "averageRating": "Average Rating",
+      "responseRate": "Response Rate",
+      "recommendRate": "Recommend Rate",
+      "pendingReviews": "Pending Reviews",
+      "needsResponse": "Needs Response",
+      "recentReviews": "Recent Reviews",
+      "last7Days": "Last 7 Days",
+      "last30Days": "Last 30 Days"
+    },
+    "filters": {
+      "allRatings": "All Ratings",
+      "5stars": "5 Stars",
+      "4stars": "4 Stars",
+      "3stars": "3 Stars",
+      "2stars": "2 Stars",
+      "1star": "1 Star",
+      "allStatus": "All Status",
+      "hasResponse": "Has Response",
+      "noResponse": "No Response",
+      "sortBy": "Sort By",
+      "newest": "Newest First",
+      "oldest": "Oldest First",
+      "highestRating": "Highest Rating",
+      "lowestRating": "Lowest Rating",
+      "mostHelpful": "Most Helpful"
+    },
+    "card": {
+      "rating": "Rating",
+      "visitDate": "Visit Date",
+      "verified": "Verified Visit",
+      "recommend": "Recommends this gym",
+      "helpful": "helpful",
+      "reply": "Reply",
+      "edit": "Edit Reply",
+      "delete": "Delete Reply",
+      "viewMore": "View More",
+      "yourReply": "Your Reply",
+      "edited": "Edited",
+      "postedOn": "Posted on"
+    },
+    "reply": {
+      "title": "Reply to Review",
+      "placeholder": "Write your response...",
+      "submit": "Submit Reply",
+      "update": "Update Reply",
+      "cancel": "Cancel",
+      "successCreate": "Reply posted successfully",
+      "successUpdate": "Reply updated successfully",
+      "successDelete": "Reply deleted successfully",
+      "errorCreate": "Failed to post reply",
+      "errorUpdate": "Failed to update reply",
+      "errorDelete": "Failed to delete reply",
+      "confirmDelete": "Are you sure you want to delete this reply?",
+      "guidelines": {
+        "title": "Reply Guidelines",
+        "tip1": "Be professional and courteous",
+        "tip2": "Address specific concerns mentioned",
+        "tip3": "Thank reviewers for their feedback",
+        "tip4": "Keep responses concise and clear"
+      }
+    },
+    "moderation": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "hide": "Hide",
+      "flag": "Flag",
+      "reason": "Reason",
+      "reasonPlaceholder": "Explain why...",
+      "successApprove": "Review approved",
+      "successReject": "Review rejected",
+      "successHide": "Review hidden",
+      "errorModerate": "Failed to moderate review"
+    },
+    "analytics": {
+      "title": "Review Analytics",
+      "overview": "Overview",
+      "ratingDistribution": "Rating Distribution",
+      "reviewsTrend": "Reviews Trend",
+      "topReviews": "Top Reviews",
+      "recentActivity": "Recent Activity",
+      "responseTime": "Average Response Time",
+      "hours": "hours",
+      "reviews": "reviews",
+      "noData": "No review data available yet",
+      "chart": {
+        "reviews": "Reviews",
+        "rating": "Rating",
+        "month": "Month"
+      }
+    },
+    "empty": {
+      "title": "No Reviews Yet",
+      "description": "You haven't received any reviews for your gym yet",
+      "tip": "💡 Great reviews help attract more customers. Encourage your satisfied customers to leave a review!",
+      "noFiltered": "No reviews match your filters",
+      "tryAdjust": "Try adjusting your filters"
+    },
+    "actions": {
+      "refresh": "Refresh",
+      "exportData": "Export Data",
+      "viewDetails": "View Details",
+      "markAsRead": "Mark as Read"
+    },
+    "notifications": {
+      "newReview": "New review received",
+      "newReply": "New reply to your review",
+      "reviewFlagged": "A review has been flagged"
+    },
+    "google": {
+      "title": "Google Reviews Integration",
+      "subtitle": "Connect your Google Business Profile to sync reviews",
+      "connect": "Connect Google",
+      "disconnect": "Disconnect",
+      "sync": "Sync Now",
+      "autoSync": "Auto Sync",
+      "syncFrequency": "Sync Frequency",
+      "lastSync": "Last Synced",
+      "totalSynced": "Total Synced Reviews",
+      "status": {
+        "connected": "Connected",
+        "disconnected": "Not Connected",
+        "syncing": "Syncing...",
+        "success": "Sync Successful",
+        "failed": "Sync Failed",
+        "disabled": "Disabled"
+      }
+    }
   }
 }
