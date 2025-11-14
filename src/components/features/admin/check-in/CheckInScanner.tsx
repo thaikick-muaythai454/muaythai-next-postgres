@@ -55,6 +55,7 @@ export function CheckInScanner() {
                   variant="light"
                   onPress={() => handleManualInput()}
                   isDisabled={!ticketId.trim()}
+                  aria-label="เช็คอิน"
                 >
                   <QrCodeIcon className="w-5 h-5" />
                 </Button>

@@ -360,6 +360,7 @@ function AdminPromotionsContent() {
                           variant="light"
                           isIconOnly
                           onPress={() => handleEdit(promotion)}
+                          aria-label="แก้ไขโปรโมชั่น"
                         >
                           <PencilIcon className="w-4 h-4" />
                         </Button>
@@ -369,6 +370,7 @@ function AdminPromotionsContent() {
                           color="danger"
                           isIconOnly
                           onPress={() => handleDeleteClick(promotion)}
+                          aria-label="ลบโปรโมชั่น"
                         >
                           <TrashIcon className="w-4 h-4" />
                         </Button>

@@ -123,6 +123,19 @@
     "recentActivity": "最近のアクティビティ",
     "quickActions": "クイックアクション"
   },
+  "error": {
+    "boundary": {
+      "title": "エラーが発生しました",
+      "description": "申し訳ございません。予期しないエラーが発生しました。チームに通知され、対応中です。",
+      "tryAgain": "もう一度試す",
+      "goHome": "ホームに戻る",
+      "goToDashboard": "ダッシュボードに移動",
+      "reportIssue": "問題を報告",
+      "details": "エラー詳細",
+      "showDetails": "詳細を表示",
+      "hideDetails": "詳細を非表示"
+    }
+  },
   "validation": {
     "required": "{field}を入力してください",
     "invalidEmail": "無効なメール形式",

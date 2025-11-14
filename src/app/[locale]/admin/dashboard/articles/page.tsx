@@ -324,6 +324,7 @@ function AdminArticlesContent() {
                           variant="light"
                           isIconOnly
                           onPress={() => window.open(`/articles/${article.slug}`, '_blank')}
+                          aria-label="ดูบทความ"
                         >
                           <EyeIcon className="w-4 h-4" />
                         </Button>
@@ -332,6 +333,7 @@ function AdminArticlesContent() {
                           variant="light"
                           isIconOnly
                           onPress={() => handleEdit(article)}
+                          aria-label="แก้ไขบทความ"
                         >
                           <PencilIcon className="w-4 h-4" />
                         </Button>
@@ -349,6 +351,7 @@ function AdminArticlesContent() {
                           color="danger"
                           isIconOnly
                           onPress={() => handleDeleteClick(article)}
+                          aria-label="ลบบทความ"
                         >
                           <TrashIcon className="w-4 h-4" />
                         </Button>

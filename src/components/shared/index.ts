@@ -47,6 +47,8 @@ export { ErrorBoundary as UIErrorBoundary } from './ui/ErrorBoundary';
 export { FavoriteButton } from './FavoriteButton';
 export { NotificationBell } from './NotificationBell';
 export { NotificationList } from './NotificationList';
+export { ResponsiveTable } from './ResponsiveTable';
+export type { ResponsiveTableColumn, ResponsiveTableProps } from './ResponsiveTable';
 
 // === TYPE EXPORTS ===
 // Component Types

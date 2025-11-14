@@ -127,6 +127,7 @@ export default function DashboardLayout({
               isIconOnly
               variant="light"
               onPress={() => setIsSidebarOpen(true)}
+              aria-label="เปิดเมนู"
             >
               <Bars3Icon className="w-6 h-6 text-white" />
             </Button>

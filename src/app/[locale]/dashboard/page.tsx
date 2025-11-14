@@ -8,19 +8,14 @@ import { createClient } from "@/lib/database/supabase/client";
 import { RoleGuard } from "@/components/features/auth";
 import { Loading } from "@/components/design-system/primitives/Loading";
 import { getUserRole, ROLE_NAMES } from "@/lib/auth/client";
-import { DashboardLayout, dashboardMenuItems } from "@/components/shared";
+import { DashboardLayout, dashboardMenuItems, ResponsiveTable } from "@/components/shared";
+import type { ResponsiveTableColumn } from "@/components/shared";
 import GamificationWidget from "@/components/features/gamification/GamificationWidget";
 import {
   Card,
   CardBody,
   Button,
   Chip,
-  Table,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
 } from "@heroui/react";
 import {
   ArrowRightIcon,
@@ -191,85 +186,92 @@ function RecentBookingsSection({
       </div>
       <Card className="bg-zinc-900 backdrop-blur-sm border border-zinc-700 rounded-lg">
         <CardBody className="p-0">
-          <Table
-            aria-label="Recent bookings table"
-            classNames={{
-              wrapper: "bg-transparent",
-              thead: "bg-transparent",
-              th: "bg-transparent text-white border-b border-zinc-700 py-4 font-medium",
-            }}
-          >
-            <TableHeader>
-              <TableColumn>เลขที่การจอง</TableColumn>
-              <TableColumn>ยิม</TableColumn>
-              <TableColumn>แพ็คเกจ</TableColumn>
-              <TableColumn>วันที่</TableColumn>
-              <TableColumn>ยอดเงิน</TableColumn>
-              <TableColumn>สถานะ</TableColumn>
-            </TableHeader>
-            <TableBody emptyContent="ยังไม่มีการจอง">
-              {recentBookings.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={6}
-                    className="py-10 text-center text-default-500"
+          <ResponsiveTable
+            columns={[
+              {
+                key: 'booking_number',
+                label: 'เลขที่การจอง',
+                render: (booking) => (
+                  <span className="font-mono text-sm">{booking.booking_number}</span>
+                ),
+                showOnMobile: true,
+              },
+              {
+                key: 'gym_name',
+                label: 'ยิม',
+                render: (booking) => (
+                  <span className="font-semibold text-white">
+                    {booking.gyms?.gym_name || "N/A"}
+                  </span>
+                ),
+                showOnMobile: true,
+              },
+              {
+                key: 'package_name',
+                label: 'แพ็คเกจ',
+                render: (booking) => (
+                  <span className="text-default-400">{booking.package_name}</span>
+                ),
+                showOnMobile: false,
+              },
+              {
+                key: 'start_date',
+                label: 'วันที่',
+                render: (booking) => (
+                  <span className="text-default-400">
+                    {new Date(booking.start_date).toLocaleDateString("th-TH", {
+                      year: "numeric",
+                      month: "short",
+                      day: "numeric",
+                    })}
+                  </span>
+                ),
+                showOnMobile: false,
+              },
+              {
+                key: 'price_paid',
+                label: 'ยอดเงิน',
+                render: (booking) => (
+                  <span className="font-mono text-white">
+                    ฿{Number(booking.price_paid).toLocaleString()}
+                  </span>
+                ),
+                showOnMobile: true,
+              },
+              {
+                key: 'status',
+                label: 'สถานะ',
+                render: (booking) => (
+                  <Chip
+                    size="sm"
+                    color={
+                      booking.status === "pending"
+                        ? "default"
+                        : booking.status === "confirmed"
+                          ? "warning"
+                          : booking.status === "completed"
+                            ? "success"
+                            : "danger"
+                    }
+                    variant="flat"
                   >
-                    ยังไม่มีการจอง
-                  </TableCell>
-                </TableRow>
-              ) : (
-                recentBookings.map((booking: BookingWithGym) => (
-                  <TableRow key={booking.id} className="hover:bg-zinc-800/50">
-                    <TableCell className="font-mono text-sm">
-                      {booking.booking_number}
-                    </TableCell>
-                    <TableCell className="font-semibold text-white">
-                      {booking.gyms?.gym_name || "N/A"}
-                    </TableCell>
-                    <TableCell className="text-default-400">
-                      {booking.package_name}
-                    </TableCell>
-                    <TableCell className="text-default-400">
-                      {new Date(booking.start_date).toLocaleDateString(
-                        "th-TH",
-                        {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        }
-                      )}
-                    </TableCell>
-                    <TableCell className="font-mono text-white">
-                      ฿{Number(booking.price_paid).toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        size="sm"
-                        color={
-                          booking.status === "pending"
-                            ? "default"
-                            : booking.status === "confirmed"
-                              ? "warning"
-                              : booking.status === "completed"
-                                ? "success"
-                                : "danger"
-                        }
-                        variant="flat"
-                      >
-                        {booking.status === "pending"
-                          ? "รอดำเนินการ"
-                          : booking.status === "confirmed"
-                            ? "ยืนยันแล้ว"
-                            : booking.status === "completed"
-                              ? "เสร็จสิ้น"
-                              : "ยกเลิก"}
-                      </Chip>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                    {booking.status === "pending"
+                      ? "รอดำเนินการ"
+                      : booking.status === "confirmed"
+                        ? "ยืนยันแล้ว"
+                        : booking.status === "completed"
+                          ? "เสร็จสิ้น"
+                          : "ยกเลิก"}
+                  </Chip>
+                ),
+                showOnMobile: true,
+              },
+            ] as ResponsiveTableColumn<BookingWithGym>[]}
+            data={recentBookings}
+            keyExtractor={(booking) => booking.id}
+            emptyContent="ยังไม่มีการจอง"
+            ariaLabel="Recent bookings table"
+          />
         </CardBody>
       </Card>
     </section>

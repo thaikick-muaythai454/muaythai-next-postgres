@@ -195,55 +195,109 @@ function SignupContent() {
   };
 
   /**
+   * Validate individual field
+   * @param fieldName - Name of the field to validate
+   * @param value - Value to validate (optional, uses formData if not provided)
+   * @returns Error message or empty string if valid
+   */
+  const validateField = (fieldName: keyof FormErrors, value?: string): string => {
+    const val = value !== undefined ? value : formData[fieldName as keyof SignupFormData] as string;
+
+    switch (fieldName) {
+      case "username":
+        if (!val.trim()) {
+          return "กรุณากรอก Username";
+        } else if (val.trim().length < 3) {
+          return "Username ต้องมีอย่างน้อย 3 ตัวอักษร";
+        } else if (!/^[a-zA-Z0-9_]+$/.test(val)) {
+          return "Username ต้องประกอบด้วย ตัวอักษร ตัวเลข และ _ เท่านั้น";
+        }
+        return "";
+
+      case "fullName":
+        if (!val.trim()) {
+          return "กรุณากรอกชื่อ-นามสกุล";
+        } else if (val.trim().length < 2) {
+          return "ชื่อต้องมีอย่างน้อย 2 ตัวอักษร";
+        }
+        return "";
+
+      case "phone":
+        if (!val.trim()) {
+          return "กรุณากรอกเบอร์โทรศัพท์";
+        } else if (!/^(0[6-9])\d{8}$/.test(val)) {
+          return "รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (เช่น 0812345678)";
+        }
+        return "";
+
+      case "email":
+        if (!val.trim()) {
+          return "กรุณากรอกอีเมล";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+          return "รูปแบบอีเมลไม่ถูกต้อง";
+        }
+        return "";
+
+      case "password":
+        return validatePasswordStrong(val, true) || "";
+
+      case "confirmPassword":
+        if (!val) {
+          return "กรุณายืนยันรหัสผ่าน";
+        } else if (formData.password !== val) {
+          return "รหัสผ่านไม่ตรงกัน";
+        }
+        return "";
+
+      default:
+        return "";
+    }
+  };
+
+  /**
+   * Handle blur event for form fields
+   * Validates the field when user leaves it
+   */
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const fieldName = name as keyof FormErrors;
+    
+    // Skip validation for empty optional fields
+    if (fieldName === "referralCode") return;
+    
+    const error = validateField(fieldName, value);
+    
+    if (error) {
+      setErrors((prev) => ({
+        ...prev,
+        [fieldName]: error,
+      }));
+    }
+  };
+
+  /**
    * Validate form inputs
    * @returns true if form is valid, false otherwise
    */
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // Username validation
-    if (!formData.username.trim()) {
-      newErrors.username = "กรุณากรอก Username";
-    } else if (formData.username.trim().length < 3) {
-      newErrors.username = "Username ต้องมีอย่างน้อย 3 ตัวอักษร";
-    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      newErrors.username =
-        "Username ต้องประกอบด้วย ตัวอักษร ตัวเลข และ _ เท่านั้น";
-    }
+    // Validate all fields
+    const fieldsToValidate: (keyof FormErrors)[] = [
+      "username",
+      "fullName",
+      "email",
+      "phone",
+      "password",
+      "confirmPassword",
+    ];
 
-    // Full name validation
-    if (!formData.fullName.trim()) {
-      newErrors.fullName = "กรุณากรอกชื่อ-นามสกุล";
-    } else if (formData.fullName.trim().length < 2) {
-      newErrors.fullName = "ชื่อต้องมีอย่างน้อย 2 ตัวอักษร";
-    }
-
-    // Phone validation
-    if (!formData.phone.trim()) {
-      newErrors.phone = "กรุณากรอกเบอร์โทรศัพท์";
-    } else if (!/^(0[6-9])\d{8}$/.test(formData.phone)) {
-      newErrors.phone = "รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง";
-    }
-
-    // Email validation
-    if (!formData.email.trim()) {
-      newErrors.email = "กรุณากรอกอีเมล";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "รูปแบบอีเมลไม่ถูกต้อง";
-    }
-
-    // Password validation with strength requirements
-    const passwordError = validatePasswordStrong(formData.password, true);
-    if (passwordError) {
-      newErrors.password = passwordError;
-    }
-
-    // Confirm password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "กรุณายืนยันรหัสผ่าน";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "รหัสผ่านไม่ตรงกัน";
-    }
+    fieldsToValidate.forEach((field) => {
+      const error = validateField(field);
+      if (error) {
+        newErrors[field] = error;
+      }
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -420,76 +474,50 @@ function SignupContent() {
           console.warn("Analytics tracking error:", error);
         }
 
-        // Signup successful - Get user role and redirect to appropriate dashboard
-        // Note: profile and user_role are created automatically by database trigger
-        try {
-          // Wait a bit for the trigger to complete
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+        // Process referral code in background (don't block redirect)
+        const normalizedFormCode = formData.referralCode.trim().toUpperCase();
+        const referralCodeToProcess = (() => {
+          if (
+            normalizedFormCode &&
+            isValidReferralCodeFormat(normalizedFormCode)
+          ) {
+            return normalizedFormCode;
+          }
+          return storedReferralCode;
+        })();
 
-          // Process referral code if provided
-          const normalizedFormCode = formData.referralCode.trim().toUpperCase();
-          const referralCodeToProcess = (() => {
-            if (
-              normalizedFormCode &&
-              isValidReferralCodeFormat(normalizedFormCode)
-            ) {
-              return normalizedFormCode;
-            }
-            return storedReferralCode;
-          })();
-
-          if (referralCodeToProcess) {
-            try {
-              const response = await fetch("/api/affiliate/validate", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ code: referralCodeToProcess }),
-              });
-
+        if (referralCodeToProcess && data.user) {
+          const userId = data.user.id;
+          // Process referral code asynchronously
+          fetch("/api/affiliate/validate", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ code: referralCodeToProcess }),
+          })
+            .then(async (response) => {
               if (response.ok) {
-                // Award referral points to the referrer
                 await fetch("/api/affiliate", {
                   method: "POST",
                   headers: {
                     "Content-Type": "application/json",
                   },
                   body: JSON.stringify({
-                    referredUserId: data.user.id,
+                    referredUserId: userId,
                     referralCode: referralCodeToProcess,
                   }),
                 });
-
-                // Clear referral code after successful processing
                 clearReferralCode();
               }
-            } catch {
-              // Error processing referral
-              // Don't fail the signup if referral processing fails
-            }
-          }
-
-          // Fetch user role
-          const { data: roleData } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", data.user.id)
-            .maybeSingle();
-
-          // Redirect based on role
-          if (roleData?.role === "admin") {
-            router.push("/admin/dashboard");
-          } else if (roleData?.role === "partner") {
-            router.push("/partner/dashboard");
-          } else {
-            // Default to user dashboard or home
-            router.push("/dashboard");
-          }
-        } catch {
-          // If role fetch fails, redirect to home
-          router.push("/");
+            })
+            .catch(() => {
+              // Silently fail - don't block user flow
+            });
         }
+
+        // Redirect to verification pending page
+        router.push(`/${locale}/verification-pending?email=${encodeURIComponent(formData.email)}`);
       }
     } catch {
       setErrors({
@@ -688,6 +716,7 @@ function SignupContent() {
                   name="username"
                   value={formData.username}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
                     errors.username
                       ? "border-red-500/70 shadow-red-500/20"
@@ -720,6 +749,7 @@ function SignupContent() {
                   name="fullName"
                   value={formData.fullName}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
                     errors.fullName
                       ? "border-red-500/70 shadow-red-500/20"
@@ -752,6 +782,7 @@ function SignupContent() {
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
                     errors.email
                       ? "border-red-500/70 shadow-red-500/20"
@@ -784,6 +815,7 @@ function SignupContent() {
                   name="phone"
                   value={formData.phone}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
                     errors.phone
                       ? "border-red-500/70 shadow-red-500/20"
@@ -816,6 +848,7 @@ function SignupContent() {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
                     errors.password
                       ? "border-red-500/70 shadow-red-500/20"
@@ -838,11 +871,53 @@ function SignupContent() {
                   )}
                 </Button>
               </div>
-              {formData.password && !errors.password && (
-                <p className={`mt-2 text-sm ${passwordStrength.color}`}>
-                  ความแข็งแรง: {passwordStrength.level}
-                </p>
+              
+              {/* Password Requirements - Show always */}
+              {!errors.password && (
+                <div className="mt-2 space-y-1">
+                  {formData.password && (
+                    <p className={`text-sm ${passwordStrength.color}`}>
+                      ความแข็งแรง: {passwordStrength.level}
+                    </p>
+                  )}
+                  <div className="bg-zinc-800/30 border border-zinc-700/50 rounded-lg p-3">
+                    <p className="text-zinc-400 text-xs mb-2">รหัสผ่านต้องมี:</p>
+                    <ul className="space-y-1 text-zinc-500 text-xs">
+                      <li className="flex items-center gap-2">
+                        <span className={formData.password.length >= 8 ? "text-green-400" : ""}>
+                          {formData.password.length >= 8 ? "✓" : "○"}
+                        </span>
+                        อย่างน้อย 8 ตัวอักษร
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className={/[a-z]/.test(formData.password) ? "text-green-400" : ""}>
+                          {/[a-z]/.test(formData.password) ? "✓" : "○"}
+                        </span>
+                        ตัวอักษรพิมพ์เล็ก (a-z)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className={/[A-Z]/.test(formData.password) ? "text-green-400" : ""}>
+                          {/[A-Z]/.test(formData.password) ? "✓" : "○"}
+                        </span>
+                        ตัวอักษรพิมพ์ใหญ่ (A-Z)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className={/\d/.test(formData.password) ? "text-green-400" : ""}>
+                          {/\d/.test(formData.password) ? "✓" : "○"}
+                        </span>
+                        ตัวเลข (0-9)
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <span className={/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password) ? "text-green-400" : ""}>
+                          {/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(formData.password) ? "✓" : "○"}
+                        </span>
+                        อักขระพิเศษ (!@#$%^&*)
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               )}
+              
               {errors.password && (
                 <p className="flex items-center gap-1 mt-2 text-red-400 text-sm">
                   <ExclamationTriangleIcon className="w-4 h-4" />
@@ -866,6 +941,7 @@ function SignupContent() {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
                     errors.confirmPassword
                       ? "border-red-500/70 shadow-red-500/20"

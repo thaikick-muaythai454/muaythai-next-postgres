@@ -405,6 +405,7 @@ function AdminProductsContent() {
                             setSelectedProduct(product);
                             detailModal.onOpen();
                           }}
+                          aria-label="ดูรายละเอียดสินค้า"
                         >
                           <EyeIcon className="w-4 h-4" />
                         </Button>
@@ -429,6 +430,7 @@ function AdminProductsContent() {
                             variantsModal.onOpen();
                           }}
                           title="จัดการ Variants"
+                          aria-label="จัดการ Variants สินค้า"
                         >
                           <TagIcon className="w-4 h-4" />
                         </Button>
@@ -453,6 +455,7 @@ function AdminProductsContent() {
                             imagesModal.onOpen();
                           }}
                           title="จัดการรูปภาพ"
+                          aria-label="จัดการรูปภาพสินค้า"
                         >
                           <PhotoIcon className="w-4 h-4" />
                         </Button>
@@ -466,6 +469,7 @@ function AdminProductsContent() {
                             inventoryModal.onOpen();
                           }}
                           title="จัดการสต็อก"
+                          aria-label="จัดการสต็อกสินค้า"
                         >
                           <AdjustmentsHorizontalIcon className="w-4 h-4" />
                         </Button>
@@ -477,6 +481,7 @@ function AdminProductsContent() {
                             setSelectedProduct(product);
                             editModal.onOpen();
                           }}
+                          aria-label="แก้ไขสินค้า"
                         >
                           <PencilIcon className="w-4 h-4" />
                         </Button>
@@ -489,6 +494,7 @@ function AdminProductsContent() {
                             setSelectedProduct(product);
                             deleteDialog.onOpen();
                           }}
+                          aria-label="ลบสินค้า"
                         >
                           <TrashIcon className="w-4 h-4" />
                         </Button>

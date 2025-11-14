@@ -481,6 +481,7 @@ function PartnerPayoutsContent() {
                         color="secondary"
                         isIconOnly
                         onPress={() => handleViewDetails(payout)}
+                        aria-label="ดูรายละเอียดการจ่ายเงิน"
                       >
                         <EyeIcon className="w-4 h-4" />
                       </Button>

@@ -361,6 +361,7 @@ function PartnerBookingsContent() {
                           variant="flat"
                           color="primary"
                           onPress={() => handleViewBooking(booking)}
+                          aria-label="ดูรายละเอียดการจอง"
                         >
                           <EyeIcon className="w-4 h-4" />
                         </Button>

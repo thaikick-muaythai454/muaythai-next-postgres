@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
-import { DashboardLayout } from '@/components/shared';
+import { DashboardLayout, ResponsiveTable } from '@/components/shared';
+import type { ResponsiveTableColumn } from '@/components/shared';
 import { adminMenuItems } from '@/components/features/admin/adminMenuItems';
-import { Card, CardBody, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Chip, Button, Input, Tabs, Tab, useDisclosure } from '@heroui/react';
+import { Card, CardBody, Chip, Button, Input, Tabs, Tab, useDisclosure } from '@heroui/react';
 import {
   MagnifyingGlassIcon,
   EyeIcon,
@@ -188,83 +189,112 @@ function AdminGymsContent() {
               <Tab key="rejected" title="ไม่อนุมัติ" />
             </Tabs>
 
-            <Table
-              aria-label="Gyms table"
-              classNames={{
-                wrapper: 'bg-transparent border border-default-200 rounded-lg overflow-hidden',
-                th: 'bg-default-100/80 text-default-700 font-semibold text-xs uppercase tracking-wide border-b border-default-200 py-3',
-                td: 'border-b border-default-200/50 py-4 text-sm align-middle',
-                tr: 'hover:bg-default-50/50 transition-colors',
-              }}
-              removeWrapper={false}
-            >
-              <TableHeader>
-                <TableColumn>ชื่อยิม</TableColumn>
-                <TableColumn>ผู้ติดต่อ</TableColumn>
-                <TableColumn>โทรศัพท์</TableColumn>
-                <TableColumn>สถานที่</TableColumn>
-                <TableColumn>สถานะ</TableColumn>
-                <TableColumn>วันที่สร้าง</TableColumn>
-                <TableColumn>การกระทำ</TableColumn>
-              </TableHeader>
-              <TableBody emptyContent="ไม่พบข้อมูลยิม">
-                {filteredGyms.map((gym) => (
-                  <TableRow key={gym.id}>
-                    <TableCell className="font-semibold text-white">{gym.gym_name}</TableCell>
-                    <TableCell className="text-default-400">{gym.contact_name}</TableCell>
-                    <TableCell className="font-mono text-default-400 text-sm">{gym.phone}</TableCell>
-                    <TableCell className="text-default-400">{gym.location}</TableCell>
-                    <TableCell>{getStatusChip(gym.status)}</TableCell>
-                    <TableCell className="text-default-400">
+            <ResponsiveTable
+              columns={[
+                {
+                  key: 'gym_name',
+                  label: 'ชื่อยิม',
+                  render: (gym) => (
+                    <span className="font-semibold text-white">{gym.gym_name}</span>
+                  ),
+                  showOnMobile: true,
+                },
+                {
+                  key: 'contact_name',
+                  label: 'ผู้ติดต่อ',
+                  render: (gym) => (
+                    <span className="text-default-400">{gym.contact_name}</span>
+                  ),
+                  showOnMobile: true,
+                },
+                {
+                  key: 'phone',
+                  label: 'โทรศัพท์',
+                  render: (gym) => (
+                    <span className="font-mono text-default-400 text-sm">{gym.phone}</span>
+                  ),
+                  showOnMobile: false,
+                },
+                {
+                  key: 'location',
+                  label: 'สถานที่',
+                  render: (gym) => (
+                    <span className="text-default-400">{gym.location}</span>
+                  ),
+                  showOnMobile: false,
+                },
+                {
+                  key: 'status',
+                  label: 'สถานะ',
+                  render: (gym) => getStatusChip(gym.status),
+                  showOnMobile: true,
+                },
+                {
+                  key: 'created_at',
+                  label: 'วันที่สร้าง',
+                  render: (gym) => (
+                    <span className="text-default-400">
                       {gym.created_at ? new Date(gym.created_at).toLocaleDateString('th-TH') : '-'}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          isIconOnly
-                          variant="flat"
-                          color="primary"
-                          onPress={() => {
-                            setSelectedGym(gym);
-                            detailModal.onOpen();
-                          }}
-                          title="ดูรายละเอียด"
-                        >
-                          <EyeIcon className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          isIconOnly
-                          variant="flat"
-                          color="secondary"
-                          onPress={() => {
-                            setSelectedGym(gym);
-                            editModal.onOpen();
-                          }}
-                          title="แก้ไข"
-                        >
-                          <PencilIcon className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          isIconOnly
-                          variant="flat"
-                          color="danger"
-                          onPress={() => {
-                            setSelectedGym(gym);
-                            deleteDialog.onOpen();
-                          }}
-                          title="ลบ"
-                        >
-                          <TrashIcon className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </span>
+                  ),
+                  showOnMobile: false,
+                },
+                {
+                  key: 'actions',
+                  label: 'การกระทำ',
+                  render: (gym) => (
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        isIconOnly
+                        variant="flat"
+                        color="primary"
+                        onPress={() => {
+                          setSelectedGym(gym);
+                          detailModal.onOpen();
+                        }}
+                        aria-label="ดูรายละเอียด"
+                      >
+                        <EyeIcon className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        isIconOnly
+                        variant="flat"
+                        color="secondary"
+                        onPress={() => {
+                          setSelectedGym(gym);
+                          editModal.onOpen();
+                        }}
+                        aria-label="แก้ไข"
+                      >
+                        <PencilIcon className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        isIconOnly
+                        variant="flat"
+                        color="danger"
+                        onPress={() => {
+                          setSelectedGym(gym);
+                          deleteDialog.onOpen();
+                        }}
+                        aria-label="ลบ"
+                      >
+                        <TrashIcon className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ),
+                  showOnMobile: true,
+                  hideLabelOnMobile: true,
+                },
+              ] as ResponsiveTableColumn<Gym>[]}
+              data={filteredGyms}
+              keyExtractor={(gym) => gym.id}
+              emptyContent="ไม่พบข้อมูลยิม"
+              ariaLabel="Gyms table"
+              className="border border-default-200 rounded-lg overflow-hidden"
+            />
           </CardBody>
         </Card>
       </section>

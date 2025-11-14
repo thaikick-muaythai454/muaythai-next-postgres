@@ -139,6 +139,7 @@ export default function MediaLibraryModal({ isOpen, onClose, onSelect }: MediaLi
                     variant="light"
                     isIconOnly
                     onPress={() => setSelectedFile(null)}
+                    aria-label="ยกเลิกการเลือก"
                   >
                     <XMarkIcon className="w-4 h-4" />
                   </Button>

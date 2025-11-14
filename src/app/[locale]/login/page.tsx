@@ -109,23 +109,68 @@ function LoginForm() {
   }, [supabase, router, redirectTo]);
 
   /**
+   * Validate individual field
+   * @param fieldName - Name of the field to validate
+   * @param value - Value to validate (optional, uses formData if not provided)
+   * @returns Error message or empty string if valid
+   */
+  const validateField = (fieldName: keyof FormErrors, value?: string): string => {
+    const val = value !== undefined ? value : formData[fieldName as keyof LoginFormData] as string;
+
+    switch (fieldName) {
+      case "identifier":
+        if (!val.trim()) {
+          return "กรุณากรอกอีเมลหรือ Username";
+        }
+        return "";
+
+      case "password":
+        if (!val) {
+          return "กรุณากรอกรหัสผ่าน";
+        } else if (val.length < 6) {
+          return "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร";
+        }
+        return "";
+
+      default:
+        return "";
+    }
+  };
+
+  /**
+   * Handle blur event for form fields
+   * Validates the field when user leaves it
+   */
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const fieldName = name as keyof FormErrors;
+    
+    const error = validateField(fieldName, value);
+    
+    if (error) {
+      setErrors((prev) => ({
+        ...prev,
+        [fieldName]: error,
+      }));
+    }
+  };
+
+  /**
    * Validate form inputs
    * @returns true if form is valid, false otherwise
    */
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    // Identifier validation (email or username)
-    if (!formData.identifier.trim()) {
-      newErrors.identifier = "กรุณากรอกอีเมลหรือ Username";
-    }
+    // Validate all fields
+    const fieldsToValidate: (keyof FormErrors)[] = ["identifier", "password"];
 
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = "กรุณากรอกรหัสผ่าน";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร";
-    }
+    fieldsToValidate.forEach((field) => {
+      const error = validateField(field);
+      if (error) {
+        newErrors[field] = error;
+      }
+    });
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -419,6 +464,7 @@ function LoginForm() {
               name="identifier"
               value={formData.identifier}
               onChange={handleInputChange}
+              onBlur={handleBlur}
                   className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
                     errors.identifier ? "border-red-500/70 shadow-red-500/20" : "border-zinc-600/50 hover:border-zinc-500/70"
                   } rounded-xl px-4 py-3 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono text-sm`}
@@ -449,6 +495,7 @@ function LoginForm() {
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
+                  onBlur={handleBlur}
                   className={`w-full bg-zinc-800/50 backdrop-blur-sm border ${
                     errors.password ? "border-red-500/70 shadow-red-500/20" : "border-zinc-600/50 hover:border-zinc-500/70 group-hover:border-zinc-500/50"
                   } rounded-xl px-4 py-3 pr-12 placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-red-500/50 focus:border-red-500/70 focus:shadow-lg focus:shadow-red-500/10 transition-all duration-200 font-mono text-sm`}

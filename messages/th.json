@@ -123,6 +123,19 @@
     "recentActivity": "กิจกรรมล่าสุด",
     "quickActions": "การกระทำด่วน"
   },
+  "error": {
+    "boundary": {
+      "title": "เกิดข้อผิดพลาด",
+      "description": "ขออภัย มีบางอย่างผิดพลาด ทีมของเราได้รับการแจ้งเตือนและกำลังดำเนินการแก้ไข",
+      "tryAgain": "ลองอีกครั้ง",
+      "goHome": "กลับหน้าแรก",
+      "goToDashboard": "ไปที่แดชบอร์ด",
+      "reportIssue": "แจ้งปัญหา",
+      "details": "รายละเอียดข้อผิดพลาด",
+      "showDetails": "แสดงรายละเอียด",
+      "hideDetails": "ซ่อนรายละเอียด"
+    }
+  },
   "validation": {
     "required": "กรุณากรอก{field}",
     "invalidEmail": "รูปแบบอีเมลไม่ถูกต้อง",

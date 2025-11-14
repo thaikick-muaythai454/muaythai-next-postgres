@@ -273,6 +273,7 @@ export function CustomReportBuilder({ onSave }: CustomReportBuilderProps) {
                           variant="light"
                           isIconOnly
                           onPress={() => handleEdit(report)}
+                          aria-label="แก้ไขรายงาน"
                         >
                           <PencilIcon className="w-4 h-4" />
                         </Button>
@@ -282,6 +283,7 @@ export function CustomReportBuilder({ onSave }: CustomReportBuilderProps) {
                           color="danger"
                           isIconOnly
                           onPress={() => handleDelete(report.id)}
+                          aria-label="ลบรายงาน"
                         >
                           <TrashIcon className="w-4 h-4" />
                         </Button>

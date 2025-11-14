@@ -151,6 +151,10 @@ function createSupabaseStub(options: SupabaseStubOptions) {
           throw new Error(`Unexpected table requested: ${table}`);
       }
     }),
+    rpc: jest.fn(async () => ({
+      data: 'audit-log-id',
+      error: null,
+    })),
     affiliateConversionsInsertMock: affiliateConversionsStub.insert,
     affiliateConversionsInsertSelectMock: affiliateConversionsStub.insertSelect,
     affiliateConversionsInsertSingleMock: affiliateConversionsStub.insertSingle,

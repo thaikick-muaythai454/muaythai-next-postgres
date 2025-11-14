@@ -5,6 +5,7 @@ interface GymDetailsFormProps {
   formData: FormData;
   errors: FormErrors;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onServiceToggle: (service: string) => void;
   selectedFiles: File[];
   fileErrors: string[];
@@ -16,6 +17,7 @@ export const GymDetailsForm = ({
   formData,
   errors,
   onInputChange,
+  onBlur,
   onServiceToggle,
   selectedFiles,
   fileErrors,
@@ -46,6 +48,7 @@ export const GymDetailsForm = ({
             name="description"
             value={formData.description}
             onChange={onInputChange}
+            onBlur={onBlur}
             rows={6}
             className="bg-zinc-700 px-4 py-3 border border-zinc-600 focus:border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 w-full text-white resize-none placeholder-zinc-500"
             placeholder="เช่น: ยิมมวยไทยขนาดใหญ่ มีเวที 2 เวที รองรับได้ 50 คน เปิดทุกวัน 06:00-22:00 มีครูมืออาชีพ 10 คน..."

@@ -350,6 +350,7 @@ export default function ProductVariantsModal({
                       size="sm"
                       variant="light"
                       onPress={() => handleEditVariant(index)}
+                      aria-label="แก้ไข Variant"
                     >
                       <PencilIcon className="w-4 h-4" />
                     </Button>
@@ -359,6 +360,7 @@ export default function ProductVariantsModal({
                       variant="light"
                       color="danger"
                       onPress={() => handleDeleteVariant(index)}
+                      aria-label="ลบ Variant"
                     >
                       <TrashIcon className="w-4 h-4" />
                     </Button>

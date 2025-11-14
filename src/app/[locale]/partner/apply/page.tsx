@@ -86,6 +86,101 @@ export default function PartnerApplyPage() {
     },
   });
 
+  /**
+   * Validate individual field
+   * @param fieldName - Name of the field to validate
+   * @param value - Value to validate (optional, uses formData if not provided)
+   * @returns Error message or empty string if valid
+   */
+  const validateField = (fieldName: string, value?: string): string => {
+    const val = value !== undefined ? value : formData[fieldName as keyof FormData] as string;
+
+    switch (fieldName) {
+      case "gymName":
+        if (!val || !val.trim()) {
+          return "กรุณากรอกชื่อยิม";
+        } else if (val.trim().length < 3) {
+          return "ชื่อยิมต้องมีอย่างน้อย 3 ตัวอักษร";
+        }
+        return "";
+
+      case "contactName":
+        if (!val || !val.trim()) {
+          return "กรุณากรอกชื่อผู้ติดต่อ";
+        } else if (val.trim().length < 2) {
+          return "ชื่อต้องมีอย่างน้อย 2 ตัวอักษร";
+        }
+        return "";
+
+      case "phone":
+        if (!val || !val.trim()) {
+          return "กรุณากรอกเบอร์โทรศัพท์";
+        } else if (!/^(0[6-9])\d{8}$/.test(val)) {
+          return "รูปแบบเบอร์โทรศัพท์ไม่ถูกต้อง (เช่น 0812345678)";
+        }
+        return "";
+
+      case "email":
+        if (!val || !val.trim()) {
+          return "กรุณากรอกอีเมล";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
+          return "รูปแบบอีเมลไม่ถูกต้อง";
+        }
+        return "";
+
+      case "address":
+        if (!val || !val.trim()) {
+          return "กรุณากรอกที่อยู่";
+        } else if (val.trim().length < 10) {
+          return "ที่อยู่ต้องมีอย่างน้อย 10 ตัวอักษร";
+        }
+        return "";
+
+      case "gymNameEnglish":
+        // Optional field, only validate if provided
+        if (val && val.trim() && val.trim().length < 3) {
+          return "ชื่อยิม (English) ต้องมีอย่างน้อย 3 ตัวอักษร";
+        }
+        return "";
+
+      case "website":
+        // Optional field, only validate if provided
+        if (val && val.trim()) {
+          const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+          const socialPattern = /^@[\w\.]+$/;
+          if (!urlPattern.test(val) && !socialPattern.test(val)) {
+            return "รูปแบบ URL หรือโซเชียลมีเดียไม่ถูกต้อง";
+          }
+        }
+        return "";
+
+      default:
+        return "";
+    }
+  };
+
+  /**
+   * Handle blur event for form fields
+   * Validates the field when user leaves it
+   */
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    
+    // Skip validation for optional fields when empty
+    if ((name === "website" || name === "gymNameEnglish" || name === "description") && !value.trim()) {
+      return;
+    }
+    
+    const error = validateField(name, value);
+    
+    if (error) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: error,
+      }));
+    }
+  };
+
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -194,6 +289,7 @@ export default function PartnerApplyPage() {
             formData={formData}
             errors={errors}
             onInputChange={handleInputChange}
+            onBlur={handleBlur}
           />
 
           {/* Gym Details */}
@@ -201,6 +297,7 @@ export default function PartnerApplyPage() {
             formData={formData}
             errors={errors}
             onInputChange={handleInputChange}
+            onBlur={handleBlur}
             onServiceToggle={handleServiceToggle}
             selectedFiles={selectedFiles}
             fileErrors={fileErrors}

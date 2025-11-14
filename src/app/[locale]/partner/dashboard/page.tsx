@@ -3,10 +3,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { createClient } from '@/lib/database/supabase/client';
 import { RoleGuard } from '@/components/features/auth';
-import { DashboardLayout, type MenuItem } from '@/components/shared';
+import { DashboardLayout, ResponsiveTable, type MenuItem } from '@/components/shared';
+import type { ResponsiveTableColumn } from '@/components/shared';
+import { ConfirmationModal } from '@/components/compositions/modals/ConfirmationModal';
 import { Link } from '@/navigation';
 import Image from 'next/image';
-import { Card, CardHeader, CardBody, Button, Chip, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from '@heroui/react';
+import { Card, CardHeader, CardBody, Button, Chip, Input, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure } from '@heroui/react';
 import {
   BuildingStorefrontIcon,
   ChartBarIcon,
@@ -78,6 +80,11 @@ function PartnerDashboardContent() {
   const [packages, setPackages] = useState<GymPackage[]>([]);
   const [editingPackage, setEditingPackage] = useState<GymPackage | null>(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  
+  // Delete confirmation modal states
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [packageToDelete, setPackageToDelete] = useState<GymPackage | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Real data states
   const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
@@ -315,13 +322,17 @@ function PartnerDashboardContent() {
     }
   };
 
-  const handleDeletePackage = async (pkg: GymPackage) => {
-    if (!confirm(`คุณต้องการลบแพ็คเกจ "${pkg.name}" หรือไม่?`)) {
-      return;
-    }
+  const handleDeletePackage = (pkg: GymPackage) => {
+    setPackageToDelete(pkg);
+    setIsDeleteModalOpen(true);
+  };
 
+  const confirmDeletePackage = async () => {
+    if (!packageToDelete) return;
+
+    setIsDeleting(true);
     try {
-      const response = await fetch(`/api/partner/packages/${pkg.id}`, {
+      const response = await fetch(`/api/partner/packages/${packageToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -330,13 +341,22 @@ function PartnerDashboardContent() {
       if (result.success) {
         toast.success('ลบแพ็คเกจสำเร็จ');
         loadPackages();
+        setIsDeleteModalOpen(false);
+        setPackageToDelete(null);
       } else {
         toast.error(result.error);
       }
     } catch (error) {
       // Error deleting package
       toast.error('เกิดข้อผิดพลาด');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const cancelDeletePackage = () => {
+    setIsDeleteModalOpen(false);
+    setPackageToDelete(null);
   };
 
   const handleSaveProfile = async () => {
@@ -818,6 +838,7 @@ function PartnerDashboardContent() {
                         variant="flat"
                         isIconOnly
                         onPress={() => handleOpenEdit(pkg)}
+                        aria-label="แก้ไขแพ็คเกจ"
                       >
                         <PencilIcon className="w-4 h-4" />
                       </Button>
@@ -827,6 +848,7 @@ function PartnerDashboardContent() {
                         variant="flat"
                         isIconOnly
                         onPress={() => handleDeletePackage(pkg)}
+                        aria-label="ลบแพ็คเกจ"
                       >
                         <TrashIcon className="w-4 h-4" />
                       </Button>
@@ -903,6 +925,7 @@ function PartnerDashboardContent() {
                         variant="flat"
                         isIconOnly
                         onPress={() => handleOpenEdit(pkg)}
+                        aria-label="แก้ไขแพ็คเกจ"
                       >
                         <PencilIcon className="w-4 h-4" />
                       </Button>
@@ -912,6 +935,7 @@ function PartnerDashboardContent() {
                         variant="flat"
                         isIconOnly
                         onPress={() => handleDeletePackage(pkg)}
+                        aria-label="ลบแพ็คเกจ"
                       >
                         <TrashIcon className="w-4 h-4" />
                       </Button>
@@ -961,41 +985,70 @@ function PartnerDashboardContent() {
         </div>
         <Card className="bg-default-100/50 backdrop-blur-sm border-none">
           <CardBody>
-            <Table
-              aria-label="Recent bookings table"
-              classNames={{
-                wrapper: "bg-transparent",
-              }}
-            >
-              <TableHeader>
-                <TableColumn>ลูกค้า</TableColumn>
-                <TableColumn>บริการ</TableColumn>
-                <TableColumn>วันที่</TableColumn>
-                <TableColumn>เวลา</TableColumn>
-                <TableColumn>สถานะ</TableColumn>
-                <TableColumn>ยอดเงิน</TableColumn>
-              </TableHeader>
-              <TableBody emptyContent="ยังไม่มีการจอง">
-                {recentBookings.map((booking) => (
-                  <TableRow key={booking.id}>
-                    <TableCell className="text-white">{booking.customer_name || 'N/A'}</TableCell>
-                    <TableCell className="text-default-400">{booking.package_name || 'N/A'}</TableCell>
-                    <TableCell className="text-default-400">{new Date(booking.start_date).toLocaleDateString('th-TH')}</TableCell>
-                    <TableCell className="text-default-400">-</TableCell>
-                    <TableCell>
-                      <Chip
-                        size="sm"
-                        color={booking.status === 'confirmed' ? 'success' : 'warning'}
-                        variant="flat"
-                      >
-                        {booking.status === 'confirmed' ? 'ยืนยันแล้ว' : 'รอยืนยัน'}
-                      </Chip>
-                    </TableCell>
-                    <TableCell className="font-mono text-white">฿{Number(booking.price_paid || 0).toLocaleString()}</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            <ResponsiveTable
+              columns={[
+                {
+                  key: 'customer_name',
+                  label: 'ลูกค้า',
+                  render: (booking) => (
+                    <span className="text-white">{booking.customer_name || 'N/A'}</span>
+                  ),
+                  showOnMobile: true,
+                },
+                {
+                  key: 'package_name',
+                  label: 'บริการ',
+                  render: (booking) => (
+                    <span className="text-default-400">{booking.package_name || 'N/A'}</span>
+                  ),
+                  showOnMobile: true,
+                },
+                {
+                  key: 'start_date',
+                  label: 'วันที่',
+                  render: (booking) => (
+                    <span className="text-default-400">
+                      {new Date(booking.start_date).toLocaleDateString('th-TH')}
+                    </span>
+                  ),
+                  showOnMobile: false,
+                },
+                {
+                  key: 'time',
+                  label: 'เวลา',
+                  render: () => <span className="text-default-400">-</span>,
+                  showOnMobile: false,
+                },
+                {
+                  key: 'status',
+                  label: 'สถานะ',
+                  render: (booking) => (
+                    <Chip
+                      size="sm"
+                      color={booking.status === 'confirmed' ? 'success' : 'warning'}
+                      variant="flat"
+                    >
+                      {booking.status === 'confirmed' ? 'ยืนยันแล้ว' : 'รอยืนยัน'}
+                    </Chip>
+                  ),
+                  showOnMobile: true,
+                },
+                {
+                  key: 'price_paid',
+                  label: 'ยอดเงิน',
+                  render: (booking) => (
+                    <span className="font-mono text-white">
+                      ฿{Number(booking.price_paid || 0).toLocaleString()}
+                    </span>
+                  ),
+                  showOnMobile: true,
+                },
+              ] as ResponsiveTableColumn<Booking>[]}
+              data={recentBookings}
+              keyExtractor={(booking) => booking.id}
+              emptyContent="ยังไม่มีการจอง"
+              ariaLabel="Recent bookings table"
+            />
           </CardBody>
         </Card>
       </section>
@@ -1017,52 +1070,79 @@ function PartnerDashboardContent() {
         </div>
         <Card className="bg-default-100/50 backdrop-blur-sm border-none">
           <CardBody>
-            <Table
-              aria-label="Recent transactions table"
-              classNames={{
-                wrapper: "bg-transparent",
-              }}
-            >
-              <TableHeader>
-                <TableColumn>รหัส</TableColumn>
-                <TableColumn>วันที่</TableColumn>
-                <TableColumn>ประเภท</TableColumn>
-                <TableColumn>รายละเอียด</TableColumn>
-                <TableColumn>จำนวนเงิน</TableColumn>
-                <TableColumn>สถานะ</TableColumn>
-              </TableHeader>
-              <TableBody emptyContent="ยังไม่มีธุรกรรม">
-                {recentTransactions.map((txn) => (
-                  <TableRow key={txn.id}>
-                    <TableCell className="font-mono text-white">{txn.id}</TableCell>
-                    <TableCell className="text-default-400">{new Date(txn.date).toLocaleDateString('th-TH')}</TableCell>
-                    <TableCell>
-                      <Chip
-                        size="sm"
-                        color={txn.type === 'รายได้' ? 'success' : 'warning'}
-                        variant="flat"
-                      >
-                        {txn.type}
-                      </Chip>
-                    </TableCell>
-                    <TableCell className="text-default-400">{txn.description}</TableCell>
-                    <TableCell className="font-mono font-bold text-success">
+            <ResponsiveTable
+              columns={[
+                {
+                  key: 'id',
+                  label: 'รหัส',
+                  render: (txn) => (
+                    <span className="font-mono text-white">{txn.id}</span>
+                  ),
+                  showOnMobile: true,
+                },
+                {
+                  key: 'date',
+                  label: 'วันที่',
+                  render: (txn) => (
+                    <span className="text-default-400">
+                      {new Date(txn.date).toLocaleDateString('th-TH')}
+                    </span>
+                  ),
+                  showOnMobile: false,
+                },
+                {
+                  key: 'type',
+                  label: 'ประเภท',
+                  render: (txn) => (
+                    <Chip
+                      size="sm"
+                      color={txn.type === 'รายได้' ? 'success' : 'warning'}
+                      variant="flat"
+                    >
+                      {txn.type}
+                    </Chip>
+                  ),
+                  showOnMobile: true,
+                },
+                {
+                  key: 'description',
+                  label: 'รายละเอียด',
+                  render: (txn) => (
+                    <span className="text-default-400">{txn.description}</span>
+                  ),
+                  showOnMobile: false,
+                },
+                {
+                  key: 'amount',
+                  label: 'จำนวนเงิน',
+                  render: (txn) => (
+                    <span className="font-mono font-bold text-success">
                       +฿{Number(txn.amount || 0).toLocaleString()}
-                    </TableCell>
-                    <TableCell>
-                      <Chip
-                        size="sm"
-                        color={txn.status === 'confirmed' || txn.status === 'completed' ? 'success' : 'warning'}
-                        variant="flat"
-                        startContent={(txn.status === 'confirmed' || txn.status === 'completed') ? <CheckCircleIcon className="w-3 h-3" /> : <ClockIcon className="w-3 h-3" />}
-                      >
-                        {txn.status === 'confirmed' || txn.status === 'completed' ? 'สำเร็จ' : 'รอดำเนินการ'}
-                      </Chip>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </span>
+                  ),
+                  showOnMobile: true,
+                },
+                {
+                  key: 'status',
+                  label: 'สถานะ',
+                  render: (txn) => (
+                    <Chip
+                      size="sm"
+                      color={txn.status === 'confirmed' || txn.status === 'completed' ? 'success' : 'warning'}
+                      variant="flat"
+                      startContent={(txn.status === 'confirmed' || txn.status === 'completed') ? <CheckCircleIcon className="w-3 h-3" /> : <ClockIcon className="w-3 h-3" />}
+                    >
+                      {txn.status === 'confirmed' || txn.status === 'completed' ? 'สำเร็จ' : 'รอดำเนินการ'}
+                    </Chip>
+                  ),
+                  showOnMobile: true,
+                },
+              ] as ResponsiveTableColumn<TransactionSummary>[]}
+              data={recentTransactions}
+              keyExtractor={(txn) => txn.id}
+              emptyContent="ยังไม่มีธุรกรรม"
+              ariaLabel="Recent transactions table"
+            />
           </CardBody>
         </Card>
       </section>
@@ -1200,6 +1280,7 @@ function PartnerDashboardContent() {
                           variant="light"
                           isIconOnly
                           onPress={() => handleRemoveFeature(idx)}
+                          aria-label="ลบฟีเจอร์"
                         >
                           <XMarkIcon className="w-4 h-4" />
                         </Button>
@@ -1220,6 +1301,20 @@ function PartnerDashboardContent() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={cancelDeletePackage}
+        title="ยืนยันการลบแพ็คเกจ"
+        message={`คุณต้องการลบแพ็คเกจ "${packageToDelete?.name}" หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`}
+        confirmText="ลบแพ็คเกจ"
+        cancelText="ยกเลิก"
+        confirmVariant="danger"
+        onConfirm={confirmDeletePackage}
+        loading={isDeleting}
+        testId="delete-package-modal"
+      />
     </DashboardLayout>
   );
 }

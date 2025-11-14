@@ -279,6 +279,7 @@ function AdminCategoriesContent() {
                             setSelectedCategory(category);
                             editModal.onOpen();
                           }}
+                          aria-label="แก้ไขหมวดหมู่"
                         >
                           <PencilIcon className="w-4 h-4" />
                         </Button>
@@ -291,6 +292,7 @@ function AdminCategoriesContent() {
                             setSelectedCategory(category);
                             deleteDialog.onOpen();
                           }}
+                          aria-label="ลบหมวดหมู่"
                         >
                           <TrashIcon className="w-4 h-4" />
                         </Button>

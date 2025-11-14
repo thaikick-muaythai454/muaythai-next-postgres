@@ -241,6 +241,7 @@ function AdminUsersContent() {
                           isIconOnly
                           variant="flat"
                           color="primary"
+                          aria-label="แก้ไขผู้ใช้"
                         >
                           <PencilIcon className="w-4 h-4" />
                         </Button>
@@ -249,6 +250,7 @@ function AdminUsersContent() {
                           isIconOnly
                           variant="flat"
                           color="danger"
+                          aria-label="ลบผู้ใช้"
                         >
                           <TrashIcon className="w-4 h-4" />
                         </Button>

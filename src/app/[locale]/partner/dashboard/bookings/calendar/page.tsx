@@ -213,6 +213,7 @@ function BookingCalendarView() {
                 isIconOnly
                 variant="light"
                 onPress={() => navigateMonth('prev')}
+                aria-label="เดือนก่อนหน้า"
               >
                 <ArrowLeftIcon className="w-5 h-5" />
               </Button>
@@ -223,6 +224,7 @@ function BookingCalendarView() {
                 isIconOnly
                 variant="light"
                 onPress={() => navigateMonth('next')}
+                aria-label="เดือนถัดไป"
               >
                 <ArrowRightIcon className="w-5 h-5" />
               </Button>

@@ -296,13 +296,16 @@
 - **Product Backlog**: [S-201] Admin Bulk Operations, [S-202] Admin Content Moderation Tools, [S-203] Referral Session Storage Optimization (Optional)
 - **Icebox / Phase 2**: [S-301] Coupon Code System
 
-### 🎨 UX Improvements (ดูรายละเอียดใน [UX_IMPROVEMENTS_NEEDED.md](./UX_IMPROVEMENTS_NEEDED.md))
-
 #### 🔴 Critical
-1. **Mobile Table Responsiveness** (0% → 100%)
+1. **Mobile Table Responsiveness** (0% → 100%) ✅ **เสร็จสมบูรณ์**
    - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
-   - ⏳ แปลง Tables เป็น Card View บน mobile
-   - Files: `admin/dashboard/gyms/page.tsx`, `partner/dashboard/page.tsx`, `dashboard/page.tsx`
+   - ✅ สร้าง ResponsiveTable component (แสดง table บน desktop, card view บน mobile)
+   - ✅ แปลง Tables เป็น Card View บน mobile
+   - ✅ อัปเดต `admin/dashboard/gyms/page.tsx` (Gyms table)
+   - ✅ อัปเดต `partner/dashboard/page.tsx` (Recent Bookings + Recent Transactions)
+   - ✅ อัปเดต `dashboard/page.tsx` (User Recent Bookings)
+   - ✅ เพิ่ม aria-labels สำหรับ accessibility
+   - ✅ ผ่าน linter checks ทุกไฟล์
 
 2. **Replace Browser confirm()** (0% → 100%)
    - ✅ วิเคราะห์ปัญหาเสร็จแล้ว
@@ -370,7 +373,7 @@
     - Recover on browser crash
 
 #### ⚪ Low Priority (Backlog)
-16. Social Login (Google, Facebook, Apple)
+16. Social Login (Google, Facebook)
 17. Dark Mode Toggle
 18. Biometric Authentication
 19. Haptic Feedback (Mobile)

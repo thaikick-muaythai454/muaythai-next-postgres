@@ -300,6 +300,7 @@ function EventCategoriesContent() {
                           size="sm"
                           variant="light"
                           onPress={() => handleEdit(category)}
+                          aria-label="แก้ไขหมวดหมู่อีเวนต์"
                         >
                           <PencilIcon className="w-4 h-4" />
                         </Button>
@@ -309,6 +310,7 @@ function EventCategoriesContent() {
                           variant="light"
                           color="danger"
                           onPress={() => handleDelete(category)}
+                          aria-label="ลบหมวดหมู่อีเวนต์"
                         >
                           <TrashIcon className="w-4 h-4" />
                         </Button>

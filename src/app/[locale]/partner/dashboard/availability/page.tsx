@@ -321,6 +321,7 @@ function AvailabilityManagementContent() {
                                 size="sm"
                                 variant="light"
                                 onPress={() => handleOpenModal(item)}
+                                aria-label="แก้ไขเวลาว่าง"
                               >
                                 <PencilIcon className="w-4 h-4" />
                               </Button>
@@ -330,6 +331,7 @@ function AvailabilityManagementContent() {
                                 variant="light"
                                 color="danger"
                                 onPress={() => handleDelete(item.id, 'regular')}
+                                aria-label="ลบเวลาว่าง"
                               >
                                 <TrashIcon className="w-4 h-4" />
                               </Button>
@@ -369,6 +371,7 @@ function AvailabilityManagementContent() {
                               size="sm"
                               variant="light"
                               onPress={() => handleOpenModal(item)}
+                              aria-label="แก้ไขเวลาพิเศษ"
                             >
                               <PencilIcon className="w-4 h-4" />
                             </Button>
@@ -378,6 +381,7 @@ function AvailabilityManagementContent() {
                               variant="light"
                               color="danger"
                               onPress={() => handleDelete(item.id, 'special')}
+                              aria-label="ลบเวลาพิเศษ"
                             >
                               <TrashIcon className="w-4 h-4" />
                             </Button>

@@ -441,6 +441,7 @@ function AdminEventsContent() {
                               setSelectedEvent(event);
                               detailModal.onOpen();
                             }}
+                            aria-label="ดูรายละเอียดอีเวนต์"
                           >
                             <EyeIcon className="w-4 h-4" />
                           </Button>
@@ -453,6 +454,7 @@ function AdminEventsContent() {
                               setSelectedEvent(event);
                               ticketsModal.onOpen();
                             }}
+                            aria-label="จัดการตั๋วอีเวนต์"
                           >
                             <TicketIcon className="w-4 h-4" />
                           </Button>
@@ -465,6 +467,7 @@ function AdminEventsContent() {
                               setSelectedEvent(event);
                               editModal.onOpen();
                             }}
+                            aria-label="แก้ไขอีเวนต์"
                           >
                             <PencilIcon className="w-4 h-4" />
                           </Button>
@@ -477,6 +480,7 @@ function AdminEventsContent() {
                               setSelectedEvent(event);
                               deleteDialog.onOpen();
                             }}
+                            aria-label="ลบอีเวนต์"
                           >
                             <TrashIcon className="w-4 h-4" />
                           </Button>

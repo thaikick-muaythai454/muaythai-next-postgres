@@ -123,6 +123,19 @@
     "recentActivity": "Recent Activity",
     "quickActions": "Quick Actions"
   },
+  "error": {
+    "boundary": {
+      "title": "Something went wrong",
+      "description": "We're sorry, but something unexpected happened. Our team has been notified and is working on it.",
+      "tryAgain": "Try again",
+      "goHome": "Go to Home",
+      "goToDashboard": "Go to Dashboard",
+      "reportIssue": "Report issue",
+      "details": "Error details",
+      "showDetails": "Show details",
+      "hideDetails": "Hide details"
+    }
+  },
   "validation": {
     "required": "Please enter {field}",
     "invalidEmail": "Invalid email format",

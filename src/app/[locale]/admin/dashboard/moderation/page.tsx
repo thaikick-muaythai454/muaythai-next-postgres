@@ -429,6 +429,7 @@ function AdminModerationContent() {
                             loadContentPreview(flag.content_type, flag.content_id);
                             detailModal.onOpen();
                           }}
+                          aria-label="ดูรายละเอียดรายงาน"
                         >
                           <EyeIcon className="w-4 h-4" />
                         </Button>

@@ -323,6 +323,7 @@ export function ScheduledReportsManager({ onSave }: ScheduledReportsManagerProps
                           variant="light"
                           isIconOnly
                           onPress={() => handleEdit(report)}
+                          aria-label="แก้ไขรายงาน"
                         >
                           <PencilIcon className="w-4 h-4" />
                         </Button>
@@ -332,6 +333,7 @@ export function ScheduledReportsManager({ onSave }: ScheduledReportsManagerProps
                           color="danger"
                           isIconOnly
                           onPress={() => handleDelete(report.id)}
+                          aria-label="ลบรายงาน"
                         >
                           <TrashIcon className="w-4 h-4" />
                         </Button>

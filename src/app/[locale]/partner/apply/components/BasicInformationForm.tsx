@@ -13,9 +13,10 @@ interface BasicInformationFormProps {
   formData: FormData;
   errors: FormErrors;
   onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  onBlur: (e: React.FocusEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
 }
 
-export const BasicInformationForm = ({ formData, errors, onInputChange }: BasicInformationFormProps) => {
+export const BasicInformationForm = ({ formData, errors, onInputChange, onBlur }: BasicInformationFormProps) => {
   return (
     <div className="bg-zinc-950 shadow-xl p-6 md:p-8 rounded-xl">
       <h2 className="flex items-center gap-3 mb-6 font-semibold text-white text-2xl">
@@ -39,6 +40,7 @@ export const BasicInformationForm = ({ formData, errors, onInputChange }: BasicI
               name="gymName"
               value={formData.gymName}
               onChange={onInputChange}
+              onBlur={onBlur}
               className={`w-full bg-zinc-700 border ${
                 errors.gymName ? "border-red-500" : "border-zinc-600"
               } rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
@@ -68,6 +70,7 @@ export const BasicInformationForm = ({ formData, errors, onInputChange }: BasicI
               name="gymNameEnglish"
               value={formData.gymNameEnglish}
               onChange={onInputChange}
+              onBlur={onBlur}
               className={`w-full bg-zinc-700 border ${
                 errors.gymNameEnglish ? "border-red-500" : "border-zinc-600"
               } rounded-lg px-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
@@ -101,6 +104,7 @@ export const BasicInformationForm = ({ formData, errors, onInputChange }: BasicI
               name="contactName"
               value={formData.contactName}
               onChange={onInputChange}
+              onBlur={onBlur}
               className={`w-full bg-zinc-700 border ${
                 errors.contactName ? "border-red-500" : "border-zinc-600"
               } rounded-lg px-4 py-3 pl-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent`}
@@ -132,6 +136,7 @@ export const BasicInformationForm = ({ formData, errors, onInputChange }: BasicI
                 name="phone"
                 value={formData.phone}
                 onChange={onInputChange}
+                onBlur={onBlur}
                 className={`w-full bg-zinc-700 border ${
                   errors.phone ? "border-red-500" : "border-zinc-600"
                 } rounded-lg px-4 py-3 pl-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
@@ -161,6 +166,7 @@ export const BasicInformationForm = ({ formData, errors, onInputChange }: BasicI
                 name="email"
                 value={formData.email}
                 onChange={onInputChange}
+                onBlur={onBlur}
                 className={`w-full bg-zinc-700 border ${
                   errors.email ? "border-red-500" : "border-zinc-600"
                 } rounded-lg px-4 py-3 pl-10 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent font-mono`}
@@ -193,6 +199,7 @@ export const BasicInformationForm = ({ formData, errors, onInputChange }: BasicI
               name="website"
               value={formData.website}
               onChange={onInputChange}
+              onBlur={onBlur}
               className="bg-zinc-700 px-4 py-3 pl-10 border border-zinc-600 focus:border-transparent rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 w-full font-mono text-white placeholder-zinc-500"
               placeholder="https://www.example.com หรือ @facebook_page"
             />
@@ -214,6 +221,7 @@ export const BasicInformationForm = ({ formData, errors, onInputChange }: BasicI
               name="address"
               value={formData.address}
               onChange={onInputChange}
+              onBlur={onBlur}
               rows={3}
               className={`w-full bg-zinc-700 border ${
                 errors.address ? "border-red-500" : "border-zinc-600"

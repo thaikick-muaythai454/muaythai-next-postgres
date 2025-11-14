@@ -226,6 +226,7 @@ export default function ProductImagesModal({
                         variant="flat"
                         onPress={() => handleReorder(index, 'up')}
                         isDisabled={index === 0}
+                        aria-label="เลื่อนขึ้น"
                       >
                         ↑
                       </Button>
@@ -235,6 +236,7 @@ export default function ProductImagesModal({
                         variant="flat"
                         onPress={() => handleReorder(index, 'down')}
                         isDisabled={index === images.length - 1}
+                        aria-label="เลื่อนลง"
                       >
                         ↓
                       </Button>
@@ -245,6 +247,7 @@ export default function ProductImagesModal({
                       variant="flat"
                       color="danger"
                       onPress={() => handleDeleteImage(index)}
+                      aria-label="ลบรูปภาพ"
                     >
                       <TrashIcon className="w-4 h-4" />
                     </Button>
