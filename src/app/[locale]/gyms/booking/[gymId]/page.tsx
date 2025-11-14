@@ -615,13 +615,15 @@ export default function GymBookingPage() {
                 onClick={handlePreviousStep}
                 disabled={currentStep === 1}
                 className="hover:bg-gray-50 disabled:opacity-50 px-6 py-2 border border-gray-300 rounded-lg text-gray-700 transition-colors disabled:cursor-not-allowed"
-               aria-label="Button">
+                aria-label="ย้อนกลับไปขั้นตอนก่อนหน้า"
+              >
                 ย้อนกลับ
               </button>
               <button
                 onClick={handleNextStep}
                 className="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg transition-colors"
-               aria-label="Button">
+                aria-label={currentStep === 3 ? 'ไปที่หน้าชำระเงิน' : 'ไปขั้นตอนถัดไป'}
+              >
                 {currentStep === 3 ? 'ไปที่หน้าชำระเงิน' : 'ถัดไป'}
               </button>
             </div>

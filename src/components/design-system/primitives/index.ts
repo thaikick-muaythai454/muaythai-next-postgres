@@ -40,6 +40,20 @@ export type { StackProps } from './Stack';
 export { Loading } from './Loading';
 export type { LoadingProps } from './Loading';
 
+// Skeleton
+export {
+  Skeleton,
+  SkeletonCard,
+  SkeletonTable,
+  SkeletonList,
+  SkeletonText,
+  SkeletonAvatar,
+  SkeletonButton,
+  SkeletonForm,
+  SkeletonDashboard
+} from './Skeleton';
+export type { SkeletonProps } from './Skeleton';
+
 // Types
 export type {
   BaseComponentProps,

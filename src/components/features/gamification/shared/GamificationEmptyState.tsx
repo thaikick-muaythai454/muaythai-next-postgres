@@ -79,7 +79,8 @@ export function GamificationEmptyState({
         <button
           onClick={action.onClick}
           className="bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-         aria-label="Button">
+          aria-label={action.label}
+        >
           {action.label}
         </button>
       )}

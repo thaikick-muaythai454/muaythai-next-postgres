@@ -230,7 +230,7 @@ export default function Header() {
                     onClick={handleLogout}
                     disabled={isLoggingOut}
                     className="group flex items-center gap-3 hover:bg-linear-to-r hover:from-red-500/10 hover:to-red-600/10 disabled:opacity-50 px-4 py-3 w-full text-zinc-300 hover:text-white text-sm text-left transition-all duration-200"
-                    aria-label="Button"
+                    aria-label="ออกจากระบบ"
                   >
                     <ArrowRightStartOnRectangleIcon className="w-5 h-5 group-hover:text-red-400 transition-colors" />
                     <span className="font-medium">
@@ -387,7 +387,7 @@ export default function Header() {
                     onClick={handleLogout}
                     disabled={isLoggingOut}
                     className="flex justify-center items-center gap-2 bg-brand-primary hover:bg-red-600 disabled:bg-red-400 px-4 py-2 rounded w-full font-medium text-sm transition-colors"
-                    aria-label="Button"
+                    aria-label="ออกจากระบบ"
                   >
                     <ArrowRightStartOnRectangleIcon className="w-5 h-5" />
                     <span>

@@ -14,7 +14,8 @@ import {
   formatPaymentDate,
   formatAmount
 } from './shared';
-import { Loading, LoadingSpinner } from '@/components/design-system/primitives/Loading';
+import { LoadingSpinner } from '@/components/design-system/primitives/Loading';
+import { Skeleton } from '@/components/design-system/primitives/Skeleton';
 
 export default function PaymentStatus() {
   const { payments, loading, error, refreshPayments } = usePaymentData();
@@ -29,8 +30,32 @@ export default function PaymentStatus() {
   if (loading) {
     return (
       <div className="bg-zinc-800 rounded-lg p-6">
-        <div className="text-center py-12">
-          <Loading centered size="xl" text="กำลังโหลดข้อมูล..." />
+        <div className="space-y-6">
+          {/* Header Skeleton */}
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-10 w-24" variant="rounded" />
+          </div>
+          
+          {/* Payment Cards Skeleton */}
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={`skeleton-${i}`} className="bg-zinc-700 rounded-lg p-6 border border-zinc-600">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4 flex-1">
+                  <Skeleton className="w-12 h-12" variant="circle" />
+                  <div className="flex-1 space-y-3">
+                    <Skeleton className="h-5 w-32" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-4 w-2/3" />
+                    </div>
+                  </div>
+                </div>
+                <Skeleton className="w-10 h-10" variant="rounded" />
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -46,7 +71,8 @@ export default function PaymentStatus() {
           <button
             onClick={handleRefresh}
             className="bg-brand-primary hover:bg-red-600 px-6 py-3 rounded-lg font-medium transition-colors"
-           aria-label="Button">
+            aria-label="ลองโหลดสถานะการชำระเงินใหม่"
+          >
             ลองใหม่
           </button>
         </div>
@@ -62,7 +88,8 @@ export default function PaymentStatus() {
           onClick={handleRefresh}
           disabled={refreshing}
           className="flex items-center gap-2 bg-zinc-700 hover:bg-zinc-600 disabled:opacity-50 px-4 py-2 rounded-lg font-medium transition-colors disabled:cursor-not-allowed"
-         aria-label="Button">
+          aria-label="รีเฟรชสถานะการชำระเงิน"
+        >
           {refreshing ? <LoadingSpinner size="xs" /> : <ArrowPathIcon className="w-4 h-4" />}
           รีเฟรช
         </button>
@@ -130,7 +157,10 @@ export default function PaymentStatus() {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <button className="text-zinc-400 hover:text-white p-2 rounded-lg hover:bg-zinc-600 transition-colors" aria-label="Button">
+                  <button 
+                    className="text-zinc-400 hover:text-white p-2 rounded-lg hover:bg-zinc-600 transition-colors" 
+                    aria-label="ดูรายละเอียดการชำระเงิน"
+                  >
                     <EyeIcon className="w-5 h-5" />
                   </button>
                 </div>

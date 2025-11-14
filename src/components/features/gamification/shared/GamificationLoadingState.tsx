@@ -1,25 +1,28 @@
 'use client';
 
 import React from 'react';
-import { Loading } from '@/components/design-system/primitives/Loading';
+import { Skeleton } from '@/components/design-system/primitives/Skeleton';
 
 interface GamificationLoadingStateProps {
   message?: string;
-  variant?: 'spinner' | 'skeleton' | 'pulse';
+  variant?: 'skeleton' | 'pulse' | 'card';
   className?: string;
 }
 
 export function GamificationLoadingState({ 
   message = 'กำลังโหลด...', 
-  variant = 'spinner',
+  variant = 'skeleton',
   className = ''
 }: GamificationLoadingStateProps) {
-  if (variant === 'skeleton') {
+  if (variant === 'card') {
     return (
-      <div className={`animate-pulse ${className}`}>
-        <div className="h-4 bg-zinc-800 rounded w-1/2 mb-2"></div>
-        <div className="h-3 bg-zinc-800 rounded w-3/4 mb-2"></div>
-        <div className="h-8 bg-zinc-800 rounded w-full"></div>
+      <div className={`bg-zinc-950/50 backdrop-blur-sm border border-zinc-800/50 rounded-lg p-6 ${className}`}>
+        <Skeleton className="h-6 w-48 mb-4" />
+        <div className="space-y-3">
+          <Skeleton className="h-4 w-full" />
+          <Skeleton className="h-4 w-3/4" />
+          <Skeleton className="h-4 w-5/6" />
+        </div>
       </div>
     );
   }
@@ -27,17 +30,20 @@ export function GamificationLoadingState({
   if (variant === 'pulse') {
     return (
       <div className={`flex items-center justify-center p-8 ${className}`}>
-        <div className="animate-pulse">
+        <div className="animate-pulse text-center">
           <div className="text-4xl mb-2">🏆</div>
-          <p className="text-zinc-400">{message}</p>
+          <Skeleton className="h-4 w-32 mx-auto" />
         </div>
       </div>
     );
   }
 
+  // Default skeleton variant
   return (
-    <div className={`flex items-center justify-center p-8 ${className}`}>
-      <Loading text={message} />
+    <div className={`space-y-2 ${className}`}>
+      <Skeleton className="h-4 w-1/2" />
+      <Skeleton className="h-3 w-3/4" />
+      <Skeleton className="h-8 w-full" />
     </div>
   );
 }

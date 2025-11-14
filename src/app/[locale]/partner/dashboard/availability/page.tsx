@@ -42,6 +42,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { Toaster, toast } from 'react-hot-toast';
 import { Loading } from '@/components/design-system/primitives/Loading';
+import { ConfirmationModal } from '@/components/compositions/modals/ConfirmationModal';
 
 interface RegularAvailability {
   id: string;
@@ -83,6 +84,9 @@ function AvailabilityManagementContent() {
   const [selectedTab, setSelectedTab] = useState<'regular' | 'special'>('regular');
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [editingItem, setEditingItem] = useState<RegularAvailability | SpecialAvailability | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{ id: string; type: 'regular' | 'special' } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     day_of_week: '',
     date: '',
@@ -192,14 +196,18 @@ function AvailabilityManagementContent() {
     }
   };
 
-  const handleDelete = async (id: string, type: 'regular' | 'special') => {
-    if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบรายการนี้?')) {
-      return;
-    }
+  const handleDeleteClick = (id: string, type: 'regular' | 'special') => {
+    setItemToDelete({ id, type });
+    setIsDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!itemToDelete) return;
+
+    setIsDeleting(true);
     try {
       const response = await fetch(
-        `/api/partner/availability?type=${type}&id=${id}`,
+        `/api/partner/availability?type=${itemToDelete.type}&id=${itemToDelete.id}`,
         { method: 'DELETE' }
       );
 
@@ -208,13 +216,22 @@ function AvailabilityManagementContent() {
       if (result.success) {
         toast.success('ลบสำเร็จ');
         await loadAvailability();
+        setIsDeleteModalOpen(false);
+        setItemToDelete(null);
       } else {
         toast.error(result.error || 'ลบไม่สำเร็จ');
       }
     } catch (error) {
       console.error('Error deleting availability:', error);
       toast.error('เกิดข้อผิดพลาด');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setItemToDelete(null);
   };
 
   const menuItems: MenuItem[] = [
@@ -330,7 +347,7 @@ function AvailabilityManagementContent() {
                                 size="sm"
                                 variant="light"
                                 color="danger"
-                                onPress={() => handleDelete(item.id, 'regular')}
+                                onPress={() => handleDeleteClick(item.id, 'regular')}
                                 aria-label="ลบเวลาว่าง"
                               >
                                 <TrashIcon className="w-4 h-4" />
@@ -380,7 +397,7 @@ function AvailabilityManagementContent() {
                               size="sm"
                               variant="light"
                               color="danger"
-                              onPress={() => handleDelete(item.id, 'special')}
+                              onPress={() => handleDeleteClick(item.id, 'special')}
                               aria-label="ลบเวลาพิเศษ"
                             >
                               <TrashIcon className="w-4 h-4" />
@@ -484,6 +501,19 @@ function AvailabilityManagementContent() {
             </ModalFooter>
           </ModalContent>
         </Modal>
+
+        <ConfirmationModal
+          isOpen={isDeleteModalOpen}
+          onClose={cancelDelete}
+          title="ยืนยันการลบรายการ"
+          message="คุณต้องการลบรายการนี้หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้"
+          confirmText="ลบรายการ"
+          cancelText="ยกเลิก"
+          confirmVariant="danger"
+          onConfirm={confirmDelete}
+          loading={isDeleting}
+          testId="delete-availability-modal"
+        />
       </DashboardLayout>
     </RoleGuard>
   );

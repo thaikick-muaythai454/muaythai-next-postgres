@@ -9,7 +9,7 @@ import LeaderboardWidget from "./LeaderboardWidget";
 import StreakDisplay from "./StreakDisplay";
 import PointsHistory from "./PointsHistory";
 import Link from "next/link";
-import { Loading } from "@/components/design-system/primitives/Loading";
+import { Skeleton } from "@/components/design-system/primitives/Skeleton";
 
 interface GamificationDashboardProps {
   className?: string;
@@ -62,8 +62,41 @@ export default function GamificationDashboard({
 
   if (loading) {
     return (
-      <div className={`flex items-center justify-center p-8 ${className}`}>
-        <Loading text="กำลังโหลด..." />
+      <div className={`space-y-6 ${className}`}>
+        {/* Header Skeleton */}
+        <div className="bg-linear-to-r from-blue-900/80 to-purple-900/80 rounded-lg p-6 border border-blue-700/30 backdrop-blur-sm">
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="h-4 w-96" />
+        </div>
+
+        {/* Level Display Skeleton */}
+        <div className="bg-zinc-950/50 backdrop-blur-sm border border-zinc-800/50 rounded-lg p-6">
+          <div className="flex items-center gap-6">
+            <Skeleton className="w-24 h-24" variant="circle" />
+            <div className="flex-1 space-y-3">
+              <Skeleton className="h-6 w-32" />
+              <Skeleton className="h-4 w-full max-w-md" />
+              <Skeleton className="h-2 w-full max-w-lg" />
+            </div>
+          </div>
+        </div>
+
+        {/* Cards Grid Skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={`skeleton-${i}`}
+              className="bg-zinc-950/50 backdrop-blur-sm border border-zinc-800/50 rounded-lg p-6"
+            >
+              <Skeleton className="h-6 w-48 mb-4" />
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-4 w-5/6" />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
@@ -91,7 +124,7 @@ export default function GamificationDashboard({
         <button
           onClick={fetchDashboard}
           className="bg-blue-600 px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          aria-label="Button"
+          aria-label="ลองโหลดข้อมูลใหม่"
         >
           ลองใหม่
         </button>

@@ -6,6 +6,7 @@ import { LoadingSpinner } from "@/components/design-system/primitives/Loading";
 import { CameraIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { toast } from "react-hot-toast";
 import { validateFileClient } from "@/lib/utils/file-validation";
+import { ConfirmationModal } from "@/components/compositions/modals/ConfirmationModal";
 
 interface ProfilePictureUploadProps {
   currentAvatarUrl?: string | null;
@@ -35,6 +36,8 @@ export function ProfilePictureUpload({
     currentAvatarUrl ? appendCacheBuster(currentAvatarUrl) : null
   );
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!currentAvatarUrl) {
@@ -132,9 +135,12 @@ export function ProfilePictureUpload({
     }
   };
 
-  const handleDelete = async () => {
-    if (!confirm("ต้องการลบรูปโปรไฟล์หรือไม่?")) return;
+  const handleDeleteClick = () => {
+    setIsDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    setIsDeleting(true);
     try {
       const response = await fetch("/api/users/profile/picture", {
         method: "DELETE",
@@ -149,12 +155,19 @@ export function ProfilePictureUpload({
       toast.success("ลบรูปโปรไฟล์สำเร็จ!");
       setPreviewUrl(null);
       onUploadSuccess("");
+      setIsDeleteModalOpen(false);
     } catch (error: unknown) {
       console.error("Delete error:", error);
       toast.error(
         error instanceof Error ? error.message : "เกิดข้อผิดพลาดในการลบ"
       );
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false);
   };
 
   return (
@@ -198,13 +211,26 @@ export function ProfilePictureUpload({
             size="sm"
             color="danger"
             variant="flat"
-            onPress={handleDelete}
+            onPress={handleDeleteClick}
             startContent={<XMarkIcon className="w-5 h-5 text-white" />}
             className="bg-red-600 hover:bg-red-700 text-white w-10 h-10 rounded-full"
             aria-label="ลบรูปโปรไฟล์"
           />
         )}
       </div>
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={cancelDelete}
+        title="ยืนยันการลบรูปโปรไฟล์"
+        message="คุณต้องการลบรูปโปรไฟล์หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้"
+        confirmText="ลบรูปภาพ"
+        cancelText="ยกเลิก"
+        confirmVariant="danger"
+        onConfirm={confirmDelete}
+        loading={isDeleting}
+        testId="delete-profile-picture-modal"
+      />
     </div>
   );
 }

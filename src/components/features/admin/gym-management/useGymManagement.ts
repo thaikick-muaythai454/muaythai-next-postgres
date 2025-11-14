@@ -4,6 +4,7 @@ import { createClient } from '@/lib/database/supabase/client';
 import { makeApiCall, filterBySearch, filterByStatus } from '../shared/adminUtils';
 import type { Gym } from '@/types';
 import { TOAST_MESSAGES } from '.';
+import { useDebouncedValue } from '@/lib/hooks';
 
 export function useGymManagement() {
   const supabase = createClient();
@@ -15,6 +16,9 @@ export function useGymManagement() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  // Debounce search query with 300ms delay
+  const { debouncedValue: debouncedSearchQuery, isDebouncing } = useDebouncedValue(searchQuery, 300);
 
   // Load gyms from Supabase
   const loadGyms = useCallback(async () => {
@@ -36,21 +40,21 @@ export function useGymManagement() {
     }
   }, [supabase]);
 
-  // Filter gyms by status and search query
+  // Filter gyms by status and search query (using debounced search)
   useEffect(() => {
     let filtered = gyms;
 
     // Filter by status tab
     filtered = filterByStatus(filtered, selectedTab);
 
-    // Filter by search query
-    if (searchQuery) {
+    // Filter by search query (debounced)
+    if (debouncedSearchQuery) {
       const searchFields: (keyof Gym)[] = ['gym_name', 'contact_name', 'phone', 'location'];
-      filtered = filterBySearch(filtered, searchQuery, searchFields);
+      filtered = filterBySearch(filtered, debouncedSearchQuery, searchFields);
     }
 
     setFilteredGyms(filtered);
-  }, [gyms, selectedTab, searchQuery]);
+  }, [gyms, selectedTab, debouncedSearchQuery]);
 
   // Generic handler for API operations with loading state
   const handleApiOperation = async (
@@ -168,6 +172,7 @@ export function useGymManagement() {
     isLoading,
     isProcessing,
     isExporting,
+    isSearching: isDebouncing,
 
     // Setters
     setSelectedGym,

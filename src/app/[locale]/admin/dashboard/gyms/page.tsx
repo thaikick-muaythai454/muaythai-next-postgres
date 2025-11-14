@@ -7,7 +7,7 @@ import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout, ResponsiveTable } from '@/components/shared';
 import type { ResponsiveTableColumn } from '@/components/shared';
 import { adminMenuItems } from '@/components/features/admin/adminMenuItems';
-import { Card, CardBody, Chip, Button, Input, Tabs, Tab, useDisclosure } from '@heroui/react';
+import { Card, CardBody, Chip, Button, Input, Tabs, Tab, useDisclosure, Spinner } from '@heroui/react';
 import {
   MagnifyingGlassIcon,
   EyeIcon,
@@ -40,6 +40,7 @@ function AdminGymsContent() {
     isLoading,
     isProcessing,
     isExporting,
+    isSearching,
     exportGyms,
     setSelectedGym,
     setSearchQuery,
@@ -160,6 +161,7 @@ function AdminGymsContent() {
                   variant="bordered"
                   onValueChange={setSearchQuery}
                   startContent={<MagnifyingGlassIcon className="w-4 h-4 text-default-400" />}
+                  endContent={isSearching && <Spinner size="sm" color="default" />}
                   className="w-full sm:w-64"
                 />
                 <Button

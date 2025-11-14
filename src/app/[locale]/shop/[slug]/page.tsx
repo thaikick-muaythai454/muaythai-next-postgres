@@ -384,7 +384,8 @@ export default function ProductDetailPage({
                   ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
                   : "bg-brand-primary hover:bg-red-600 text-white"
               }`}
-             aria-label="Button">
+              aria-label="เพิ่มสินค้าลงตะกร้า"
+            >
               <ShoppingCartIcon className="w-6 h-6" />
               {isOutOfStock ? "สินค้าหมด" : "เพิ่มลงตะกร้า"}
             </button>

@@ -37,6 +37,7 @@ import {
 import type { Gym } from '@/types';
 import { uploadImages, validateFile } from '@/app/[locale]/partner/apply/utils/fileUpload';
 import { showSuccessToast, showErrorToast } from '@/lib/utils';
+import { ConfirmationModal } from '@/components/compositions/modals/ConfirmationModal';
 
 function GymPageContent() {
   const supabase = createClient();
@@ -48,6 +49,9 @@ function GymPageContent() {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [imageIndexToDelete, setImageIndexToDelete] = useState<number | null>(null);
+  const [isDeletingImage, setIsDeletingImage] = useState(false);
   const [fileErrors, setFileErrors] = useState<string[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [editFormData, setEditFormData] = useState({
@@ -204,11 +208,17 @@ function GymPageContent() {
     }
   };
 
-  const handleDeleteImage = async (imageIndex: number) => {
-    if (!gym || !confirm('คุณแน่ใจว่าต้องการลบรูปภาพนี้?')) return;
+  const handleDeleteImageClick = (imageIndex: number) => {
+    setImageIndexToDelete(imageIndex);
+    setIsDeleteModalOpen(true);
+  };
 
+  const confirmDeleteImage = async () => {
+    if (!gym || imageIndexToDelete === null) return;
+
+    setIsDeletingImage(true);
     try {
-      const updatedImages = gym.images?.filter((_, idx) => idx !== imageIndex) || [];
+      const updatedImages = gym.images?.filter((_, idx) => idx !== imageIndexToDelete) || [];
 
       const { error } = await supabase
         .from('gyms')
@@ -226,9 +236,18 @@ function GymPageContent() {
 
       setGym(updatedGym);
       showSuccessToast('ลบรูปภาพสำเร็จ!');
+      setIsDeleteModalOpen(false);
+      setImageIndexToDelete(null);
     } catch (error) {
       showErrorToast('เกิดข้อผิดพลาดในการลบรูปภาพ');
+    } finally {
+      setIsDeletingImage(false);
     }
+  };
+
+  const cancelDeleteImage = () => {
+    setIsDeleteModalOpen(false);
+    setImageIndexToDelete(null);
   };
 
   const menuItems: MenuItem[] = [
@@ -626,7 +645,7 @@ function GymPageContent() {
                         />
                         <button
                           type="button"
-                          onClick={() => handleDeleteImage(idx)}
+                          onClick={() => handleDeleteImageClick(idx)}
                           className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-600 rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
                           title="ลบรูปภาพ"
                         >
@@ -650,6 +669,18 @@ function GymPageContent() {
           )}
         </CardBody>
       </Card>
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={cancelDeleteImage}
+        title="ยืนยันการลบรูปภาพ"
+        message="คุณต้องการลบรูปภาพนี้หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้"
+        confirmText="ลบรูปภาพ"
+        cancelText="ยกเลิก"
+        confirmVariant="danger"
+        onConfirm={confirmDeleteImage}
+        loading={isDeletingImage}
+        testId="delete-gym-image-modal"
+      />
     </DashboardLayout>
   );
 }

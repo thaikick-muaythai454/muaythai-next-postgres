@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardBody, CardHeader, Button, Input, Select, SelectItem, Progress } from '@heroui/react';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
+import { ConfirmationModal } from '@/components/compositions/modals/ConfirmationModal';
 
 interface TrainingGoal {
   id: string;
@@ -28,6 +29,9 @@ export function TrainingGoalsManager() {
   const [goals, setGoals] = useState<TrainingGoal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [goalToDelete, setGoalToDelete] = useState<TrainingGoal | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     goal_type: 'custom',
     title: '',
@@ -96,11 +100,17 @@ export function TrainingGoalsManager() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('ต้องการลบเป้าหมายนี้หรือไม่?')) return;
+  const handleDeleteClick = (goal: TrainingGoal) => {
+    setGoalToDelete(goal);
+    setIsDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!goalToDelete) return;
+
+    setIsDeleting(true);
     try {
-      const response = await fetch(`/api/users/goals/${id}`, {
+      const response = await fetch(`/api/users/goals/${goalToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -112,10 +122,19 @@ export function TrainingGoalsManager() {
 
       toast.success('ลบเป้าหมายสำเร็จ!');
       loadGoals();
+      setIsDeleteModalOpen(false);
+      setGoalToDelete(null);
     } catch (error: unknown) {
       console.error('Delete error:', error);
       toast.error((error as Error).message || 'เกิดข้อผิดพลาด');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setGoalToDelete(null);
   };
 
   const handleToggleComplete = async (goal: TrainingGoal) => {
@@ -311,7 +330,7 @@ export function TrainingGoalsManager() {
                         size="sm"
                         variant="flat"
                         color="danger"
-                        onPress={() => handleDelete(goal.id)}
+                        onPress={() => handleDeleteClick(goal)}
                         startContent={<TrashIcon className="w-4 h-4" />}
                       >
                         ลบ
@@ -346,6 +365,19 @@ export function TrainingGoalsManager() {
           </div>
         )}
       </div>
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={cancelDelete}
+        title="ยืนยันการลบเป้าหมาย"
+        message={`คุณต้องการลบเป้าหมาย "${goalToDelete?.title}" หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`}
+        confirmText="ลบเป้าหมาย"
+        cancelText="ยกเลิก"
+        confirmVariant="danger"
+        onConfirm={confirmDelete}
+        loading={isDeleting}
+        testId="delete-goal-modal"
+      />
     </div>
   );
 }

@@ -168,11 +168,17 @@ export default function ArticleDetailPage({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-3 ml-auto">
-            <button className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-300 text-sm" aria-label="Button">
+            <button 
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-300 text-sm" 
+              aria-label="แชร์บทความ"
+            >
               <ShareIcon className="w-4 h-4" />
               แชร์
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-300 text-sm" aria-label="Button">
+            <button 
+              className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-colors text-zinc-300 text-sm" 
+              aria-label="บันทึกบทความ"
+            >
               <BookmarkIcon className="w-4 h-4" />
               บันทึก
             </button>

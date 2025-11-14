@@ -15,6 +15,7 @@ import {
 } from '@/services/auth.service';
 import { toast } from 'react-hot-toast';
 import { Loading, LoadingSpinner } from '@/components/design-system/primitives/Loading';
+import { ConfirmationModal } from '@/components/compositions/modals/ConfirmationModal';
 
 interface ConnectedIdentity {
   id: string;
@@ -32,6 +33,8 @@ export function ConnectedAccountsPanel() {
   const [isLoading, setIsLoading] = useState(true);
   const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
   const [isUnlinking, setIsUnlinking] = useState<string | null>(null);
+  const [isUnlinkModalOpen, setIsUnlinkModalOpen] = useState(false);
+  const [providerToUnlink, setProviderToUnlink] = useState<'google' | 'facebook' | null>(null);
 
   useEffect(() => {
     loadConnectedAccounts();
@@ -70,22 +73,27 @@ export function ConnectedAccountsPanel() {
     }
   };
 
-  const handleUnlinkProvider = async (provider: 'google' | 'facebook') => {
-    const providerName = provider === 'google' ? 'Google' : 'Facebook';
+  const handleUnlinkClick = (provider: 'google' | 'facebook') => {
+    setProviderToUnlink(provider);
+    setIsUnlinkModalOpen(true);
+  };
 
-    if (!confirm(`คุณแน่ใจหรือไม่ที่จะยกเลิกการเชื่อมต่อบัญชี ${providerName} นี้?`)) {
-      return;
-    }
+  const confirmUnlink = async () => {
+    if (!providerToUnlink) return;
+
+    const providerName = providerToUnlink === 'google' ? 'Google' : 'Facebook';
 
     try {
-      setIsUnlinking(provider);
-      await unlinkOAuthAccount(provider);
+      setIsUnlinking(providerToUnlink);
+      await unlinkOAuthAccount(providerToUnlink);
       await loadConnectedAccounts();
       toast.success(`ยกเลิกการเชื่อมต่อบัญชี ${providerName} สำเร็จ`, {
         duration: 3000,
       });
+      setIsUnlinkModalOpen(false);
+      setProviderToUnlink(null);
     } catch (error) {
-      console.error(`Error unlinking ${provider} account:`, error);
+      console.error(`Error unlinking ${providerToUnlink} account:`, error);
       const message = error instanceof Error ? error.message : `ไม่สามารถยกเลิกการเชื่อมต่อบัญชี ${providerName} ได้`;
       toast.error(message, {
         duration: 3000,
@@ -93,6 +101,11 @@ export function ConnectedAccountsPanel() {
     } finally {
       setIsUnlinking(null);
     }
+  };
+
+  const cancelUnlink = () => {
+    setIsUnlinkModalOpen(false);
+    setProviderToUnlink(null);
   };
 
   const hasGoogleAccount = identities.some((id) => id.provider === 'google');
@@ -161,7 +174,7 @@ export function ConnectedAccountsPanel() {
                   <TrashIcon className="w-4 h-4" />
                 )
               }
-              onPress={() => handleUnlinkProvider('google')}
+              onPress={() => handleUnlinkClick('google')}
               isDisabled={isUnlinking !== null}
             >
               {isUnlinking === 'google' ? 'กำลังยกเลิก...' : 'ยกเลิกการเชื่อมต่อ'}
@@ -227,7 +240,7 @@ export function ConnectedAccountsPanel() {
                   <TrashIcon className="w-4 h-4" />
                 )
               }
-              onPress={() => handleUnlinkProvider('facebook')}
+              onPress={() => handleUnlinkClick('facebook')}
               isDisabled={isUnlinking !== null}
             >
               {isUnlinking === 'facebook' ? 'กำลังยกเลิก...' : 'ยกเลิกการเชื่อมต่อ'}
@@ -261,6 +274,19 @@ export function ConnectedAccountsPanel() {
           </p>
         </div>
       </CardBody>
+
+      <ConfirmationModal
+        isOpen={isUnlinkModalOpen}
+        onClose={cancelUnlink}
+        title="ยืนยันการยกเลิกการเชื่อมต่อ"
+        message={`คุณต้องการยกเลิกการเชื่อมต่อบัญชี ${providerToUnlink === 'google' ? 'Google' : 'Facebook'} หรือไม่? คุณยังสามารถเชื่อมต่อใหม่ได้ในภายหลัง`}
+        confirmText="ยกเลิกการเชื่อมต่อ"
+        cancelText="ไม่ยกเลิก"
+        confirmVariant="danger"
+        onConfirm={confirmUnlink}
+        loading={!!isUnlinking}
+        testId="unlink-account-modal"
+      />
     </Card>
   );
 }

@@ -85,7 +85,8 @@ export default function QuickSearchBar() {
             <button
               type="submit"
               className="bg-brand-primary hover:bg-red-600 px-6 py-3 rounded-lg font-semibold transition-colors"
-             aria-label="Button">
+              aria-label="ค้นหาค่ายมวยและคอร์สเรียน"
+            >
               Search
             </button>
           </form>

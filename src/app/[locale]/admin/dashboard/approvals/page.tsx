@@ -7,7 +7,7 @@ import { RoleGuard } from '@/components/features/auth';
 import { DashboardLayout } from '@/components/shared';
 import { adminMenuItems } from '@/components/features/admin/adminMenuItems';
 import { showSuccessToast, showErrorToast } from '@/lib/utils';
-import { Card, CardBody, Button, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Checkbox } from '@heroui/react';
+import { Card, CardBody, Button, Chip, Modal, ModalContent, ModalHeader, ModalBody, ModalFooter, useDisclosure, Table, TableHeader, TableColumn, TableBody, TableRow, TableCell, Input, Checkbox, Spinner } from '@heroui/react';
 import { LoadingSpinner } from '@/components/design-system/primitives/Loading';
 import {
   CheckCircleIcon,
@@ -18,6 +18,7 @@ import {
 import { User } from '@supabase/supabase-js';
 import Image from 'next/image';
 import type { Gym } from '@/types';
+import { useDebouncedValue } from '@/lib/hooks';
 
 // Utility Components
 
@@ -27,6 +28,7 @@ const ApplicationTable = ({
   searchQuery,
   setSearchQuery,
   isLoading,
+  isSearching,
   selectedIds,
   onSelectionChange,
   onBulkApprove,
@@ -37,6 +39,7 @@ const ApplicationTable = ({
   searchQuery: string;
   setSearchQuery: (query: string) => void;
   isLoading: boolean;
+  isSearching: boolean;
   selectedIds: Set<string>;
   onSelectionChange: (ids: Set<string>) => void;
   onBulkApprove: () => void;
@@ -100,6 +103,7 @@ const ApplicationTable = ({
           value={searchQuery}
           onValueChange={setSearchQuery}
           startContent={<MagnifyingGlassIcon className="w-4 h-4 text-default-400" />}
+          endContent={isSearching && <Spinner size="sm" color="default" />}
           className="max-w-xs"
         />
       </div>
@@ -302,6 +306,9 @@ function AdminApprovalsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
 
+  // Debounce search query with 300ms delay
+  const { debouncedValue: debouncedSearchQuery, isDebouncing } = useDebouncedValue(searchQuery, 300);
+
   const detailModal = useDisclosure();
   const bulkConfirmModal = useDisclosure();
   const [bulkOperation, setBulkOperation] = useState<'approve' | 'reject' | null>(null);
@@ -333,14 +340,14 @@ function AdminApprovalsContent() {
   }, [loadApplications]);
 
   const filteredApplications = useMemo(() => {
-    if (!searchQuery) return applications;
-    const query = searchQuery.toLowerCase();
+    if (!debouncedSearchQuery) return applications;
+    const query = debouncedSearchQuery.toLowerCase();
     return applications.filter(app =>
       app.gym_name.toLowerCase().includes(query) ||
       app.contact_name?.toLowerCase().includes(query) ||
       app.email?.toLowerCase().includes(query)
     );
-  }, [applications, searchQuery]);
+  }, [applications, debouncedSearchQuery]);
 
   const handleBulkOperation = async (operation: 'approve' | 'reject') => {
     if (selectedIds.size === 0) {
@@ -451,6 +458,7 @@ function AdminApprovalsContent() {
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               isLoading={isLoading}
+              isSearching={isDebouncing}
               selectedIds={selectedIds}
               onSelectionChange={setSelectedIds}
               onBulkApprove={handleBulkApprove}

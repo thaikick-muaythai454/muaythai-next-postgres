@@ -10,6 +10,19 @@ const config: Config = {
     "./node_modules/@heroui/theme/dist/components/(select|form|listbox|divider|popover|button|ripple|spinner|scroll-shadow|card|image|chip|skeleton).js",
   ],
   darkMode: "class",
+  theme: {
+    extend: {
+      animation: {
+        shimmer: "shimmer 2s infinite linear",
+      },
+      keyframes: {
+        shimmer: {
+          "0%": { backgroundPosition: "200% 0" },
+          "100%": { backgroundPosition: "-200% 0" },
+        },
+      },
+    },
+  },
   plugins: [
     heroui(),
     // Custom plugin to add brand-primary utility classes

@@ -35,6 +35,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import type { ScheduledReport, CustomReport } from '@/types/database.types';
+import { ConfirmationModal } from '@/components/compositions/modals/ConfirmationModal';
 
 interface ScheduledReportsManagerProps {
   onSave?: () => void;
@@ -46,6 +47,9 @@ export function ScheduledReportsManager({ onSave }: ScheduledReportsManagerProps
   const [customReports, setCustomReports] = useState<CustomReport[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [reportToDelete, setReportToDelete] = useState<ScheduledReport | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     custom_report_id: '',
     name: '',
@@ -142,11 +146,17 @@ export function ScheduledReportsManager({ onSave }: ScheduledReportsManagerProps
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('ต้องการลบรายงานที่กำหนดเวลานี้หรือไม่?')) return;
+  const handleDeleteClick = (report: ScheduledReport) => {
+    setReportToDelete(report);
+    setIsDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!reportToDelete) return;
+
+    setIsDeleting(true);
     try {
-      const response = await fetch(`/api/admin/reports/scheduled/${id}`, {
+      const response = await fetch(`/api/admin/reports/scheduled/${reportToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -155,13 +165,22 @@ export function ScheduledReportsManager({ onSave }: ScheduledReportsManagerProps
       if (result.success) {
         toast.success('ลบรายงานสำเร็จ');
         loadScheduledReports();
+        setIsDeleteModalOpen(false);
+        setReportToDelete(null);
       } else {
         throw new Error(result.error || 'เกิดข้อผิดพลาด');
       }
     } catch (error) {
       console.error('Error deleting scheduled report:', error);
       toast.error('เกิดข้อผิดพลาดในการลบรายงาน');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setReportToDelete(null);
   };
 
   const handleToggleActive = async (id: string, isActive: boolean) => {
@@ -332,7 +351,7 @@ export function ScheduledReportsManager({ onSave }: ScheduledReportsManagerProps
                           variant="light"
                           color="danger"
                           isIconOnly
-                          onPress={() => handleDelete(report.id)}
+                          onPress={() => handleDeleteClick(report)}
                           aria-label="ลบรายงาน"
                         >
                           <TrashIcon className="w-4 h-4" />
@@ -506,6 +525,19 @@ export function ScheduledReportsManager({ onSave }: ScheduledReportsManagerProps
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={cancelDelete}
+        title="ยืนยันการลบรายงาน"
+        message={`คุณต้องการลบรายงานที่กำหนดเวลา "${reportToDelete?.name}" หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`}
+        confirmText="ลบรายงาน"
+        cancelText="ยกเลิก"
+        confirmVariant="danger"
+        onConfirm={confirmDelete}
+        loading={isDeleting}
+        testId="delete-scheduled-report-modal"
+      />
     </>
   );
 }

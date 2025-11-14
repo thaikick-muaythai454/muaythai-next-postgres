@@ -228,7 +228,8 @@ export default function ShopPage() {
                 <button
                   onClick={handleReset}
                   className="bg-brand-primary hover:bg-red-600 mt-4 px-6 py-2 rounded-lg transition-colors"
-                  aria-label="Button">
+                  aria-label="ล้างการค้นหาและเริ่มใหม่"
+                >
                   ล้างการค้นหา
                 </button>
               </div>

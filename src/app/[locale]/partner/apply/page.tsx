@@ -331,7 +331,8 @@ export default function PartnerApplyPage() {
               type="submit"
               disabled={isSubmitting}
               className="flex justify-center items-center gap-3 bg-brand-primary hover:bg-red-600 disabled:bg-zinc-600 shadow-lg px-8 py-4 rounded-lg w-full font-bold text-white text-lg hover:scale-[1.02] transition-all disabled:cursor-not-allowed transform"
-             aria-label="Button">
+              aria-label="ส่งใบสมัครพาร์ทเนอร์"
+            >
               {isSubmitting ? (
                 <>
                   <LoadingSpinner size="sm" />

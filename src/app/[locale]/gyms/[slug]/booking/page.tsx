@@ -936,7 +936,8 @@ export default function BookingPage({
                 onClick={handlePrevious}
                 disabled={currentStep === 1}
                 className="disabled:opacity-50 px-6 py-3 rounded-lg font-semibold text-zinc-400 hover:text-white transition-colors disabled:cursor-not-allowed"
-               aria-label="Button">
+                aria-label="ย้อนกลับไปขั้นตอนก่อนหน้า"
+              >
                 ย้อนกลับ
               </button>
 
@@ -944,7 +945,8 @@ export default function BookingPage({
                 onClick={handleNext}
                 disabled={isCreatingPayment}
                 className="bg-brand-primary hover:bg-red-600 disabled:opacity-50 px-8 py-3 rounded-lg font-semibold transition-colors disabled:cursor-not-allowed"
-               aria-label="Button">
+                aria-label="ไปขั้นตอนถัดไป"
+              >
                 {isCreatingPayment ? "กำลังโหลด..." : "ถัดไป"}
               </button>
             </div>
@@ -956,7 +958,8 @@ export default function BookingPage({
               <button
                 onClick={handlePrevious}
                 className="px-6 py-3 rounded-lg font-semibold text-zinc-400 hover:text-white transition-colors"
-               aria-label="Button">
+                aria-label="ย้อนกลับไปขั้นตอนก่อนหน้า"
+              >
                 ย้อนกลับ
               </button>
             </div>

@@ -81,7 +81,8 @@ export function ProductCard({ product, showAddToCart = true }: ProductCardProps)
                   ? "bg-zinc-700 text-zinc-500 cursor-not-allowed"
                   : "bg-brand-primary hover:bg-red-600 text-white"
               }`}
-             aria-label="Button">
+              aria-label="เพิ่มสินค้าลงตะกร้า"
+            >
               <ShoppingCartIcon className="w-5 h-5" />
             </button>
           )}

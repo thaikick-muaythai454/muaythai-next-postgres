@@ -33,6 +33,7 @@ import {
 } from '@heroicons/react/24/outline';
 import { toast } from 'react-hot-toast';
 import type { CustomReport } from '@/types/database.types';
+import { ConfirmationModal } from '@/components/compositions/modals/ConfirmationModal';
 
 const AVAILABLE_TABLES = [
   { value: 'profiles', label: 'ผู้ใช้ (Profiles)' },
@@ -84,6 +85,9 @@ export function CustomReportBuilder({ onSave }: CustomReportBuilderProps) {
   const [customReports, setCustomReports] = useState<CustomReport[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [reportToDelete, setReportToDelete] = useState<CustomReport | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -167,11 +171,17 @@ export function CustomReportBuilder({ onSave }: CustomReportBuilderProps) {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('ต้องการลบรายงานนี้หรือไม่?')) return;
+  const handleDeleteClick = (report: CustomReport) => {
+    setReportToDelete(report);
+    setIsDeleteModalOpen(true);
+  };
 
+  const confirmDelete = async () => {
+    if (!reportToDelete) return;
+
+    setIsDeleting(true);
     try {
-      const response = await fetch(`/api/admin/reports/custom/${id}`, {
+      const response = await fetch(`/api/admin/reports/custom/${reportToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -180,13 +190,22 @@ export function CustomReportBuilder({ onSave }: CustomReportBuilderProps) {
       if (result.success) {
         toast.success('ลบรายงานสำเร็จ');
         loadCustomReports();
+        setIsDeleteModalOpen(false);
+        setReportToDelete(null);
       } else {
         throw new Error(result.error || 'เกิดข้อผิดพลาด');
       }
     } catch (error) {
       console.error('Error deleting custom report:', error);
       toast.error('เกิดข้อผิดพลาดในการลบรายงาน');
+    } finally {
+      setIsDeleting(false);
     }
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setReportToDelete(null);
   };
 
   const handleEdit = (report: CustomReport) => {
@@ -282,7 +301,7 @@ export function CustomReportBuilder({ onSave }: CustomReportBuilderProps) {
                           variant="light"
                           color="danger"
                           isIconOnly
-                          onPress={() => handleDelete(report.id)}
+                          onPress={() => handleDeleteClick(report)}
                           aria-label="ลบรายงาน"
                         >
                           <TrashIcon className="w-4 h-4" />
@@ -385,6 +404,19 @@ export function CustomReportBuilder({ onSave }: CustomReportBuilderProps) {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={cancelDelete}
+        title="ยืนยันการลบรายงาน"
+        message={`คุณต้องการลบรายงาน "${reportToDelete?.name}" หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`}
+        confirmText="ลบรายงาน"
+        cancelText="ยกเลิก"
+        confirmVariant="danger"
+        onConfirm={confirmDelete}
+        loading={isDeleting}
+        testId="delete-report-modal"
+      />
     </>
   );
 }

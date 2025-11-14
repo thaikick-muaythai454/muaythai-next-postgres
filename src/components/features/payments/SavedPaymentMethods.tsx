@@ -13,6 +13,7 @@ import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { SavedPaymentMethod } from '@/services/payment.service';
 import { Loading, LoadingSpinner } from '@/components/design-system/primitives/Loading';
+import { ConfirmationModal } from '@/components/compositions/modals/ConfirmationModal';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || '');
 
@@ -151,6 +152,8 @@ export default function SavedPaymentMethods({
   const [showAddModal, setShowAddModal] = useState(false);
   const [setupIntentClientSecret, setSetupIntentClientSecret] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [methodToDelete, setMethodToDelete] = useState<SavedPaymentMethod | null>(null);
 
   const fetchMethods = async () => {
     try {
@@ -174,14 +177,17 @@ export default function SavedPaymentMethods({
     fetchMethods();
   }, []);
 
-  const handleDelete = async (methodId: string) => {
-    if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบบัตรเครดิตนี้?')) {
-      return;
-    }
+  const handleDeleteClick = (method: SavedPaymentMethod) => {
+    setMethodToDelete(method);
+    setIsDeleteModalOpen(true);
+  };
 
-    setDeletingId(methodId);
+  const confirmDelete = async () => {
+    if (!methodToDelete) return;
+
+    setDeletingId(methodToDelete.id);
     try {
-      const response = await fetch(`/api/payments/saved-methods?method_id=${methodId}`, {
+      const response = await fetch(`/api/payments/saved-methods?method_id=${methodToDelete.id}`, {
         method: 'DELETE',
       });
 
@@ -191,11 +197,18 @@ export default function SavedPaymentMethods({
       }
 
       await fetchMethods();
+      setIsDeleteModalOpen(false);
+      setMethodToDelete(null);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'เกิดข้อผิดพลาดในการลบบัตรเครดิต');
     } finally {
       setDeletingId(null);
     }
+  };
+
+  const cancelDelete = () => {
+    setIsDeleteModalOpen(false);
+    setMethodToDelete(null);
   };
 
   const handleSetDefault = async (methodId: string) => {
@@ -345,7 +358,7 @@ export default function SavedPaymentMethods({
                     </button>
                   )}
                   <button
-                    onClick={() => handleDelete(method.id)}
+                    onClick={() => handleDeleteClick(method)}
                     disabled={deletingId === method.id}
                     className="text-red-400 hover:text-red-300 transition-colors disabled:opacity-50"
                     aria-label="Delete payment method"
@@ -427,6 +440,19 @@ export default function SavedPaymentMethods({
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={cancelDelete}
+        title="ยืนยันการลบบัตร"
+        message={`คุณต้องการลบบัตร ${methodToDelete?.card?.brand || ''} ที่ลงท้ายด้วย ${methodToDelete?.card?.last4 || ''} หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`}
+        confirmText="ลบบัตร"
+        cancelText="ยกเลิก"
+        confirmVariant="danger"
+        onConfirm={confirmDelete}
+        loading={!!deletingId}
+        testId="delete-payment-method-modal"
+      />
     </div>
   );
 }

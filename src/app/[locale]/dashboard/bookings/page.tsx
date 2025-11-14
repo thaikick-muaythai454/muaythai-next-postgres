@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { createClient } from "@/lib/database/supabase/client";
 import { RoleGuard } from "@/components/features/auth";
 import { DashboardLayout, dashboardMenuItems } from "@/components/shared";
@@ -27,6 +27,7 @@ import {
 import { User } from "@supabase/supabase-js";
 import { Loading } from "@/components/design-system/primitives/Loading";
 import type { Booking as BookingType } from "@/types/database.types";
+import { ConfirmationModal } from "@/components/compositions/modals/ConfirmationModal";
 
 interface BookingWithGym extends BookingType {
   gyms?: {
@@ -43,6 +44,31 @@ function BookingsContent() {
   const [bookings, setBookings] = useState<BookingWithGym[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState("all");
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+  const [bookingToCancel, setBookingToCancel] = useState<BookingWithGym | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+
+  const loadBookings = useCallback(async (userId: string) => {
+    const { data, error } = await supabase
+      .from("bookings")
+      .select(
+        `
+        *,
+        gyms:gym_id (
+          id,
+          gym_name,
+          gym_name_english,
+          slug
+        )
+      `
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setBookings(data as BookingWithGym[]);
+    }
+  }, [supabase]);
 
   useEffect(() => {
     async function loadData() {
@@ -52,32 +78,13 @@ function BookingsContent() {
       setUser(user);
 
       if (user) {
-        // Fetch user's bookings with gym information
-        const { data, error } = await supabase
-          .from("bookings")
-          .select(
-            `
-            *,
-            gyms:gym_id (
-              id,
-              gym_name,
-              gym_name_english,
-              slug
-            )
-          `
-          )
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false });
-
-        if (!error && data) {
-          setBookings(data as BookingWithGym[]);
-        }
+        await loadBookings(user.id);
       }
 
       setIsLoading(false);
     }
     loadData();
-  }, [supabase]);
+  }, [supabase, loadBookings]);
 
   const getStatusChip = (status: string) => {
     const statusConfig: Record<
@@ -142,6 +149,38 @@ function BookingsContent() {
         {config.label}
       </Chip>
     );
+  };
+
+  const handleCancelClick = (booking: BookingWithGym) => {
+    setBookingToCancel(booking);
+    setIsCancelModalOpen(true);
+  };
+
+  const confirmCancel = async () => {
+    if (!bookingToCancel || !user) return;
+
+    setIsCancelling(true);
+    try {
+      const { error } = await supabase
+        .from("bookings")
+        .update({ status: "cancelled" })
+        .eq("id", bookingToCancel.id);
+
+      if (!error) {
+        await loadBookings(user.id);
+        setIsCancelModalOpen(false);
+        setBookingToCancel(null);
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  const cancelCancellation = () => {
+    setIsCancelModalOpen(false);
+    setBookingToCancel(null);
   };
 
   const filteredBookings = bookings.filter((booking) => {
@@ -345,35 +384,7 @@ function BookingsContent() {
                           size="sm"
                           color="danger"
                           variant="flat"
-                          onPress={async () => {
-                            if (confirm("คุณต้องการยกเลิกการจองนี้หรือไม่?")) {
-                              const { error } = await supabase
-                                .from("bookings")
-                                .update({ status: "cancelled" })
-                                .eq("id", booking.id);
-
-                              if (!error) {
-                                // Reload data
-                                const { data } = await supabase
-                                  .from("bookings")
-                                  .select(
-                                    `
-                                    *,
-                                    gyms:gym_id (
-                                      id,
-                                      gym_name,
-                                      gym_name_english,
-                                      slug
-                                    )
-                                  `
-                                  )
-                                  .eq("user_id", user?.id)
-                                  .order("created_at", { ascending: false });
-
-                                if (data) setBookings(data as BookingWithGym[]);
-                              }
-                            }
-                          }}
+                          onPress={() => handleCancelClick(booking)}
                         >
                           ยกเลิก
                         </Button>
@@ -391,6 +402,19 @@ function BookingsContent() {
           </CardBody>
         </Card>
       </section>
+
+      <ConfirmationModal
+        isOpen={isCancelModalOpen}
+        onClose={cancelCancellation}
+        title="ยืนยันการยกเลิกการจอง"
+        message={`คุณต้องการยกเลิกการจอง "${bookingToCancel?.package_name}" ที่ ${bookingToCancel?.gyms?.gym_name} หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`}
+        confirmText="ยกเลิกการจอง"
+        cancelText="ไม่ยกเลิก"
+        confirmVariant="danger"
+        onConfirm={confirmCancel}
+        loading={isCancelling}
+        testId="cancel-booking-modal"
+      />
     </DashboardLayout>
   );
 }

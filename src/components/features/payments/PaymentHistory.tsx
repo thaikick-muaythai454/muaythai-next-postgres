@@ -16,7 +16,7 @@ import {
   PaymentRecord
 } from './shared';
 import RetryPaymentButton from './RetryPaymentButton';
-import { Loading } from '@/components/design-system/primitives/Loading';
+import { Skeleton } from '@/components/design-system/primitives/Skeleton';
 
 export default function PaymentHistory() {
   const { payments, loading, error, refreshPayments } = usePaymentData();
@@ -26,9 +26,41 @@ export default function PaymentHistory() {
 
   if (loading) {
     return (
-      <div className="bg-zinc-800 rounded-lg p-6">
-        <div className="text-center py-12">
-          <Loading centered size="xl" text="กำลังโหลดประวัติการชำระเงิน..." />
+      <div className="space-y-6">
+        {/* Header Skeleton */}
+        <div className="bg-zinc-800 rounded-lg p-6">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <Skeleton className="h-6 w-48 mb-2" />
+              <Skeleton className="h-4 w-64" />
+            </div>
+            <div className="text-right space-y-2">
+              <Skeleton className="h-4 w-24 ml-auto" />
+              <Skeleton className="h-8 w-16 ml-auto" />
+            </div>
+          </div>
+        </div>
+        
+        {/* Payment List Skeleton */}
+        <div className="space-y-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={`skeleton-${i}`} className="bg-zinc-800 rounded-lg p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4 flex-1">
+                  <Skeleton className="w-12 h-12" variant="circle" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-5 w-32" />
+                    <Skeleton className="h-4 w-48" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                </div>
+                <div className="text-right space-y-2">
+                  <Skeleton className="h-8 w-32 ml-auto" />
+                  <Skeleton className="h-6 w-24 ml-auto" />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     );
@@ -44,7 +76,8 @@ export default function PaymentHistory() {
           <button
             onClick={refreshPayments}
             className="bg-brand-primary hover:bg-red-600 px-6 py-3 rounded-lg font-medium transition-colors"
-           aria-label="Button">
+            aria-label="ลองโหลดข้อมูลการชำระเงินใหม่"
+          >
             ลองใหม่
           </button>
         </div>

@@ -230,7 +230,8 @@ export default function PaymentPage() {
                         onClick={createPaymentIntent}
                         disabled={isLoading}
                         className="bg-brand-primary hover:bg-red-600 disabled:bg-zinc-600 disabled:opacity-50 px-8 py-4 rounded-lg font-semibold text-lg transition-colors disabled:cursor-not-allowed"
-                       aria-label="Button">
+                        aria-label="เริ่มต้นกระบวนการชำระเงิน"
+                      >
                         {isLoading ? 'กำลังสร้างการชำระเงิน...' : 'เริ่มต้นการชำระเงิน'}
                       </button>
                       {error && (

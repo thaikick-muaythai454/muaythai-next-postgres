@@ -183,7 +183,8 @@ const RetryButton: React.FC<{
         sizeClasses,
         variantClasses
       )}
-     aria-label="Button">
+      aria-label="ลองใหม่อีกครั้ง"
+    >
       <svg
         className="w-4 h-4 mr-2"
         fill="none"
@@ -371,7 +372,8 @@ export const ErrorDisplay = React.forwardRef<HTMLDivElement, ErrorDisplayProps>(
                 <button
                   onClick={onRetry}
                   className="text-red-600 hover:text-red-800 underline text-sm"
-                 aria-label="Button">
+                  aria-label="ลองทำซ้ำอีกครั้ง"
+                >
                   {retryText}
                 </button>
               )}
