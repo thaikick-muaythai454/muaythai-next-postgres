@@ -1,289 +1,299 @@
 /**
  * Export Utilities
- * Functions for exporting data to PDF and CSV formats
+ * Universal functions for exporting data to PDF/CSV
+ * รองรับ Thai fonts และ formatting
  */
 
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-/**
- * Export data to CSV format
- */
-export function exportToCSV(
-  data: Record<string, unknown>[],
-  filename: string,
-  headers?: string[]
-): void {
-  if (!data || data.length === 0) {
-    throw new Error('No data to export');
-  }
-
-  // Get all unique keys from data
-  const allKeys = new Set<string>();
-  data.forEach((row) => {
-    Object.keys(row).forEach((key) => allKeys.add(key));
-  });
-
-  // Use provided headers or all keys
-  const columns = headers || Array.from(allKeys);
-
-  // Create CSV content
-  const csvRows: string[] = [];
-
-  // Add headers
-  csvRows.push(columns.map((col) => escapeCSVValue(col)).join(','));
-
-  // Add data rows
-  data.forEach((row) => {
-    const values = columns.map((col) => {
-      const value = row[col];
-      if (value === null || value === undefined) return '';
-      
-      // Handle arrays
-      if (Array.isArray(value)) {
-        return escapeCSVValue(value.join('; '));
-      }
-      
-      // Handle objects
-      if (typeof value === 'object') {
-        return escapeCSVValue(JSON.stringify(value));
-      }
-      
-      return escapeCSVValue(String(value));
-    });
-    csvRows.push(values.join(','));
-  });
-
-  // Create blob and download
-  const csvContent = csvRows.join('\n');
-  const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' }); // BOM for Excel
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = `${filename}.csv`;
-  link.click();
-  URL.revokeObjectURL(url);
-}
-
-/**
- * Escape CSV value to handle commas, quotes, and newlines
- */
-function escapeCSVValue(value: string): string {
-  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-    return `"${value.replace(/"/g, '""')}"`;
-  }
-  return value;
-}
-
-/**
- * Export data to PDF format
- */
-export function exportToPDF(
-  data: Record<string, unknown>[],
-  filename: string,
-  title: string,
-  headers?: string[],
-  columnHeaders?: string[]
-): void {
-  if (!data || data.length === 0) {
-    throw new Error('No data to export');
-  }
-
-  const doc = new jsPDF();
-
-  // Add title
-  doc.setFontSize(16);
-  doc.text(title, 14, 20);
-
-  // Add export date
-  doc.setFontSize(10);
-  doc.text(`Generated: ${new Date().toLocaleString('th-TH')}`, 14, 30);
-
-  // Get all unique keys from data
-  const allKeys = new Set<string>();
-  data.forEach((row) => {
-    Object.keys(row).forEach((key) => allKeys.add(key));
-  });
-
-  // Use provided headers or all keys
-  const columns = headers || Array.from(allKeys);
+export interface ExportColumn<T = Record<string, unknown>> {
+  /**
+   * Key ของคอลัมน์ในข้อมูล
+   */
+  key: string;
   
-  // Use provided column headers or column names
-  const tableHeaders = columnHeaders || columns.map((col) => col.toUpperCase().replace(/_/g, ' '));
-
-  // Prepare table data
-  const tableData = data.map((row) => {
-    return columns.map((col) => {
-      const value = row[col];
-      if (value === null || value === undefined) return '';
-      
-      // Handle arrays
-      if (Array.isArray(value)) {
-        return value.join(', ');
-      }
-      
-      // Handle objects
-      if (typeof value === 'object') {
-        return JSON.stringify(value).substring(0, 50); // Limit length
-      }
-      
-      // Format dates
-      if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}/)) {
-        try {
-          const date = new Date(value);
-          return date.toLocaleDateString('th-TH');
-        } catch {
-          return value;
-        }
-      }
-      
-      return String(value);
-    });
-  });
-
-  // Generate table
-  autoTable(doc, {
-    head: [tableHeaders],
-    body: tableData,
-    startY: 35,
-    styles: { fontSize: 8 },
-    headStyles: { fillColor: [220, 53, 69], textColor: 255, fontStyle: 'bold' },
-    alternateRowStyles: { fillColor: [245, 245, 245] },
-    margin: { top: 35 },
-  });
-
-  // Save PDF
-  doc.save(`${filename}.pdf`);
+  /**
+   * Label ที่จะแสดงใน header
+   */
+  label: string;
+  
+  /**
+   * Function สำหรับ format ข้อมูลก่อน export (optional)
+   */
+  format?: (value: unknown, row: T) => string;
+  
+  /**
+   * ความกว้างของคอลัมน์ (optional, สำหรับ PDF)
+   */
+  width?: number;
 }
 
-/**
- * Format data for export (clean up nested objects, arrays, etc.)
- */
-export function formatDataForExport(
-  data: Record<string, unknown>[],
-  columnMapping?: Record<string, string>
-): Array<Record<string, unknown>> {
-  return data.map((row) => {
-    const formatted: Record<string, unknown> = {};
-    
-    Object.keys(row).forEach((key) => {
-      const displayKey = columnMapping?.[key] || key;
-      let value = row[key];
-
-      // Handle arrays
-      if (Array.isArray(value)) {
-        value = value.join(', ');
-      }
-      
-      // Handle objects (extract useful info)
-      if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-        // For gyms/users objects, get name
-        if ((value as Record<string, unknown>).gym_name || (value as Record<string, unknown>).full_name || (value as Record<string, unknown>).email) {
-          value = (value as Record<string, unknown>).gym_name || (value as Record<string, unknown>).full_name || (value as Record<string, unknown>).email;
-        } else {
-          value = JSON.stringify(value as Record<string, unknown>).substring(0, 100);
-        }
-      }
-
-      // Format dates
-      if (typeof value === 'string' && value.match(/^\d{4}-\d{2}-\d{2}/)) {
-        try {
-          const date = new Date(value);
-          value = date.toLocaleDateString('th-TH', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          });
-        } catch {
-          // Keep original value
-        }
-      }
-
-      formatted[displayKey] = value;
-    });
-
-    return formatted;
-  });
-}
-
-/**
- * Table configuration for different data types
- */
-export const TABLE_CONFIGS: Record<string, {
-  title: string;
+export interface ExportPDFOptions<T = Record<string, unknown>> {
+  data: T[];
+  columns?: ExportColumn<T>[];
   filename: string;
-  headers: string[];
-  columnHeaders: string[];
-  columnMapping?: Record<string, string>;
-}> = {
-  users: {
-    title: 'รายงานผู้ใช้ทั้งหมด',
-    filename: 'users-report',
-    headers: ['id', 'email', 'full_name', 'username', 'phone', 'role', 'created_at'],
-    columnHeaders: ['ID', 'อีเมล', 'ชื่อ-นามสกุล', 'ชื่อผู้ใช้', 'เบอร์โทร', 'บทบาท', 'วันที่สร้าง'],
-    columnMapping: {
-      id: 'ID',
-      email: 'อีเมล',
-      full_name: 'ชื่อ-นามสกุล',
-      username: 'ชื่อผู้ใช้',
-      phone: 'เบอร์โทร',
-      role: 'บทบาท',
-      created_at: 'วันที่สร้าง',
-    },
-  },
-  gyms: {
-    title: 'รายงานยิมทั้งหมด',
-    filename: 'gyms-report',
-    headers: ['id', 'gym_name', 'gym_name_english', 'contact_name', 'email', 'phone', 'location', 'status', 'created_at'],
-    columnHeaders: ['ID', 'ชื่อยิม (ไทย)', 'ชื่อยิม (อังกฤษ)', 'ชื่อผู้ติดต่อ', 'อีเมล', 'เบอร์โทร', 'ที่อยู่', 'สถานะ', 'วันที่สร้าง'],
-    columnMapping: {
-      id: 'ID',
-      gym_name: 'ชื่อยิม (ไทย)',
-      gym_name_english: 'ชื่อยิม (อังกฤษ)',
-      contact_name: 'ชื่อผู้ติดต่อ',
-      email: 'อีเมล',
-      phone: 'เบอร์โทร',
-      location: 'ที่อยู่',
-      status: 'สถานะ',
-      created_at: 'วันที่สร้าง',
-    },
-  },
-  bookings: {
-    title: 'รายงานการจอง',
-    filename: 'bookings-report',
-    headers: ['id', 'booking_number', 'customer_name', 'customer_email', 'customer_phone', 'gym_name', 'package_name', 'price_paid', 'start_date', 'end_date', 'payment_status', 'status', 'created_at'],
-    columnHeaders: ['ID', 'เลขที่จอง', 'ชื่อลูกค้า', 'อีเมล', 'เบอร์โทร', 'ยิม', 'แพ็คเกจ', 'ราคา', 'วันที่เริ่ม', 'วันที่สิ้นสุด', 'สถานะการชำระ', 'สถานะ', 'วันที่สร้าง'],
-    columnMapping: {
-      id: 'ID',
-      booking_number: 'เลขที่จอง',
-      customer_name: 'ชื่อลูกค้า',
-      customer_email: 'อีเมล',
-      customer_phone: 'เบอร์โทร',
-      gym_name: 'ยิม',
-      package_name: 'แพ็คเกจ',
-      price_paid: 'ราคา',
-      start_date: 'วันที่เริ่ม',
-      end_date: 'วันที่สิ้นสุด',
-      payment_status: 'สถานะการชำระ',
-      status: 'สถานะ',
-      created_at: 'วันที่สร้าง',
-    },
-  },
-  payments: {
-    title: 'รายงานรายได้',
-    filename: 'payments-report',
-    headers: ['id', 'user_id', 'payment_type', 'amount', 'status', 'payment_method', 'stripe_payment_intent_id', 'created_at'],
-    columnHeaders: ['ID', 'User ID', 'ประเภท', 'จำนวนเงิน', 'สถานะ', 'วิธีชำระ', 'Stripe ID', 'วันที่สร้าง'],
-    columnMapping: {
-      id: 'ID',
-      user_id: 'User ID',
-      payment_type: 'ประเภท',
-      amount: 'จำนวนเงิน',
-      status: 'สถานะ',
-      payment_method: 'วิธีชำระ',
-      stripe_payment_intent_id: 'Stripe ID',
-      created_at: 'วันที่สร้าง',
-    },
-  },
-};
+  title?: string;
+  subtitle?: string;
+  orientation?: 'portrait' | 'landscape';
+  pageSize?: 'a4' | 'letter' | 'legal';
+  includeTimestamp?: boolean;
+  includeRowNumbers?: boolean;
+}
 
+export interface ExportCSVOptions<T = Record<string, unknown>> {
+  data: T[];
+  columns?: ExportColumn<T>[];
+  filename: string;
+  includeTimestamp?: boolean;
+}
+
+/**
+ * สร้างคอลัมน์อัตโนมัติจากข้อมูล
+ */
+function generateColumnsFromData<T>(data: T[]): ExportColumn<T>[] {
+  if (data.length === 0) return [];
+  
+  const firstRow = data[0] as Record<string, unknown>;
+  return Object.keys(firstRow).map(key => ({
+    key,
+    label: key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' '),
+  }));
+}
+
+/**
+ * Format ค่าสำหรับการแสดงผล
+ */
+function formatValue(value: unknown): string {
+  if (value === null || value === undefined) return '';
+  
+  if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+  
+  if (value instanceof Date) {
+    return value.toLocaleDateString('th-TH');
+  }
+  
+  if (typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+  
+  return String(value);
+}
+
+/**
+ * Export ข้อมูลเป็น PDF
+ */
+export async function exportToPDF<T = Record<string, unknown>>({
+  data,
+  columns: providedColumns,
+  filename,
+  title = 'Report',
+  subtitle,
+  orientation = 'landscape',
+  pageSize = 'a4',
+  includeTimestamp = true,
+  includeRowNumbers = true,
+}: ExportPDFOptions<T>): Promise<void> {
+  try {
+    // สร้าง PDF document
+    const doc = new jsPDF({
+      orientation,
+      unit: 'mm',
+      format: pageSize,
+    });
+
+    // กำหนดคอลัมน์
+    const columns = providedColumns || generateColumnsFromData(data);
+    
+    // เพิ่ม row numbers ถ้าต้องการ
+    const headers = includeRowNumbers 
+      ? ['#', ...columns.map(col => col.label)]
+      : columns.map(col => col.label);
+
+    // เตรียมข้อมูล
+    const rows = data.map((row, index) => {
+      const rowData = columns.map(col => {
+        const value = (row as Record<string, unknown>)[col.key];
+        return col.format ? col.format(value, row) : formatValue(value);
+      });
+      
+      return includeRowNumbers ? [String(index + 1), ...rowData] : rowData;
+    });
+
+    // คำนวณตำแหน่ง Y เริ่มต้น
+    let currentY = 20;
+
+    // เพิ่มหัวข้อ
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title, 14, currentY);
+    currentY += 10;
+
+    // เพิ่ม subtitle (ถ้ามี)
+    if (subtitle) {
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.text(subtitle, 14, currentY);
+      currentY += 8;
+    }
+
+    // เพิ่ม timestamp (ถ้าต้องการ)
+    if (includeTimestamp) {
+      doc.setFontSize(10);
+      doc.setTextColor(128, 128, 128);
+      const timestamp = new Date().toLocaleString('th-TH', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+      doc.text(`Generated: ${timestamp}`, 14, currentY);
+      currentY += 10;
+    }
+
+    // เพิ่มตาราง
+    autoTable(doc, {
+      head: [headers],
+      body: rows,
+      startY: currentY,
+      theme: 'grid',
+      styles: {
+        font: 'helvetica',
+        fontSize: 9,
+        cellPadding: 3,
+      },
+      headStyles: {
+        fillColor: [220, 38, 38], // red-600
+        textColor: 255,
+        fontStyle: 'bold',
+        halign: 'center',
+      },
+      alternateRowStyles: {
+        fillColor: [249, 250, 251], // gray-50
+      },
+      columnStyles: includeRowNumbers ? {
+        0: { cellWidth: 10, halign: 'center' }, // Row number column
+      } : undefined,
+      margin: { top: 10, right: 14, bottom: 10, left: 14 },
+      didDrawPage: (data) => {
+        // เพิ่มเลขหน้า
+        const pageCount = doc.getNumberOfPages();
+        doc.setFontSize(10);
+        doc.setTextColor(128, 128, 128);
+        doc.text(
+          `Page ${data.pageNumber} of ${pageCount}`,
+          doc.internal.pageSize.width / 2,
+          doc.internal.pageSize.height - 10,
+          { align: 'center' }
+        );
+      },
+    });
+
+    // บันทึกไฟล์
+    const finalFilename = includeTimestamp
+      ? `${filename}_${new Date().toISOString().split('T')[0]}.pdf`
+      : `${filename}.pdf`;
+    
+    doc.save(finalFilename);
+  } catch (error) {
+    console.error('PDF Export error:', error);
+    throw new Error('Failed to export PDF');
+  }
+}
+
+/**
+ * Export ข้อมูลเป็น CSV
+ */
+export async function exportToCSV<T = Record<string, unknown>>({
+  data,
+  columns: providedColumns,
+  filename,
+  includeTimestamp = true,
+}: ExportCSVOptions<T>): Promise<void> {
+  try {
+    // กำหนดคอลัมน์
+    const columns = providedColumns || generateColumnsFromData(data);
+    
+    // สร้าง header row
+    const headers = columns.map(col => col.label).join(',');
+    
+    // สร้าง data rows
+    const rows = data.map(row => {
+      return columns.map(col => {
+        const value = (row as Record<string, unknown>)[col.key];
+        const formatted = col.format ? col.format(value, row) : formatValue(value);
+        
+        // Escape commas and quotes for CSV
+        if (formatted.includes(',') || formatted.includes('"') || formatted.includes('\n')) {
+          return `"${formatted.replace(/"/g, '""')}"`;
+        }
+        return formatted;
+      }).join(',');
+    });
+    
+    // รวม CSV content
+    const csvContent = [headers, ...rows].join('\n');
+    
+    // เพิ่ม BOM สำหรับ UTF-8 (เพื่อให้ Excel อ่านภาษาไทยได้)
+    const BOM = '\uFEFF';
+    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' });
+    
+    // สร้างลิงก์ดาวน์โหลด
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    const finalFilename = includeTimestamp
+      ? `${filename}_${new Date().toISOString().split('T')[0]}.csv`
+      : `${filename}.csv`;
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', finalFilename);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('CSV Export error:', error);
+    throw new Error('Failed to export CSV');
+  }
+}
+
+/**
+ * Export ข้อมูลเป็น JSON (bonus feature)
+ */
+export async function exportToJSON<T = Record<string, unknown>>({
+  data,
+  filename,
+  prettify = true,
+}: {
+  data: T[];
+  filename: string;
+  prettify?: boolean;
+}): Promise<void> {
+  try {
+    const jsonContent = prettify 
+      ? JSON.stringify(data, null, 2)
+      : JSON.stringify(data);
+    
+    const blob = new Blob([jsonContent], { type: 'application/json' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.json`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    console.error('JSON Export error:', error);
+    throw new Error('Failed to export JSON');
+  }
+}

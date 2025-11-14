@@ -1,5 +1,7 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { Card, CardBody } from '@heroui/react';
+import { TableExportButton } from './TableExportButton';
+import { ExportColumn } from '@/lib/utils/export';
 
 export interface ResponsiveTableColumn<T> {
   key: string;
@@ -11,6 +13,43 @@ export interface ResponsiveTableColumn<T> {
   cellClassName?: string;
   /** Hide column label on mobile (useful for actions) */
   hideLabelOnMobile?: boolean;
+  /** Format function for export (optional) */
+  exportFormat?: (item: T) => string;
+}
+
+export interface ResponsiveTableExportConfig<T> {
+  /**
+   * เปิดใช้งาน export หรือไม่
+   */
+  enabled: boolean;
+  
+  /**
+   * ชื่อไฟล์ (ไม่ต้องใส่ extension)
+   */
+  filename: string;
+  
+  /**
+   * หัวข้อของ report (สำหรับ PDF)
+   */
+  title?: string;
+  
+  /**
+   * Subtitle ของ report (สำหรับ PDF)
+   */
+  subtitle?: string;
+  
+  /**
+   * คอลัมน์ที่จะ export (ถ้าไม่ระบุจะใช้ columns ของ table)
+   */
+  columns?: ExportColumn<T>[];
+  
+  /**
+   * ตัวเลือกเพิ่มเติม
+   */
+  options?: {
+    orientation?: 'portrait' | 'landscape';
+    includeTimestamp?: boolean;
+  };
 }
 
 export interface ResponsiveTableProps<T> {
@@ -25,6 +64,10 @@ export interface ResponsiveTableProps<T> {
   mobileCardClassName?: string;
   /** Aria label for accessibility */
   ariaLabel: string;
+  /** การตั้งค่า export (optional) */
+  exportConfig?: ResponsiveTableExportConfig<T>;
+  /** ส่วนเพิ่มเติมด้านบน table (เช่น filters, search) */
+  topContent?: ReactNode;
 }
 
 /**
@@ -54,6 +97,8 @@ export function ResponsiveTable<T>({
   className = '',
   mobileCardClassName = '',
   ariaLabel,
+  exportConfig,
+  topContent,
 }: ResponsiveTableProps<T>) {
   // Auto-set showOnMobile for first 3 columns if not specified
   const processedColumns = columns.map((col, index) => ({
@@ -61,8 +106,51 @@ export function ResponsiveTable<T>({
     showOnMobile: col.showOnMobile !== undefined ? col.showOnMobile : index < 3,
   }));
 
+  // เตรียม export columns จาก table columns
+  const exportColumns = useMemo(() => {
+    if (exportConfig?.columns) return exportConfig.columns;
+    
+    return columns.map(col => ({
+      key: col.key,
+      label: col.label,
+      format: col.exportFormat 
+        ? (value: unknown, row: T) => col.exportFormat!(row)
+        : (value: unknown, row: T) => {
+            const rendered = col.render(row);
+            // แปลง ReactNode เป็น string สำหรับ export
+            if (typeof rendered === 'string') return rendered;
+            if (typeof rendered === 'number') return String(rendered);
+            return String(value ?? '');
+          },
+    }));
+  }, [columns, exportConfig?.columns]);
+
   return (
     <>
+      {/* Top Bar with Export Button */}
+      {(exportConfig?.enabled || topContent) && (
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex-1">
+            {topContent}
+          </div>
+          {exportConfig?.enabled && (
+            <TableExportButton
+              exportOptions={{
+                data,
+                columns: exportColumns,
+                filename: exportConfig.filename,
+                title: exportConfig.title,
+                subtitle: exportConfig.subtitle,
+                options: exportConfig.options,
+              }}
+              size="sm"
+              variant="bordered"
+              color="default"
+            />
+          )}
+        </div>
+      )}
+
       {/* Desktop Table View - Hidden on mobile */}
       <div className={`hidden md:block overflow-x-auto ${className}`}>
         <table className="w-full" aria-label={ariaLabel}>

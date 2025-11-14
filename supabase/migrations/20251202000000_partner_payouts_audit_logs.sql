@@ -409,7 +409,7 @@ GRANT SELECT ON audit_logs TO authenticated;
 GRANT INSERT ON audit_logs TO authenticated;
 
 -- Grant execute permission on helper functions
-GRANT EXECUTE ON FUNCTION log_audit_event TO authenticated;
+-- Note: log_audit_event GRANT is handled in 20251112013000_update_log_audit_event_with_request_context.sql
 GRANT EXECUTE ON FUNCTION generate_payout_number TO authenticated;
 -- ---
 -- PART 6: COMMENTS AND DOCUMENTATION
@@ -441,4 +441,4 @@ COMMENT ON COLUMN audit_logs.user_role IS 'User role at the time of action';
 
 -- Function comments
 COMMENT ON FUNCTION generate_payout_number IS 'Generates unique payout number in format POYYYYMMXXXX';
-COMMENT ON FUNCTION log_audit_event IS 'Helper function to log audit events with user context and change tracking';
+-- Note: log_audit_event comment is handled in 20251112013000_update_log_audit_event_with_request_context.sql

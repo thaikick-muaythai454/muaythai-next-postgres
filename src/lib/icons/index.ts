@@ -101,10 +101,11 @@ export const loadHeroIconsSolid = async (iconName: string): Promise<IconComponen
   return (icons as unknown as Record<string, IconComponent>)[iconName];
 };
 
-export const loadLucideIcon = async (iconName: string): Promise<IconComponent | undefined> => {
-  const icons = await import('lucide-react');
-  return (icons as unknown as Record<string, IconComponent>)[iconName];
-};
+// Lucide icons removed - using @heroicons only
+// export const loadLucideIcon = async (iconName: string): Promise<IconComponent | undefined> => {
+//   const icons = await import('lucide-react');
+//   return (icons as unknown as Record<string, IconComponent>)[iconName];
+// };
 
 // Icon registry for dynamic loading
 export const IconRegistry = {
@@ -112,21 +113,18 @@ export const IconRegistry = {
     outline: loadHeroIconsOutline,
     solid: loadHeroIconsSolid,
   },
-  lucide: loadLucideIcon,
+  // lucide: loadLucideIcon, // Removed
 };
 
 // Utility function to get icon with fallback
 export const getIcon = async (
-  library: 'heroicons' | 'lucide',
+  library: 'heroicons',
   variant: 'outline' | 'solid' = 'outline',
   iconName: string
 ): Promise<IconComponent | null> => {
   try {
     if (library === 'heroicons') {
       const icon = await IconRegistry.heroicons[variant](iconName);
-      return icon || null;
-    } else if (library === 'lucide') {
-      const icon = await IconRegistry.lucide(iconName);
       return icon || null;
     }
     return null;

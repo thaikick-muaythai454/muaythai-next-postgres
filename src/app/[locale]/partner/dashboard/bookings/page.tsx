@@ -40,6 +40,7 @@ import {
   MegaphoneIcon,
 } from '@heroicons/react/24/outline';
 import type { Booking as BookingType, Gym } from '@/types';
+import { SimpleExportButtons } from '@/components/shared/TableExportButton';
 
 function PartnerBookingsContent() {
   const supabase = createClient();
@@ -294,18 +295,59 @@ function PartnerBookingsContent() {
       <section>
         <Card className="bg-default-100/50 backdrop-blur-sm border-none">
           <CardBody>
-            <Tabs
-              selectedKey={selectedTab}
-              onSelectionChange={(key) => setSelectedTab(key as string)}
-              className="mb-6"
-              color="secondary"
-            >
-              <Tab key="all" title={`ทั้งหมด (${stats.total})`} />
-              <Tab key="pending" title={`รอยืนยัน (${stats.pending})`} />
-              <Tab key="confirmed" title={`ยืนยันแล้ว (${stats.confirmed})`} />
-              <Tab key="completed" title={`เสร็จสิ้น (${stats.completed})`} />
-              <Tab key="cancelled" title={`ยกเลิก (${stats.cancelled})`} />
-            </Tabs>
+            <div className="flex justify-between items-start mb-4 gap-4">
+              <Tabs
+                selectedKey={selectedTab}
+                onSelectionChange={(key) => setSelectedTab(key as string)}
+                color="secondary"
+                className="flex-1"
+              >
+                <Tab key="all" title={`ทั้งหมด (${stats.total})`} />
+                <Tab key="pending" title={`รอยืนยัน (${stats.pending})`} />
+                <Tab key="confirmed" title={`ยืนยันแล้ว (${stats.confirmed})`} />
+                <Tab key="completed" title={`เสร็จสิ้น (${stats.completed})`} />
+                <Tab key="cancelled" title={`ยกเลิก (${stats.cancelled})`} />
+              </Tabs>
+
+              {/* Export Buttons */}
+              <SimpleExportButtons
+                exportOptions={{
+                  data: filteredBookings,
+                  columns: [
+                    { key: 'booking_number', label: 'รหัสจอง' },
+                    { key: 'customer_name', label: 'ลูกค้า' },
+                    { key: 'customer_phone', label: 'โทรศัพท์' },
+                    { key: 'customer_email', label: 'อีเมล' },
+                    { key: 'package_name', label: 'แพ็คเกจ' },
+                    { 
+                      key: 'start_date', 
+                      label: 'วันที่เริ่ม',
+                      format: (_, row: BookingType) => formatDate(row.start_date)
+                    },
+                    { 
+                      key: 'end_date', 
+                      label: 'วันที่สิ้นสุด',
+                      format: (_, row: BookingType) => row.end_date ? formatDate(row.end_date) : '-'
+                    },
+                    { 
+                      key: 'price_paid', 
+                      label: 'ยอดเงิน',
+                      format: (_, row: BookingType) => formatCurrency(Number(row.price_paid))
+                    },
+                    { key: 'payment_status', label: 'สถานะการชำระ' },
+                    { key: 'status', label: 'สถานะการจอง' },
+                  ],
+                  filename: `${gym?.gym_name || 'gym'}-bookings-${selectedTab}`,
+                  title: `รายงานการจอง - ${gym?.gym_name || 'ยิม'}`,
+                  subtitle: `สถานะ: ${selectedTab === 'all' ? 'ทั้งหมด' : selectedTab} (${filteredBookings.length} รายการ)`,
+                  options: {
+                    orientation: 'landscape',
+                    includeTimestamp: true,
+                  },
+                }}
+                size="sm"
+              />
+            </div>
 
             <Table
               aria-label="Partner bookings table"

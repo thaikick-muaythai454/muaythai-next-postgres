@@ -18,6 +18,7 @@ import { Link } from '@/navigation';
 import { notFound } from "next/navigation";
 import { GymMap } from "@/components/shared/maps/GymMap";
 import { Loading } from "@/components/design-system/primitives/Loading";
+import { GymGallery } from "@/components/features/gym";
 
 const Breadcrumb = memo(function Breadcrumb({ gymName }: { gymName: string }) {
   return (
@@ -353,7 +354,7 @@ export default function GymDetailPage({
         <div className="gap-8 grid grid-cols-1 lg:grid-cols-3">
           <div className="space-y-8 lg:col-span-2">
             <GymHeader gym={gym} />
-            <GalleryPlaceholder />
+            <GymGallery gymId={gym.id} gymName={gym.gym_name} />
             <AboutSection details={gym.gym_details} />
             <LocationSection location={gym.location} mapUrl={gym.map_url} />
             <GymMap

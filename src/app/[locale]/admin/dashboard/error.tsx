@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import * as Sentry from '@sentry/nextjs';
-import { AlertTriangle, RefreshCw, Home, ChevronDown, ChevronUp } from 'lucide-react';
+import { ExclamationTriangleIcon, ArrowPathIcon, HomeIcon, ChevronDownIcon, ChevronUpIcon } from '@heroicons/react/24/outline';
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -43,7 +43,7 @@ export default function AdminDashboardError({ error, reset }: ErrorProps) {
           <div className="relative">
             <div className="absolute inset-0 bg-red-500/20 blur-xl rounded-full" />
             <div className="relative bg-red-100 dark:bg-red-900/30 p-4 rounded-full">
-              <AlertTriangle className="w-12 h-12 text-red-600 dark:text-red-400" />
+              <ExclamationTriangleIcon className="w-12 h-12 text-red-600 dark:text-red-400" />
             </div>
           </div>
         </div>
@@ -64,14 +64,14 @@ export default function AdminDashboardError({ error, reset }: ErrorProps) {
             onClick={reset}
             className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
           >
-            <RefreshCw className="w-5 h-5" />
+            <ArrowPathIcon className="w-5 h-5" />
             {t('tryAgain')}
           </button>
           <button
             onClick={() => window.location.href = '/admin/dashboard'}
             className="flex-1 flex items-center justify-center gap-2 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
           >
-            <Home className="w-5 h-5" />
+            <HomeIcon className="w-5 h-5" />
             {t('goToDashboard')}
           </button>
         </div>
@@ -86,9 +86,9 @@ export default function AdminDashboardError({ error, reset }: ErrorProps) {
               {showDetails ? t('hideDetails') : t('showDetails')}
             </span>
             {showDetails ? (
-              <ChevronUp className="w-4 h-4" />
+              <ChevronUpIcon className="w-4 h-4" />
             ) : (
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDownIcon className="w-4 h-4" />
             )}
           </button>
 

@@ -164,18 +164,6 @@ function AdminGymsContent() {
                   endContent={isSearching && <Spinner size="sm" color="default" />}
                   className="w-full sm:w-64"
                 />
-                <Button
-                  color="danger"
-                  size="sm"
-                  radius="lg"
-                  variant="solid"
-                  startContent={<ArrowDownTrayIcon className="w-4 h-4" />}
-                  isLoading={isExporting}
-                  isDisabled={isExporting || filteredGyms.length === 0}
-                  onPress={() => exportGyms()}
-                >
-                  ส่งออก CSV
-                </Button>
               </div>
             </div>
 
@@ -192,6 +180,16 @@ function AdminGymsContent() {
             </Tabs>
 
             <ResponsiveTable
+              exportConfig={{
+                enabled: true,
+                filename: `admin-gyms-${selectedTab}`,
+                title: 'รายงานยิม - Admin Dashboard',
+                subtitle: `สถานะ: ${selectedTab === 'all' ? 'ทั้งหมด' : selectedTab} (${filteredGyms.length} รายการ)`,
+                options: {
+                  orientation: 'landscape',
+                  includeTimestamp: true,
+                },
+              }}
               columns={[
                 {
                   key: 'gym_name',
@@ -200,6 +198,7 @@ function AdminGymsContent() {
                     <span className="font-semibold text-white">{gym.gym_name}</span>
                   ),
                   showOnMobile: true,
+                  exportFormat: (gym) => gym.gym_name,
                 },
                 {
                   key: 'contact_name',
@@ -208,6 +207,7 @@ function AdminGymsContent() {
                     <span className="text-default-400">{gym.contact_name}</span>
                   ),
                   showOnMobile: true,
+                  exportFormat: (gym) => gym.contact_name,
                 },
                 {
                   key: 'phone',
@@ -216,6 +216,7 @@ function AdminGymsContent() {
                     <span className="font-mono text-default-400 text-sm">{gym.phone}</span>
                   ),
                   showOnMobile: false,
+                  exportFormat: (gym) => gym.phone,
                 },
                 {
                   key: 'location',
@@ -224,12 +225,14 @@ function AdminGymsContent() {
                     <span className="text-default-400">{gym.location}</span>
                   ),
                   showOnMobile: false,
+                  exportFormat: (gym) => gym.location,
                 },
                 {
                   key: 'status',
                   label: 'สถานะ',
                   render: (gym) => getStatusChip(gym.status),
                   showOnMobile: true,
+                  exportFormat: (gym) => gym.status,
                 },
                 {
                   key: 'created_at',
@@ -240,6 +243,7 @@ function AdminGymsContent() {
                     </span>
                   ),
                   showOnMobile: false,
+                  exportFormat: (gym) => gym.created_at ? new Date(gym.created_at).toLocaleDateString('th-TH') : '-',
                 },
                 {
                   key: 'actions',

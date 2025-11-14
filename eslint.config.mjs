@@ -21,6 +21,12 @@ const eslintConfig = [
       // Ignore analysis tools (development utilities)
       "src/analysis/**",
       "dist/**",
+      // Ignore test files
+      "tests/**",
+      "**/*.test.js",
+      "**/*.test.ts",
+      "**/*.spec.js",
+      "**/*.spec.ts",
     ],
   },
   {

@@ -6,6 +6,7 @@ import { Loading } from '@/components/design-system/primitives/Loading';
 // import { Button } from '@/components/design-system/primitives/Button';
 import { EmptyState } from './EmptyState';
 import { DataTableProps } from './types';
+import { TableExportButton } from '@/components/shared/TableExportButton';
 
 function DataTableImpl<T = Record<string, unknown>>({
   columns,
@@ -16,6 +17,8 @@ function DataTableImpl<T = Record<string, unknown>>({
   sortBy,
   sortOrder,
   onSort,
+  exportConfig,
+  topContent,
   className = '',
   testId = 'data-table',
   ...props
@@ -56,6 +59,25 @@ function DataTableImpl<T = Record<string, unknown>>({
     });
   }, [data, currentSortBy, currentSortOrder]);
 
+  // เตรียม export columns จาก table columns (ต้องอยู่ก่อน early returns)
+  const exportColumns = useMemo(() => {
+    if (exportConfig?.columns) return exportConfig.columns;
+    
+    return columns.map(col => ({
+      key: col.key,
+      label: col.title,
+      format: col.render 
+        ? (value: unknown, row: T) => {
+            const rendered = col.render!(value, row, 0);
+            // แปลง ReactNode เป็น string สำหรับ export
+            if (typeof rendered === 'string') return rendered;
+            if (typeof rendered === 'number') return String(rendered);
+            return String(value ?? '');
+          }
+        : undefined,
+    }));
+  }, [columns, exportConfig?.columns]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -75,17 +97,42 @@ function DataTableImpl<T = Record<string, unknown>>({
   }
 
   return (
-    <div
-      className={`
-        overflow-hidden rounded-2xl border border-zinc-700/70 bg-zinc-900/70
-        shadow-2xl ring-1 ring-zinc-500/20 backdrop-blur-md
-        ${className}
-      `}
-      data-testid={testId}
-      {...props}
-    >
-      <div className="overflow-x-auto">
-        <table className="w-full">
+    <div className={className}>
+      {/* Top Bar with Export Button */}
+      {(exportConfig?.enabled || topContent) && (
+        <div className="flex justify-between items-center mb-4">
+          <div className="flex-1">
+            {topContent}
+          </div>
+          {exportConfig?.enabled && (
+            <TableExportButton
+              exportOptions={{
+                data: sortedData,
+                columns: exportColumns,
+                filename: exportConfig.filename,
+                title: exportConfig.title,
+                subtitle: exportConfig.subtitle,
+                options: exportConfig.options,
+              }}
+              size="sm"
+              variant="bordered"
+              color="default"
+            />
+          )}
+        </div>
+      )}
+
+      {/* Table Container */}
+      <div
+        className={`
+          overflow-hidden rounded-2xl border border-zinc-700/70 bg-zinc-900/70
+          shadow-2xl ring-1 ring-zinc-500/20 backdrop-blur-md
+        `}
+        data-testid={testId}
+        {...props}
+      >
+        <div className="overflow-x-auto">
+          <table className="w-full">
           {/* Header */}
           <thead className="bg-zinc-900/80 border-b border-zinc-700/80">
             <tr>
@@ -163,6 +210,7 @@ function DataTableImpl<T = Record<string, unknown>>({
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

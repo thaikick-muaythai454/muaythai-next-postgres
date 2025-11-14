@@ -37,6 +37,7 @@ import {
 import type { User } from '@supabase/supabase-js';
 import type { Booking } from '@/types/database.types';
 import { showErrorToast, showSuccessToast } from '@/lib/utils';
+import { SimpleExportButtons } from '@/components/shared/TableExportButton';
 
 type BulkBookingAction = 'confirm' | 'complete' | 'cancel';
 
@@ -398,15 +399,62 @@ function AdminBookingsContent() {
           </CardBody>
         </Card>
 
-        <Tabs
-          selectedKey={selectedTab}
-          onSelectionChange={(key) => setSelectedTab(key as string)}
-          className="mb-4"
-        >
-          {tabs.map((tab) => (
-            <Tab key={tab.key} title={`${tab.label} (${tab.count})`} />
-          ))}
-        </Tabs>
+        <div className="flex justify-between items-center mb-4 gap-4">
+          <Tabs
+            selectedKey={selectedTab}
+            onSelectionChange={(key) => setSelectedTab(key as string)}
+            className="flex-1"
+          >
+            {tabs.map((tab) => (
+              <Tab key={tab.key} title={`${tab.label} (${tab.count})`} />
+            ))}
+          </Tabs>
+
+          {/* Export Buttons */}
+          <SimpleExportButtons
+            exportOptions={{
+              data: filteredBookings,
+              columns: [
+                { key: 'booking_number', label: 'เลขที่การจอง' },
+                { key: 'customer_name', label: 'ลูกค้า' },
+                { key: 'customer_email', label: 'อีเมล' },
+                { 
+                  key: 'gym_name', 
+                  label: 'ยิม',
+                  format: (_, row: BookingRow) => String(row.gyms?.gym_name || '-')
+                },
+                { 
+                  key: 'status', 
+                  label: 'สถานะการจอง',
+                  format: (_, row: BookingRow) => String(row.status || '-')
+                },
+                { 
+                  key: 'payment_status', 
+                  label: 'สถานะการชำระ',
+                  format: (_, row: BookingRow) => String(row.payment_status || '-')
+                },
+                { 
+                  key: 'price_paid', 
+                  label: 'ยอดชำระ (บาท)',
+                  format: (_, row: BookingRow) => row.price_paid ? Number(row.price_paid).toLocaleString() : '0'
+                },
+                { 
+                  key: 'updated_at', 
+                  label: 'อัปเดตล่าสุด',
+                  format: (_, row: BookingRow) => formatDate(row.updated_at)
+                },
+              ],
+              filename: `admin-bookings-${selectedTab}`,
+              title: 'รายงานการจอง - Admin Dashboard',
+              subtitle: `สถานะ: ${tabs.find(t => t.key === selectedTab)?.label || selectedTab} (${filteredBookings.length} รายการ)`,
+              options: {
+                orientation: 'landscape',
+                includeTimestamp: true,
+              },
+            }}
+            size="sm"
+          />
+        </div>
 
         <Card>
           <CardBody>

@@ -1,23 +1,37 @@
 /**
  * Partner Messages API
  * 
- * POST /api/partner/messages - Partner ส่งข้อความถึงลูกค้า
- * GET /api/partner/messages - ดูข้อความที่ส่งไป
+ * POST /api/partner/messages - สร้าง/ส่งข้อความใหม่
+ * GET /api/partner/messages - ดูข้อความทั้งหมด (รองรับ conversation_id filter)
+ * PATCH /api/partner/messages - Mark messages as read
  * 
- * Partners can send messages to users who have bookings at their gym
+ * Partners can send messages to customers who have bookings at their gym
  */
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/database/supabase/server';
 
+interface MessageInsert {
+  conversation_id: string;
+  sender_id: string;
+  sender_role: 'partner' | 'customer' | 'admin';
+  message_text: string;
+  message_type?: 'text' | 'image' | 'file' | 'system';
+  attachments?: Array<{ url: string; name: string; size: number; type: string }>;
+  reply_to_message_id?: string;
+}
+
 /**
  * POST /api/partner/messages
- * Partner ส่งข้อความถึงลูกค้า
+ * สร้าง/ส่งข้อความใหม่
+ * 
  * Body:
- * - user_id: UUID (required) - ID ของลูกค้าที่จะส่งข้อความ
- * - subject: string (required) - หัวข้อข้อความ
+ * - customer_id: UUID (required) - ID ของลูกค้า
  * - message: string (required) - เนื้อหาข้อความ
- * - booking_id?: UUID (optional) - ID ของการจองที่เกี่ยวข้อง (ถ้ามี)
+ * - booking_id?: UUID (optional) - Link to booking
+ * - conversation_id?: UUID (optional) - ถ้ามี conversation อยู่แล้ว
+ * - subject?: string (optional) - หัวข้อ (สำหรับ conversation ใหม่)
+ * - attachments?: Array (optional) - ไฟล์แนบ
  */
 export async function POST(request: NextRequest) {
   try {
@@ -33,14 +47,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ตรวจสอบว่าเป็น partner หรือ admin
+    // ตรวจสอบว่าเป็น partner
     const { data: roleData } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
       .maybeSingle();
 
-    if (!roleData || !['partner', 'admin'].includes(roleData.role)) {
+    if (!roleData || roleData.role !== 'partner') {
       return NextResponse.json(
         { success: false, error: 'คุณไม่มีสิทธิ์ส่งข้อความ' },
         { status: 403 }
@@ -50,7 +64,7 @@ export async function POST(request: NextRequest) {
     // ดึงค่ายของ partner
     const { data: gym, error: gymError } = await supabase
       .from('gyms')
-      .select('id, gym_name, gym_name_english, user_id')
+      .select('id, gym_name, gym_name_english')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -62,140 +76,190 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { user_id, subject, message, booking_id } = body;
+    const { 
+      customer_id, 
+      message, 
+      booking_id, 
+      conversation_id,
+      subject,
+      attachments = []
+    } = body;
 
     // Validation
-    const errors: Record<string, string> = {};
-
-    if (!user_id) {
-      errors.user_id = 'กรุณาระบุผู้รับ';
-    }
-
-    if (!subject || subject.trim().length === 0) {
-      errors.subject = 'กรุณาระบุหัวข้อ';
-    } else if (subject.trim().length > 200) {
-      errors.subject = 'หัวข้อต้องไม่เกิน 200 ตัวอักษร';
-    }
-
-    if (!message || message.trim().length === 0) {
-      errors.message = 'กรุณาระบุเนื้อหา';
-    } else if (message.trim().length > 5000) {
-      errors.message = 'เนื้อหาต้องไม่เกิน 5000 ตัวอักษร';
-    }
-
-    if (Object.keys(errors).length > 0) {
+    if (!customer_id) {
       return NextResponse.json(
-        { success: false, error: 'ข้อมูลไม่ถูกต้อง', errors },
+        { success: false, error: 'กรุณาระบุผู้รับ' },
         { status: 400 }
       );
     }
 
-    // ตรวจสอบว่าผู้ใช้มี booking ที่ค่ายนี้หรือไม่ (ถ้าไม่ใช่ admin)
-    if (roleData.role === 'partner') {
-      let bookingQuery = supabase
-        .from('bookings')
+    if (!message || message.trim().length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'กรุณาระบุเนื้อหาข้อความ' },
+        { status: 400 }
+      );
+    }
+
+    if (message.trim().length > 5000) {
+      return NextResponse.json(
+        { success: false, error: 'เนื้อหาต้องไม่เกิน 5000 ตัวอักษร' },
+        { status: 400 }
+      );
+    }
+
+    // ตรวจสอบว่าลูกค้ามี booking ที่ค่ายนี้หรือไม่
+    const { data: booking, error: bookingError } = await supabase
+      .from('bookings')
+      .select('id')
+      .eq('user_id', customer_id)
+      .eq('gym_id', gym.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (bookingError || !booking) {
+      return NextResponse.json(
+        { success: false, error: 'ลูกค้านี้ยังไม่มีการจองกับค่ายของคุณ' },
+        { status: 404 }
+      );
+    }
+
+    let finalConversationId = conversation_id;
+
+    // ถ้าไม่มี conversation_id ให้ค้นหา หรือสร้างใหม่
+    if (!finalConversationId) {
+      // ค้นหา conversation ที่มีอยู่แล้ว
+      const { data: existingConv } = await supabase
+        .from('conversations')
         .select('id')
-        .eq('user_id', user_id)
+        .eq('partner_id', user.id)
+        .eq('customer_id', customer_id)
         .eq('gym_id', gym.id)
-        .limit(1);
+        .eq('conversation_type', 'partner_customer')
+        .eq('status', 'active')
+        .maybeSingle();
 
-      if (booking_id) {
-        bookingQuery = bookingQuery.eq('id', booking_id);
-      }
+      if (existingConv) {
+        finalConversationId = existingConv.id;
+      } else {
+        // สร้าง conversation ใหม่
+        const { data: newConv, error: convError } = await supabase
+          .from('conversations')
+          .insert({
+            partner_id: user.id,
+            customer_id,
+            gym_id: gym.id,
+            conversation_type: 'partner_customer',
+            subject: subject || `ข้อความจาก ${gym.gym_name || gym.gym_name_english}`,
+            booking_id: booking_id || booking.id,
+            status: 'active',
+          })
+          .select('id')
+          .single();
 
-      const { data: booking, error: bookingError } = await bookingQuery.maybeSingle();
+        if (convError || !newConv) {
+          console.error('Error creating conversation:', convError);
+          return NextResponse.json(
+            { success: false, error: 'ไม่สามารถสร้างการสนทนาได้' },
+            { status: 500 }
+          );
+        }
 
-      if (bookingError || !booking) {
-        return NextResponse.json(
-          { success: false, error: 'ไม่พบการจองที่เกี่ยวข้องกับผู้ใช้รายนี้' },
-          { status: 404 }
-        );
+        finalConversationId = newConv.id;
+
+        // สร้าง conversation participants
+        await supabase.from('conversation_participants').insert([
+          {
+            conversation_id: finalConversationId,
+            user_id: user.id,
+            role: 'partner',
+            is_active: true,
+          },
+          {
+            conversation_id: finalConversationId,
+            user_id: customer_id,
+            role: 'customer',
+            is_active: true,
+          },
+        ]);
       }
     }
 
-    // ดึงข้อมูลผู้รับ
-    const { data: recipient } = await supabase
-      .from('profiles')
-      .select('full_name, username')
-      .eq('user_id', user_id)
-      .maybeSingle();
+    // สร้างข้อความใหม่
+    const messageData: MessageInsert = {
+      conversation_id: finalConversationId,
+      sender_id: user.id,
+      sender_role: 'partner',
+      message_text: message.trim(),
+      message_type: attachments.length > 0 ? 'file' : 'text',
+      attachments: attachments.length > 0 ? attachments : undefined,
+    };
 
-    const recipientName = recipient?.full_name || recipient?.username || 'ลูกค้า';
+    const { data: newMessage, error: messageError } = await supabase
+      .from('messages')
+      .insert(messageData)
+      .select('*')
+      .single();
 
-    // สร้างข้อความในระบบ (ถ้ามี messages table) หรือใช้ metadata
-    // สำหรับตอนนี้ เราจะส่ง notification โดยตรง
-
-    // ส่ง notification ถึงผู้ใช้
-    try {
-      const { data: notification, error: notificationError } = await supabase
-        .from('notifications')
-        .insert({
-          user_id: user_id,
-          type: 'partner_message',
-          title: `ข้อความจาก ${gym.gym_name || gym.gym_name_english || 'ค่ายมวย'}`,
-          message: subject,
-          link_url: booking_id ? `/dashboard/bookings` : '/dashboard',
-          metadata: {
-            partner_id: user.id,
-            partner_name: gym.gym_name || gym.gym_name_english || 'ค่ายมวย',
-            gym_id: gym.id,
-            subject: subject.trim(),
-            message: message.trim(),
-            booking_id: booking_id || null,
-            sent_at: new Date().toISOString(),
-          },
-        })
-        .select()
-        .single();
-
-      if (notificationError) {
-        console.error('Error creating notification:', notificationError);
-        throw notificationError;
-      }
-
-      // Log audit event
-      try {
-        await supabase.rpc('log_audit_event', {
-          p_user_id: user.id,
-          p_action_type: 'create',
-          p_resource_type: 'notification',
-          p_resource_id: notification.id,
-          p_resource_name: `Message to ${recipientName}`,
-          p_description: `Partner sent message to user: ${subject}`,
-          p_new_values: {
-            recipient_id: user_id,
-            subject: subject.trim(),
-            gym_id: gym.id,
-          },
-          p_severity: 'low',
-        });
-      } catch (auditError) {
-        console.warn('Failed to log audit event:', auditError);
-      }
-
-      return NextResponse.json({
-        success: true,
-        message: 'ส่งข้อความสำเร็จ',
-        data: {
-          notification_id: notification.id,
-          sent_at: notification.created_at,
-        },
-      }, { status: 201 });
-
-    } catch (error) {
-      console.error('Error sending partner message:', error);
+    if (messageError || !newMessage) {
+      console.error('Error creating message:', messageError);
       return NextResponse.json(
-        {
-          success: false,
-          error: 'เกิดข้อผิดพลาดในการส่งข้อความ',
-          details: error instanceof Error ? error.message : 'Unknown error',
-        },
+        { success: false, error: 'ไม่สามารถส่งข้อความได้' },
         { status: 500 }
       );
     }
 
+    // ส่ง notification ให้ลูกค้า
+    try {
+      await supabase
+        .from('notifications')
+        .insert({
+          user_id: customer_id,
+          type: 'partner_message',
+          title: `ข้อความจาก ${gym.gym_name || gym.gym_name_english}`,
+          message: message.trim().substring(0, 100) + (message.length > 100 ? '...' : ''),
+          link_url: `/dashboard/messages/${finalConversationId}`,
+          metadata: {
+            conversation_id: finalConversationId,
+            message_id: newMessage.id,
+            gym_id: gym.id,
+            partner_id: user.id,
+          },
+        });
+    } catch (notifError) {
+      console.warn('Failed to send notification:', notifError);
+    }
+
+    // Log audit event
+    try {
+      await supabase.rpc('log_audit_event', {
+        p_user_id: user.id,
+        p_action_type: 'create',
+        p_resource_type: 'message',
+        p_resource_id: newMessage.id,
+        p_resource_name: `Message to customer`,
+        p_description: `Partner sent message in conversation ${finalConversationId}`,
+        p_new_values: {
+          conversation_id: finalConversationId,
+          customer_id,
+          gym_id: gym.id,
+        },
+        p_severity: 'low',
+      });
+    } catch (auditError) {
+      console.warn('Failed to log audit event:', auditError);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: 'ส่งข้อความสำเร็จ',
+      data: {
+        message: newMessage,
+        conversation_id: finalConversationId,
+      },
+    }, { status: 201 });
+
   } catch (error) {
-    console.error('Error in partner messages API:', error);
+    console.error('Error in POST /api/partner/messages:', error);
     return NextResponse.json(
       {
         success: false,
@@ -209,11 +273,12 @@ export async function POST(request: NextRequest) {
 
 /**
  * GET /api/partner/messages
- * ดูข้อความที่ส่งไป (notification history)
+ * ดูข้อความในแต่ละ conversation
+ * 
  * Query params:
+ * - conversation_id: UUID (required) - ID ของ conversation
  * - limit: number (default: 50)
  * - offset: number (default: 0)
- * - user_id: filter by recipient user_id (optional)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -229,100 +294,87 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // ตรวจสอบว่าเป็น partner หรือ admin
+    // ตรวจสอบว่าเป็น partner
     const { data: roleData } = await supabase
       .from('user_roles')
       .select('role')
       .eq('user_id', user.id)
       .maybeSingle();
 
-    if (!roleData || !['partner', 'admin'].includes(roleData.role)) {
+    if (!roleData || roleData.role !== 'partner') {
       return NextResponse.json(
         { success: false, error: 'คุณไม่มีสิทธิ์ดูข้อความ' },
         { status: 403 }
       );
     }
 
-    // ดึงค่ายของ partner
-    const { data: gym, error: gymError } = await supabase
-      .from('gyms')
-      .select('id')
-      .eq('user_id', user.id)
+    const { searchParams } = new URL(request.url);
+    const conversationId = searchParams.get('conversation_id');
+    const limit = parseInt(searchParams.get('limit') || '50', 10);
+    const offset = parseInt(searchParams.get('offset') || '0', 10);
+
+    if (!conversationId) {
+      return NextResponse.json(
+        { success: false, error: 'กรุณาระบุ conversation_id' },
+        { status: 400 }
+      );
+    }
+
+    // ตรวจสอบว่า partner เป็นเจ้าของ conversation นี้
+    const { data: conversation, error: convError } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('id', conversationId)
+      .eq('partner_id', user.id)
       .maybeSingle();
 
-    if (gymError || !gym) {
+    if (convError || !conversation) {
       return NextResponse.json(
-        { success: false, error: 'ไม่พบค่ายมวยของคุณ' },
+        { success: false, error: 'ไม่พบการสนทนานี้' },
         { status: 404 }
       );
     }
 
-    const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '50', 10);
-    const offset = parseInt(searchParams.get('offset') || '0', 10);
-    const filterUserId = searchParams.get('user_id');
-
-    // ดึง notifications ที่เป็น partner_message และมี gym_id ใน metadata
-    // Note: เนื่องจาก notifications table ไม่มี field สำหรับ partner_id โดยตรง
-    // เราจะใช้ metadata เพื่อ filter
-    let query = supabase
-      .from('notifications')
-      .select('*')
-      .eq('type', 'partner_message')
-      .order('created_at', { ascending: false })
+    // ดึงข้อความ
+    const { data: messages, error: messagesError, count } = await supabase
+      .from('messages')
+      .select('*', { count: 'exact' })
+      .eq('conversation_id', conversationId)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: true })
       .range(offset, offset + limit - 1);
 
-    // Filter by user_id if provided
-    if (filterUserId) {
-      query = query.eq('user_id', filterUserId);
+    if (messagesError) {
+      throw messagesError;
     }
 
-    const { data: notifications, error: notificationsError } = await query;
-
-    if (notificationsError) {
-      throw notificationsError;
-    }
-
-    // Filter notifications where gym_id in metadata matches current gym
-    // (Only if user is partner, not admin)
-    let filteredNotifications = notifications || [];
-    if (roleData.role === 'partner') {
-      filteredNotifications = filteredNotifications.filter((notification) => {
-        const metadata = notification.metadata as Record<string, unknown> | null;
-        return metadata?.gym_id === gym.id && metadata?.partner_id === user.id;
+    // Mark messages as read (ที่เป็นฝั่งลูกค้าส่งมา)
+    try {
+      await supabase.rpc('mark_conversation_as_read', {
+        p_conversation_id: conversationId,
+        p_user_id: user.id,
+        p_user_role: 'partner',
       });
+    } catch (readError) {
+      console.warn('Failed to mark as read:', readError);
     }
-
-    // Get total count
-    let countQuery = supabase
-      .from('notifications')
-      .select('*', { count: 'exact', head: true })
-      .eq('type', 'partner_message');
-
-    if (filterUserId) {
-      countQuery = countQuery.eq('user_id', filterUserId);
-    }
-
-    const { count } = await countQuery;
-    const totalCount = roleData.role === 'partner' 
-      ? filteredNotifications.length 
-      : (count || 0);
 
     return NextResponse.json({
       success: true,
       data: {
-        messages: filteredNotifications,
+        messages: messages || [],
+        conversation,
         pagination: {
-          total: totalCount,
+          total: count || 0,
           limit,
           offset,
-          hasMore: totalCount > offset + limit,
+          hasMore: (count || 0) > offset + limit,
         },
       },
     });
 
   } catch (error) {
-    console.error('Error fetching partner messages:', error);
+    console.error('Error in GET /api/partner/messages:', error);
     return NextResponse.json(
       {
         success: false,
@@ -334,3 +386,85 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * PATCH /api/partner/messages
+ * Mark conversation as read
+ * 
+ * Body:
+ * - conversation_id: UUID (required)
+ */
+export async function PATCH(request: NextRequest) {
+  try {
+    const supabase = await createClient();
+    
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError || !user) {
+      return NextResponse.json(
+        { success: false, error: 'กรุณาเข้าสู่ระบบ' },
+        { status: 401 }
+      );
+    }
+
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (!roleData || roleData.role !== 'partner') {
+      return NextResponse.json(
+        { success: false, error: 'คุณไม่มีสิทธิ์' },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    const { conversation_id } = body;
+
+    if (!conversation_id) {
+      return NextResponse.json(
+        { success: false, error: 'กรุณาระบุ conversation_id' },
+        { status: 400 }
+      );
+    }
+
+    // ตรวจสอบว่าเป็นเจ้าของ conversation
+    const { data: conversation } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('id', conversation_id)
+      .eq('partner_id', user.id)
+      .maybeSingle();
+
+    if (!conversation) {
+      return NextResponse.json(
+        { success: false, error: 'ไม่พบการสนทนานี้' },
+        { status: 404 }
+      );
+    }
+
+    // Mark as read
+    await supabase.rpc('mark_conversation_as_read', {
+      p_conversation_id: conversation_id,
+      p_user_id: user.id,
+      p_user_role: 'partner',
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'อัปเดตสถานะสำเร็จ',
+    });
+
+  } catch (error) {
+    console.error('Error in PATCH /api/partner/messages:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'เกิดข้อผิดพลาด',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      },
+      { status: 500 }
+    );
+  }
+}

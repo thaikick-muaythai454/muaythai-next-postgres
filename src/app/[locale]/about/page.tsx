@@ -1,5 +1,5 @@
 import { ContactForm } from "@/components/features/contact";
-import { Award, ShieldCheck, Trophy } from "lucide-react";
+import { TrophyIcon, StarIcon, ShieldCheckIcon } from "@heroicons/react/24/outline";
 import { PageHeader } from "@/components/shared";
 
 export default function AboutPage() {
@@ -27,17 +27,17 @@ export default function AboutPage() {
         <h2 className="font-semibold text-xl sm:text-2xl text-center">ไฮไลท์ค่ายมวยในเครือเรา</h2>
         <div className="gap-6 grid sm:grid-cols-2 lg:grid-cols-3 mt-6">
           <div className="bg-zinc-950/60 p-6 border border-white/10 rounded-xl text-center">
-            <Trophy className="mx-auto w-10 h-10 text-amber-400" />
+            <TrophyIcon className="mx-auto w-10 h-10 text-amber-400" />
             <h3 className="mt-4 font-semibold">แชมป์โลก 5 สมัย</h3>
             <p className="mt-2 text-white/70 text-sm">ค่ายมวยของเราได้สร้างแชมป์โลกมาแล้วถึง 5 สมัย</p>
           </div>
           <div className="bg-zinc-950/60 p-6 border border-white/10 rounded-xl text-center">
-            <Award className="mx-auto w-10 h-10 text-sky-400" />
+            <StarIcon className="mx-auto w-10 h-10 text-sky-400" />
             <h3 className="mt-4 font-semibold">โค้ชผู้เชี่ยวชาญ</h3>
             <p className="mt-2 text-white/70 text-sm">ทีมโค้ชที่ได้รับการรับรองและมีประสบการณ์สูง</p>
           </div>
           <div className="sm:col-span-2 lg:col-span-1 bg-zinc-950/60 p-6 border border-white/10 rounded-xl text-center">
-            <ShieldCheck className="mx-auto w-10 h-10 text-emerald-400" />
+            <ShieldCheckIcon className="mx-auto w-10 h-10 text-emerald-400" />
             <h3 className="mt-4 font-semibold">สถานที่มาตรฐานสากล</h3>
             <p className="mt-2 text-white/70 text-sm">อุปกรณ์และสถานที่ฝึกซ้อมที่ทันสมัยและปลอดภัย</p>
           </div>

@@ -525,7 +525,7 @@
 | **Shop System** | 95% | ✅ มี API ครบ (Products: 6, Variants: 4, Images: 3, Orders: 3, Shipping: 5) - ✅ เชื่อมต่อ Frontend แล้ว - ✅ Shipping System เสร็จแล้ว - ✅ Admin UI ครบแล้ว (Products, Variants, Images, Inventory, Categories) |
 | **Event System** | 95% | ✅ มี API ครบ (Events: 6 endpoints, Tickets: 4, Event Categories: 3) - ✅ เชื่อมต่อ Frontend แล้ว - ✅ Admin UI เสร็จแล้ว - ✅ ระบบจัดการจำนวนตั๋วเสร็จแล้ว - ✅ QR Code/Check-in UI เสร็จแล้ว |
 | **Admin Analytics** | 100% | ✅ มี API พร้อม date filtering และ chart data |
-| **Partner Dashboard** | 85% | ✅ Analytics, Payout, Bookings, Packages, Promotions, Availability, Performance, Settings - ❌ ยังขาด: Messages System, Report Export (PDF/CSV), Gallery Management, Reviews UI |
+| **Partner Dashboard** | 90% | ✅ Analytics, Payout, Bookings, Packages, Promotions, Availability, Performance, Settings, **Messages** ✅ - ❌ ยังขาด: Gallery Management (5%), Reviews UI (5%) |
 | **Admin Promotions** | 100% | ✅ มี API ครบ 4 endpoints + Admin UI ครบถ้วน |
 | **Partner Promotions** | 80% | ✅ มี API ครบ 4 endpoints + Partner UI ครบถ้วน - ⚠️ ยังไม่มีระบบคำนวณส่วนลดกับ package |
 | **Newsletter System** | 100% | ✅ Subscribe/Unsubscribe, Campaigns, Unsubscribe Page, Email Integration |
@@ -937,24 +937,35 @@
 - [x] Transaction History (`/partner/dashboard/transactions`) - View Payment History
 - [x] Settings (`/partner/dashboard/settings`) - Account Settings, Notifications
 
-**❌ Missing Features (ยังขาด 15%)**:
-- [ ] **Messages/Inbox System** - สื่อสารกับลูกค้าและ Admin
-  - [ ] Database tables: `messages`, `conversations`
-  - [ ] API endpoints: `/api/partner/messages` (GET, POST, PATCH)
-  - [ ] UI: Inbox, Message Thread, Compose
-  - [ ] Real-time notifications (WebSocket/Polling)
+**❌ Missing Features (ยังขาด 10%)**:
+- [x] **Messages/Inbox System** ✅ **เสร็จสมบูรณ์ 14 พ.ย. 2025** - สื่อสารกับลูกค้า
+  - [x] Database tables: `messages`, `conversations`, `conversation_participants`
+  - [x] API endpoints: `/api/partner/messages` (GET, POST, PATCH), `/api/partner/conversations` (GET, POST)
+  - [x] UI Components: `ConversationList`, `MessageThread`, `ComposeMessage`
+  - [x] Partner Messages Page: `/partner/dashboard/messages`
+  - [x] Real-time updates (Polling every 30 seconds)
+  - [x] Navigation link เพิ่มแล้ว
+  - **Features**: Unread count, Read receipts, Typing indicators, File attachments support, Link to bookings
   
-- [ ] **Report Generation** - Export ข้อมูลเป็น PDF/CSV
-  - [ ] Monthly Revenue Report (PDF)
-  - [ ] Booking Report (CSV)
-  - [ ] Tax Report (PDF) - สรุปรายรับรายจ่าย
-  - [ ] API: `/api/partner/reports/generate`
+- [x] **Report Generation** - Export ข้อมูลเป็น PDF/CSV ✅
+  - [x] Universal Export System - ทุก table สามารถ export ได้
+  - [x] Export เป็น PDF (รองรับ Thai fonts)
+  - [x] Export เป็น CSV (รองรับ UTF-8 BOM)
+  - [x] `useTableExport` hook - reusable hook สำหรับ export
+  - [x] `TableExportButton` component - ปุ่ม export แบบ dropdown
+  - [x] `SimpleExportButtons` component - ปุ่ม export แยก PDF/CSV
+  - [x] Client-side export (ไม่ต้องใช้ API endpoint)
+  - [x] ใช้งานได้ใน Partner Dashboard (bookings table)
+  - [x] ใช้งานได้ใน Admin Dashboard (gyms, bookings tables)
+  - [x] DataTable component รองรับ export
+  - [x] ResponsiveTable component รองรับ export
+  - [x] Automatic timestamp และ page numbers
   
-- [ ] **Gallery Management** - จัดการรูปภาพค่ายมวย
-  - [ ] Database table: `gym_gallery`
-  - [ ] API: `/api/partner/gallery` (GET, POST, DELETE)
-  - [ ] UI: Upload, Organize, Set Featured Image
-  - [ ] Image optimization + CDN
+- [x] **Gallery Management** - จัดการรูปภาพค่ายมวย ✅
+  - [x] Database table: `gym_gallery` (with RLS policies, triggers for featured image management, and display order)
+  - [x] API: `/api/partner/gallery` (GET, POST, DELETE, PATCH, reorder)
+  - [x] UI: Upload, Organize, Set Featured Image (`/partner/dashboard/gallery`)
+  - [x] Image optimization + CDN (client-side optimization before upload, Supabase Storage with CDN)
   
 - [ ] **Reviews Management UI** - ดูและตอบกลับรีวิว
   - [ ] UI: `/partner/dashboard/reviews`
@@ -962,7 +973,7 @@
   - [ ] Reply to Reviews (if supported)
   - [ ] Review Analytics
 
-**📝 หมายเหตุ**: Features ที่ขาดเป็น Optional - ระบบหลักพร้อมใช้งานแล้ว (85%)
+**📝 หมายเหตุ**: Messages System เสร็จแล้ว! ✅ Features ที่ขาดเป็น Optional - ระบบหลักพร้อมใช้งานแล้ว (90%)
 
 #### Email Notification System (⚠️ ต้องพัฒนา)
 - [x] เพิ่ม Email Templates ครบทุกประเภท ✅

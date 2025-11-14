@@ -445,7 +445,7 @@ export default function SavedPaymentMethods({
         isOpen={isDeleteModalOpen}
         onClose={cancelDelete}
         title="ยืนยันการลบบัตร"
-        message={`คุณต้องการลบบัตร ${methodToDelete?.card?.brand || ''} ที่ลงท้ายด้วย ${methodToDelete?.card?.last4 || ''} หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`}
+        message={`คุณต้องการลบบัตร ${methodToDelete?.brand || ''} ที่ลงท้ายด้วย ${methodToDelete?.last4 || ''} หรือไม่? การกระทำนี้ไม่สามารถย้อนกลับได้`}
         confirmText="ลบบัตร"
         cancelText="ยกเลิก"
         confirmVariant="danger"

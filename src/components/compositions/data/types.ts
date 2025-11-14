@@ -1,5 +1,6 @@
 import { ReactNode } from 'react';
 import { BaseComponentProps } from '@/components/design-system/types';
+import { ExportColumn } from '@/lib/utils/export';
 
 export interface TableColumn<T = Record<string, unknown>> {
   key: string;
@@ -8,6 +9,41 @@ export interface TableColumn<T = Record<string, unknown>> {
   sortable?: boolean;
   width?: string | number;
   align?: 'left' | 'center' | 'right';
+}
+
+export interface TableExportConfig<T = Record<string, unknown>> {
+  /**
+   * เปิดใช้งาน export หรือไม่
+   */
+  enabled: boolean;
+  
+  /**
+   * ชื่อไฟล์ (ไม่ต้องใส่ extension)
+   */
+  filename: string;
+  
+  /**
+   * หัวข้อของ report (สำหรับ PDF)
+   */
+  title?: string;
+  
+  /**
+   * Subtitle ของ report (สำหรับ PDF)
+   */
+  subtitle?: string;
+  
+  /**
+   * คอลัมน์ที่จะ export (ถ้าไม่ระบุจะใช้ columns ของ table)
+   */
+  columns?: ExportColumn<T>[];
+  
+  /**
+   * ตัวเลือกเพิ่มเติม
+   */
+  options?: {
+    orientation?: 'portrait' | 'landscape';
+    includeTimestamp?: boolean;
+  };
 }
 
 export interface DataTableProps<T = Record<string, unknown>> extends BaseComponentProps {
@@ -19,6 +55,16 @@ export interface DataTableProps<T = Record<string, unknown>> extends BaseCompone
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
   onSort?: (key: string, order: 'asc' | 'desc') => void;
+  
+  /**
+   * การตั้งค่า export (optional)
+   */
+  exportConfig?: TableExportConfig<T>;
+  
+  /**
+   * ส่วนเพิ่มเติมด้านบน table (เช่น filters, search)
+   */
+  topContent?: ReactNode;
 }
 
 export interface ListItem {

@@ -1,9 +1,15 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
-import * as Sentry from '@sentry/nextjs';
-import { AlertTriangle, RefreshCw, Home, ChevronDown, ChevronUp } from 'lucide-react';
+import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import * as Sentry from "@sentry/nextjs";
+import {
+  ExclamationTriangleIcon,
+  ArrowPathIcon,
+  HomeIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+} from "@heroicons/react/24/outline";
 
 interface ErrorProps {
   error: Error & { digest?: string };
@@ -11,16 +17,16 @@ interface ErrorProps {
 }
 
 export default function PartnerDashboardError({ error, reset }: ErrorProps) {
-  const t = useTranslations('error.boundary');
+  const t = useTranslations("error.boundary");
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
     // Log error to Sentry with partner context
     Sentry.captureException(error, {
       tags: {
-        errorBoundary: 'partner-dashboard',
-        userType: 'partner',
-        severity: 'high',
+        errorBoundary: "partner-dashboard",
+        userType: "partner",
+        severity: "high",
       },
       extra: {
         digest: error.digest,
@@ -30,8 +36,8 @@ export default function PartnerDashboardError({ error, reset }: ErrorProps) {
     });
 
     // Log to console in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Partner Dashboard Error:', error);
+    if (process.env.NODE_ENV === "development") {
+      console.error("Partner Dashboard Error:", error);
     }
   }, [error]);
 
@@ -43,19 +49,19 @@ export default function PartnerDashboardError({ error, reset }: ErrorProps) {
           <div className="relative">
             <div className="absolute inset-0 bg-red-500/20 blur-xl rounded-full" />
             <div className="relative bg-red-100 dark:bg-red-900/30 p-4 rounded-full">
-              <AlertTriangle className="w-12 h-12 text-red-600 dark:text-red-400" />
+              <ExclamationTriangleIcon className="w-12 h-12 text-red-600 dark:text-red-400" />
             </div>
           </div>
         </div>
 
         {/* Error Title */}
         <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white text-center mb-4">
-          {t('title')}
+          {t("title")}
         </h1>
 
         {/* Error Description */}
         <p className="text-gray-600 dark:text-gray-300 text-center mb-8 text-lg">
-          {t('description')}
+          {t("description")}
         </p>
 
         {/* Action Buttons */}
@@ -64,15 +70,15 @@ export default function PartnerDashboardError({ error, reset }: ErrorProps) {
             onClick={reset}
             className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl"
           >
-            <RefreshCw className="w-5 h-5" />
-            {t('tryAgain')}
+            <ArrowPathIcon className="w-5 h-5" />
+            {t("tryAgain")}
           </button>
           <button
-            onClick={() => window.location.href = '/partner/dashboard'}
+            onClick={() => (window.location.href = "/partner/dashboard")}
             className="flex-1 flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors duration-200"
           >
-            <Home className="w-5 h-5" />
-            {t('goToDashboard')}
+            <HomeIcon className="w-5 h-5" />
+            {t("goToDashboard")}
           </button>
         </div>
 
@@ -83,19 +89,21 @@ export default function PartnerDashboardError({ error, reset }: ErrorProps) {
             className="w-full flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors"
           >
             <span className="font-medium">
-              {showDetails ? t('hideDetails') : t('showDetails')}
+              {showDetails ? t("hideDetails") : t("showDetails")}
             </span>
             {showDetails ? (
-              <ChevronUp className="w-4 h-4" />
+              <ChevronUpIcon className="w-4 h-4" />
             ) : (
-              <ChevronDown className="w-4 h-4" />
+              <ChevronDownIcon className="w-4 h-4" />
             )}
           </button>
 
           {showDetails && (
             <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg overflow-auto">
               <p className="text-xs font-mono text-gray-700 dark:text-gray-300 mb-2">
-                <strong className="text-red-600 dark:text-red-400">{t('details')}:</strong>
+                <strong className="text-red-600 dark:text-red-400">
+                  {t("details")}:
+                </strong>
               </p>
               <pre className="text-xs text-gray-600 dark:text-gray-400 whitespace-pre-wrap wrap-break-words">
                 {error.message}
@@ -105,7 +113,7 @@ export default function PartnerDashboardError({ error, reset }: ErrorProps) {
                   <strong>Digest:</strong> {error.digest}
                 </p>
               )}
-              {process.env.NODE_ENV === 'development' && error.stack && (
+              {process.env.NODE_ENV === "development" && error.stack && (
                 <pre className="text-xs text-gray-500 dark:text-gray-500 mt-2 whitespace-pre-wrap wrap-break-words">
                   {error.stack}
                 </pre>
@@ -127,4 +135,3 @@ export default function PartnerDashboardError({ error, reset }: ErrorProps) {
     </div>
   );
 }
-

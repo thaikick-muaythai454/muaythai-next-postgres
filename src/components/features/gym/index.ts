@@ -1,0 +1,2 @@
+export { GymGallery } from './GymGallery';
+

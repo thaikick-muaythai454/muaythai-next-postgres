@@ -252,6 +252,7 @@ function GymPageContent() {
 
   const menuItems: MenuItem[] = [
     { label: 'ข้อมูลยิม', href: '/partner/dashboard/gym', icon: BuildingStorefrontIcon },
+    { label: 'แกลเลอรี่', href: '/partner/dashboard/gallery', icon: PhotoIcon },
     { label: 'โปรโมชั่น', href: '/partner/dashboard/promotions', icon: MegaphoneIcon },
     { label: 'ประวัติการจอง', href: '/partner/dashboard/bookings', icon: CalendarIcon },
     { label: 'รายการธุรกรรม', href: '/partner/dashboard/transactions', icon: BanknotesIcon },
