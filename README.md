@@ -1,4 +1,4 @@
-# Thaikcik MuayThai
+# Thaikick MuayThai
 
 The project is a modern full-stack web application designed for managing Muay Thai bookings and gym operations. Built using Next.js and TypeScript, and powered by PostgreSQL, this project serves as the core booking and management system for thaikickmuaythai.com.
 
